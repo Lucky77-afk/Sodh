@@ -1,4 +1,7 @@
 import streamlit as st
+import socket
+import datetime
+from datetime import datetime
 from components.header import render_header
 from components.dashboard import render_dashboard
 from components.transactions import render_transactions
@@ -10,6 +13,19 @@ from utils.database import init_db
 
 # Initialize database
 init_db()
+
+# Print connection information for debugging
+hostname = socket.gethostname()
+try:
+    # Try to get the server's IP address
+    ip_address = socket.gethostbyname(hostname)
+    print(f"Server hostname: {hostname}")
+    print(f"Server IP address: {ip_address}")
+    print(f"Server running on http://0.0.0.0:5000")
+except Exception as e:
+    print(f"Error getting server info: {e}")
+    print(f"Server hostname: {hostname}")
+    print(f"Server running on http://0.0.0.0:5000")
 
 # Set page configuration
 st.set_page_config(
@@ -202,8 +218,29 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
+# Add health check/status page
+if 'health_check' in st.query_params:
+    st.success("Server is up and running! 🚀")
+    st.write(f"Server Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    try:
+        st.write(f"Hostname: {socket.gethostname()}")
+        st.write(f"IP Address: {socket.gethostbyname(socket.gethostname())}")
+    except:
+        st.write("Could not determine server details")
+    
+    st.write("### Database Status")
+    try:
+        from utils.database import get_projects
+        projects = get_projects()
+        st.write(f"✅ Database connected successfully")
+        st.write(f"Projects count: {len(projects)}")
+    except Exception as e:
+        st.error(f"❌ Database error: {str(e)}")
+    
+    st.button("Refresh Status")
+    
 # Main content based on navigation selection
-if page == "Dashboard":
+elif page == "Dashboard":
     render_dashboard()
 elif page == "Transactions":
     render_transactions()
