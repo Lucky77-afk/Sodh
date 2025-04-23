@@ -81,21 +81,15 @@ def render_contract_projects():
 
 def render_project_form():
     """Renders a form to create a new collaboration project"""
-    with st.expander("Create New Project"):
-        with st.form("new_project_form"):
-            project_name = st.text_input("Project Name")
-            project_description = st.text_area("Project Description")
-            ip_terms = st.text_area("IP Terms", 
-                                     value="All intellectual property developed through this collaboration will be jointly owned by participants proportional to their contribution percentage.")
-            
-            # Form submission
-            submit_button = st.form_submit_button("Create Project")
-            
-            if submit_button:
-                if project_name and project_description:
-                    st.success(f"Project '{project_name}' would be created on the blockchain")
-                else:
-                    st.error("Please fill in all required fields")
+    from components.transaction_submitter import render_project_submission_form
+    
+    success, result = render_project_submission_form()
+    
+    if success:
+        # In a real implementation, this would refresh the project list
+        st.success(f"Project created successfully with transaction signature: {result['signature'][:7]}...{result['signature'][-4:]}")
+        st.session_state.show_confirmation = True
+        st.session_state.latest_tx_signature = result['signature']
 
 def render_smart_contract():
     """Main function to render smart contract interface"""
@@ -153,6 +147,20 @@ def render_smart_contract():
     with tabs[2]:
         st.markdown("### Project Milestones")
         
+        # Import transaction forms for adding milestones
+        from components.transaction_submitter import render_milestone_submission_form
+        
+        # Add milestone form
+        success, result = render_milestone_submission_form()
+        
+        if success:
+            st.success(f"Milestone added successfully with transaction signature: {result['signature'][:7]}...{result['signature'][-4:]}")
+            st.session_state.show_milestone_confirmation = True
+            st.session_state.latest_milestone_tx = result['signature']
+        
+        st.markdown("<hr style='margin: 20px 0; border-color: #333;'>", unsafe_allow_html=True)
+        
+        # Display existing milestones
         milestones = [
             {
                 "title": "Initial Quantum Algorithm Design",
@@ -169,6 +177,23 @@ def render_smart_contract():
                 "status": "Pending"
             }
         ]
+        
+        # If we just added a new milestone via a transaction, add it to the display list
+        if 'show_milestone_confirmation' in st.session_state and st.session_state.show_milestone_confirmation:
+            if 'latest_milestone_tx' in st.session_state:
+                # Add the new milestone to the top of the list
+                if result and 'data' in result and 'args' in result['data']:
+                    new_milestone = {
+                        "title": result['data']['args']['title'],
+                        "description": result['data']['args']['description'],
+                        "deadline": datetime.fromtimestamp(result['data']['args']['deadline']).strftime("%Y-%m-%d"),
+                        "payment": f"{result['data']['args']['payment_amount'] / 1_000_000} USDC",
+                        "status": "Pending"
+                    }
+                    milestones.insert(0, new_milestone)
+                
+                # Reset confirmation after displaying
+                st.session_state.show_milestone_confirmation = False
         
         for i, milestone in enumerate(milestones):
             status_color = "#14F195" if milestone["status"] == "Funded" else "#AAA"
@@ -196,17 +221,31 @@ def render_smart_contract():
             """, unsafe_allow_html=True)
             
             if milestone["status"] == "Funded":
-                st.markdown(f"""
-                <div style="padding-left: 15px; margin-bottom: 20px;">
-                    <button style="background-color: #9945FF; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif;">
-                        Mark as Completed
-                    </button>
-                </div>
-                """, unsafe_allow_html=True)
+                # For funded milestones, allow completing them
+                st.button(f"Mark as Completed: {milestone['title']}", key=f"complete_milestone_{i}", 
+                         type="secondary", use_container_width=False)
+            elif milestone["status"] == "Pending":
+                # For pending milestones, allow funding them
+                st.button(f"Fund Milestone: {milestone['title']}", key=f"fund_milestone_{i}", 
+                         type="primary", use_container_width=False)
     
     with tabs[3]:
         st.markdown("### Project Participants")
         
+        # Import transaction form for adding participants
+        from components.transaction_submitter import render_participant_submission_form
+        
+        # Add participant form
+        success, result = render_participant_submission_form()
+        
+        if success:
+            st.success(f"Participant added successfully with transaction signature: {result['signature'][:7]}...{result['signature'][-4:]}")
+            st.session_state.show_participant_confirmation = True
+            st.session_state.latest_participant_tx = result['signature']
+        
+        st.markdown("<hr style='margin: 20px 0; border-color: #333;'>", unsafe_allow_html=True)
+        
+        # Display existing participants
         participants = [
             {
                 "name": "Dr. Alice Johnson",
@@ -231,25 +270,47 @@ def render_smart_contract():
             }
         ]
         
-        for participant in participants:
-            st.markdown(f"""
-            <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; color: #FFFFFF;">{participant["name"]}</h3>
-                    <div style="color: #14F195; font-size: 0.9rem; font-weight: bold;">
-                        {participant["contribution"]}
+        # If we just added a new participant via a transaction, add it to the display list
+        if 'show_participant_confirmation' in st.session_state and st.session_state.show_participant_confirmation:
+            if 'latest_participant_tx' in st.session_state:
+                # Add the new participant to the top of the list
+                if result and 'data' in result and 'args' in result['data']:
+                    new_participant = {
+                        "name": result['data']['args']['name'],
+                        "role": result['data']['args']['role'],
+                        "contribution": f"{result['data']['args']['contribution_percentage']}%",
+                        "joined": datetime.now().strftime("%Y-%m-%d"),
+                        "wallet": f"{result['data']['accounts']['participant'][:4]}...{result['data']['accounts']['participant'][-4:]}"
+                    }
+                    participants.insert(0, new_participant)
+                
+                # Reset confirmation after displaying
+                st.session_state.show_participant_confirmation = False
+        
+        # Show all participants in cards
+        col1, col2 = st.columns(2)
+        
+        for i, participant in enumerate(participants):
+            # Alternate between columns
+            with col1 if i % 2 == 0 else col2:
+                st.markdown(f"""
+                <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; color: #FFFFFF;">{participant["name"]}</h3>
+                        <div style="color: #14F195; font-size: 0.9rem; font-weight: bold;">
+                            {participant["contribution"]}
+                        </div>
+                    </div>
+                    <p style="color: #AAAAAA; margin-top: 8px; margin-bottom: 12px;">
+                        {participant["role"]}
+                    </p>
+                    <div style="display: flex; gap: 15px; font-size: 0.8rem;">
+                        <div style="color: #AAAAAA;">
+                            Joined: <span style="color: #FFFFFF;">{participant["joined"]}</span>
+                        </div>
+                        <div style="color: #AAAAAA;">
+                            Wallet: <span class="transaction-hash">{participant["wallet"]}</span>
+                        </div>
                     </div>
                 </div>
-                <p style="color: #AAAAAA; margin-top: 8px; margin-bottom: 12px;">
-                    {participant["role"]}
-                </p>
-                <div style="display: flex; gap: 15px; font-size: 0.8rem;">
-                    <div style="color: #AAAAAA;">
-                        Joined: <span style="color: #FFFFFF;">{participant["joined"]}</span>
-                    </div>
-                    <div style="color: #AAAAAA;">
-                        Wallet: <span class="transaction-hash">{participant["wallet"]}</span>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)

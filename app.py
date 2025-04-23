@@ -204,3 +204,5 @@ elif page == "Smart Contract":
     render_smart_contract()
 elif page == "Whitepaper":
     render_whitepaper()
+elif page == "Tutorial":
+    render_tutorial()
