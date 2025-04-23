@@ -16,7 +16,12 @@ st.set_page_config(
     page_title="Sodh - Solana Blockchain Explorer",
     page_icon="🔍",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://www.solana.com/docs',
+        'Report a bug': None,
+        'About': "Sodh Explorer - A Solana Blockchain Explorer built with Streamlit"
+    }
 )
 
 # Add custom styling
