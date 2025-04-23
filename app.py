@@ -6,6 +6,10 @@ from components.account import render_account
 from components.smart_contract import render_smart_contract
 from components.whitepaper import render_whitepaper
 from components.tutorial import render_tutorial
+from utils.database import init_db
+
+# Initialize database
+init_db()
 
 # Set page configuration
 st.set_page_config(
