@@ -179,8 +179,15 @@ st.markdown("""
 # Render the header with logo
 render_header()
 
+# Add access information notification
+st.toast("📱 For mobile access, use the 'Open in new tab' button in Replit's preview window", icon="🔔")
+
 # Sidebar navigation
 with st.sidebar:
+    # Add health check access
+    if st.button("⚡ Check Server Status"):
+        st.query_params["health_check"] = True
+        st.rerun()
     st.markdown('<p class="gradient-text">NAVIGATION</p>', unsafe_allow_html=True)
     page = st.radio(
         "Select a page",
