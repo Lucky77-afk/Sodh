@@ -112,15 +112,45 @@ def render_transactions():
     # Recent transactions section
     st.markdown("### Recent Transactions")
     
+    # Try to get transactions from database first
+    from utils.database import get_recent_transactions as get_db_transactions
+    
     try:
-        client = get_solana_client()
-        recent_txs = get_recent_transactions(client)
+        # Get database transactions
+        db_txs = get_db_transactions(limit=10)
         
-        if recent_txs:
-            for tx in recent_txs:
-                render_transaction_card(tx)
+        if db_txs:
+            # Format database transactions to match expected format
+            for tx in db_txs:
+                # Convert Unix timestamp to datetime if available
+                block_time = "Unknown"
+                if tx.get("blocktime"):
+                    from datetime import datetime
+                    block_time = datetime.fromtimestamp(tx["blocktime"]).strftime("%Y-%m-%d %H:%M:%S")
+                elif tx.get("created_at"):
+                    block_time = tx["created_at"]
+                
+                # Create a transaction object with the required fields
+                tx_obj = {
+                    "signature": tx["signature"],
+                    "status": "Success" if tx["status"] == "Confirmed" else "Failed",
+                    "block_time": block_time,
+                    "fee": "0.000005"  # Default fee
+                }
+                render_transaction_card(tx_obj)
         else:
-            st.info("No recent transactions found")
+            # Fallback to Solana blockchain transactions if no database transactions
+            try:
+                client = get_solana_client()
+                recent_txs = get_recent_transactions(client)
+                
+                if recent_txs:
+                    for tx in recent_txs:
+                        render_transaction_card(tx)
+                else:
+                    st.info("No recent transactions found")
+            except Exception as e:
+                st.error(f"Error retrieving recent transactions from blockchain: {str(e)}")
     except Exception as e:
         st.error(f"Error retrieving recent transactions: {str(e)}")
         

@@ -17,45 +17,71 @@ def render_contract_header():
 
 def render_contract_projects():
     """Display list of collaborative projects from the contract"""
+    from utils.database import get_projects, get_participants, get_milestones
+    
     st.markdown("### Collaborative Projects")
     
-    # Sample project data (would come from contract in production)
-    projects = [
-        {
-            "id": "Proj1",
-            "name": "Quantum Research Collaboration",
-            "description": "A collaborative project to research quantum computing applications in bioinformatics",
-            "participants": 3,
-            "milestones": 2,
-            "created_at": "2025-04-15",
-            "status": "Active"
-        },
-        {
-            "id": "Proj2",
-            "name": "Decentralized AI Training Framework",
-            "description": "Developing a framework for decentralized AI model training using blockchain validation",
-            "participants": 5,
-            "milestones": 4,
-            "created_at": "2025-03-28",
-            "status": "Active"
-        },
-        {
-            "id": "Proj3",
-            "name": "Carbon Credit Tokenization System",
-            "description": "Building a system to tokenize and trade carbon credits on Solana blockchain",
-            "participants": 4,
-            "milestones": 3,
-            "created_at": "2025-03-10",
-            "status": "Completed"
-        }
-    ]
+    # Get projects from database
+    db_projects = get_projects()
+    
+    # Combine database projects with example projects if needed
+    projects = []
+    
+    # Process projects from database
+    if db_projects:
+        for project in db_projects:
+            # Get related data
+            participants_count = len(get_participants(project_id=project['id']))
+            milestones_count = len(get_milestones(project_id=project['id']))
+            
+            # Format data for display
+            projects.append({
+                "id": project['id'],
+                "name": project['name'],
+                "description": project['description'],
+                "participants": participants_count,
+                "milestones": milestones_count,
+                "created_at": project['created_at'],
+                "status": "Active"  # Default status for now
+            })
+    
+    # Add example projects if no projects in database
+    if not projects:
+        projects = [
+            {
+                "id": "Proj1",
+                "name": "Quantum Research Collaboration",
+                "description": "A collaborative project to research quantum computing applications in bioinformatics",
+                "participants": 3,
+                "milestones": 2,
+                "created_at": "2025-04-15",
+                "status": "Active"
+            },
+            {
+                "id": "Proj2",
+                "name": "Decentralized AI Training Framework",
+                "description": "Developing a framework for decentralized AI model training using blockchain validation",
+                "participants": 5,
+                "milestones": 4,
+                "created_at": "2025-03-28",
+                "status": "Active"
+            },
+            {
+                "id": "Proj3",
+                "name": "Carbon Credit Tokenization System",
+                "description": "Building a system to tokenize and trade carbon credits on Solana blockchain",
+                "participants": 4,
+                "milestones": 3,
+                "created_at": "2025-03-10",
+                "status": "Completed"
+            }
+        ]
     
     for project in projects:
         status_color = "#14F195" if project["status"] == "Active" else "#9945FF"
         
         st.markdown(f"""
-        <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin-bottom: 15px; cursor: pointer;" 
-             onclick="alert('Project details would open here');">
+        <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; color: #FFFFFF;">{project["name"]}</h3>
                 <div style="color: {status_color}; font-size: 0.9rem; font-weight: bold;">
@@ -78,6 +104,12 @@ def render_contract_projects():
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Add button to select this project for future operations
+        if st.button(f"Select: {project['name']}", key=f"select_project_{project['id']}"):
+            st.session_state.current_project_id = project['id']
+            st.success(f"Selected project: {project['name']}")
+            st.rerun()
 
 def render_project_form():
     """Renders a form to create a new collaboration project"""
@@ -193,23 +225,46 @@ def render_smart_contract():
         
         st.markdown("<hr style='margin: 20px 0; border-color: #333;'>", unsafe_allow_html=True)
         
-        # Display existing milestones
-        milestones = [
-            {
-                "title": "Initial Quantum Algorithm Design",
-                "description": "Develop the theoretical framework for quantum algorithms targeting protein folding predictions",
-                "deadline": "2025-05-23",
-                "payment": "50 USDC",
-                "status": "Funded"
-            },
-            {
-                "title": "Prototype Implementation",
-                "description": "Implement prototype of quantum algorithm on simulator and analyze performance",
-                "deadline": "2025-06-23",
-                "payment": "100 USDC",
-                "status": "Pending"
-            }
-        ]
+        # Display existing milestones from database
+        from utils.database import get_milestones
+        
+        # Get current project ID from session state or use a default
+        project_id = st.session_state.get('current_project_id', 1)
+        
+        # Get milestones from database
+        db_milestones = get_milestones(project_id=project_id)
+        
+        # Process milestones from database
+        milestones = []
+        if db_milestones:
+            for m in db_milestones:
+                milestones.append({
+                    "id": m['id'],
+                    "title": m['title'],
+                    "description": m['description'],
+                    "deadline": m['deadline'],
+                    "payment": f"{m['payment_amount']} USDC",
+                    "status": m['status']
+                })
+        
+        # Add example milestones if none in database
+        if not milestones:
+            milestones = [
+                {
+                    "title": "Initial Quantum Algorithm Design",
+                    "description": "Develop the theoretical framework for quantum algorithms targeting protein folding predictions",
+                    "deadline": "2025-05-23",
+                    "payment": "50 USDC",
+                    "status": "Funded"
+                },
+                {
+                    "title": "Prototype Implementation",
+                    "description": "Implement prototype of quantum algorithm on simulator and analyze performance",
+                    "deadline": "2025-06-23",
+                    "payment": "100 USDC",
+                    "status": "Pending"
+                }
+            ]
         
         # If we just added a new milestone via a transaction, add it to the display list
         if 'show_milestone_confirmation' in st.session_state and st.session_state.show_milestone_confirmation:
@@ -295,30 +350,58 @@ def render_smart_contract():
         
         st.markdown("<hr style='margin: 20px 0; border-color: #333;'>", unsafe_allow_html=True)
         
-        # Display existing participants
-        participants = [
-            {
-                "name": "Dr. Alice Johnson",
-                "role": "Lead Researcher",
-                "contribution": "40%",
-                "joined": "2025-04-15",
-                "wallet": "8ZtK...xBw4"
-            },
-            {
-                "name": "Dr. Bob Smith",
-                "role": "Quantum Algorithm Specialist",
-                "contribution": "35%",
-                "joined": "2025-04-15",
-                "wallet": "5RnP...vZq7"
-            },
-            {
-                "name": "Dr. Carol Williams",
-                "role": "Bioinformatics Expert",
-                "contribution": "25%",
-                "joined": "2025-04-16",
-                "wallet": "3mLj...tA1s"
-            }
-        ]
+        # Display existing participants from database
+        from utils.database import get_participants
+        
+        # Get current project ID from session state or use a default
+        project_id = st.session_state.get('current_project_id', 1)
+        
+        # Get participants from database
+        db_participants = get_participants(project_id=project_id)
+        
+        # Process participants from database
+        participants = []
+        if db_participants:
+            for p in db_participants:
+                # Format wallet address for display
+                wallet_display = p['wallet_address']
+                if wallet_display and len(wallet_display) > 10:
+                    wallet_display = f"{wallet_display[:4]}...{wallet_display[-4:]}"
+                
+                participants.append({
+                    "id": p['id'],
+                    "name": p['name'],
+                    "role": p['role'],
+                    "contribution": f"{p['contribution_percentage']}%",
+                    "joined": p['joined_at'].split()[0] if p['joined_at'] else "N/A",
+                    "wallet": wallet_display
+                })
+        
+        # Add example participants if none in database
+        if not participants:
+            participants = [
+                {
+                    "name": "Dr. Alice Johnson",
+                    "role": "Lead Researcher",
+                    "contribution": "40%",
+                    "joined": "2025-04-15",
+                    "wallet": "8ZtK...xBw4"
+                },
+                {
+                    "name": "Dr. Bob Smith",
+                    "role": "Quantum Algorithm Specialist",
+                    "contribution": "35%",
+                    "joined": "2025-04-15",
+                    "wallet": "5RnP...vZq7"
+                },
+                {
+                    "name": "Dr. Carol Williams",
+                    "role": "Bioinformatics Expert",
+                    "contribution": "25%",
+                    "joined": "2025-04-16",
+                    "wallet": "3mLj...tA1s"
+                }
+            ]
         
         # If we just added a new participant via a transaction, add it to the display list
         if 'show_participant_confirmation' in st.session_state and st.session_state.show_participant_confirmation:

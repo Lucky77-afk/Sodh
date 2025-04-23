@@ -5,6 +5,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import random
 from utils.solana_client import get_solana_client, get_recent_blocks, get_latest_block_time
+from utils.database import get_recent_transactions
 
 def render_dashboard():
     """Renders the dashboard with blockchain metrics and visualizations"""
@@ -153,6 +154,52 @@ def render_dashboard():
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.error("Could not retrieve block time data")
+        
+        # Local database transactions
+        st.markdown("### Local Database Transactions", unsafe_allow_html=True)
+        
+        # Get database transactions
+        db_transactions = get_recent_transactions(limit=5)
+        
+        if db_transactions and len(db_transactions) > 0:
+            # Format transaction data for display
+            tx_disp_data = {
+                'Signature': [],
+                'Type': [],
+                'Status': [],
+                'Timestamp': []
+            }
+            
+            for tx in db_transactions:
+                # Format signature for display (truncate)
+                sig = tx['signature']
+                short_sig = f"{sig[:8]}...{sig[-8:]}" if len(sig) > 16 else sig
+                
+                # Format timestamp
+                timestamp = tx.get('created_at', 'N/A')
+                
+                # Add to display data
+                tx_disp_data['Signature'].append(short_sig)
+                tx_disp_data['Type'].append(tx.get('tx_type', 'Unknown'))
+                tx_disp_data['Status'].append(tx.get('status', 'Unknown'))
+                tx_disp_data['Timestamp'].append(timestamp)
+            
+            # Create dataframe
+            tx_df = pd.DataFrame(tx_disp_data)
+            
+            # Add color styling to status column
+            def color_status(val):
+                color = '#14F195' if val == 'Confirmed' else '#FF5C5C'
+                return f'color: {color}'
+            
+            # Display styled dataframe
+            st.dataframe(
+                tx_df.style.applymap(color_status, subset=['Status']),
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.info("No transactions found in the database. Create a project, milestone, or participant to see transactions here.")
         
         # Token metrics
         st.markdown("### Top Solana Tokens", unsafe_allow_html=True)
