@@ -3,6 +3,9 @@ from components.header import render_header
 from components.dashboard import render_dashboard
 from components.transactions import render_transactions
 from components.account import render_account
+from components.smart_contract import render_smart_contract
+from components.whitepaper import render_whitepaper
+from components.tutorial import render_tutorial
 
 # Set page configuration
 st.set_page_config(
@@ -109,6 +112,41 @@ st.markdown("""
         padding: 0.5rem 1rem;
         font-family: 'Inter', sans-serif;
     }
+    
+    .form-card {
+        background-color: #1E1E1E;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 3px solid #14F195;
+    }
+    
+    /* Additional styling for contract elements */
+    .contract-function {
+        font-family: 'Roboto Mono', monospace;
+        color: #14F195;
+        background-color: #1A1A1A;
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-bottom: 4px;
+    }
+    
+    .contract-event {
+        font-family: 'Roboto Mono', monospace;
+        color: #9945FF;
+        background-color: #1A1A1A;
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-bottom: 4px;
+    }
+    
+    .milestone-card {
+        background-color: #1E1E1E;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+        border-left: 3px solid #9945FF;
+    }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
 """, unsafe_allow_html=True)
@@ -121,7 +159,7 @@ with st.sidebar:
     st.markdown('<p class="gradient-text">NAVIGATION</p>', unsafe_allow_html=True)
     page = st.radio(
         "Select a page",
-        ["Dashboard", "Transactions", "Account"],
+        ["Dashboard", "Transactions", "Account", "Smart Contract", "Whitepaper", "Tutorial"],
         label_visibility="collapsed"
     )
     
@@ -138,6 +176,15 @@ with st.sidebar:
             del st.session_state.wallet_address
             st.rerun()
     
+    # About section in sidebar
+    st.markdown("---")
+    st.markdown('<p class="gradient-text">ABOUT DAPPR</p>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="font-size: 0.85rem; color: #AAA;">
+    Decentralized Autonomous Platform for Propagation of Research (DAPPR) leverages Solana blockchain to revolutionize academia-industry collaboration.
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.markdown("---")
     st.markdown("""
     <div style="font-size: 0.8rem; color: #666;">
@@ -153,3 +200,7 @@ elif page == "Transactions":
     render_transactions()
 elif page == "Account":
     render_account()
+elif page == "Smart Contract":
+    render_smart_contract()
+elif page == "Whitepaper":
+    render_whitepaper()
