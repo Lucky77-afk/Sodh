@@ -2,6 +2,7 @@ import streamlit as st
 import time
 import random
 import json
+from utils.database import record_transaction
 
 def simulate_transaction(tx_type, tx_data):
     """
@@ -38,27 +39,51 @@ def simulate_transaction(tx_type, tx_data):
     # Simulate random success with high probability
     success = random.random() < 0.95
     
+    current_time = int(time.time())
+    slot = random.randint(150000000, 160000000)
+    
     if success:
         status_text.text("Transaction confirmed!")
         progress_bar.progress(100)
+        
+        # Record transaction in database
+        record_transaction(
+            signature=tx_signature,
+            tx_type=tx_type,
+            status="Confirmed",
+            blocktime=current_time,
+            slot=slot,
+            data=tx_json
+        )
         
         # Return successful transaction data
         return {
             "success": True,
             "signature": tx_signature,
-            "blocktime": int(time.time()),
-            "slot": random.randint(150000000, 160000000),
+            "blocktime": current_time,
+            "slot": slot,
             "tx_type": tx_type,
             "data": tx_data
         }
     else:
         status_text.text("Transaction failed.")
         
+        # Record failed transaction in database
+        record_transaction(
+            signature=tx_signature,
+            tx_type=tx_type,
+            status="Failed",
+            blocktime=current_time,
+            slot=slot,
+            data=tx_json
+        )
+        
         # Return failure data
         return {
             "success": False,
             "error": "Transaction simulation error: Insufficient funds for transaction",
-            "tx_type": tx_type
+            "tx_type": tx_type,
+            "signature": tx_signature
         }
 
 def render_transaction_submitter(tx_type, tx_data):

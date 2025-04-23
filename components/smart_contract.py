@@ -82,11 +82,23 @@ def render_contract_projects():
 def render_project_form():
     """Renders a form to create a new collaboration project"""
     from components.transaction_submitter import render_project_submission_form
+    from utils.database import create_project
     
     success, result = render_project_submission_form()
     
     if success:
-        # In a real implementation, this would refresh the project list
+        # Store the project in the database
+        if 'data' in result and 'args' in result['data']:
+            project = create_project(
+                name=result['data']['args']['name'],
+                description=result['data']['args']['description'],
+                ip_terms=result['data']['args']['ip_terms'] if 'ip_terms' in result['data']['args'] else None,
+                transaction_signature=result['signature']
+            )
+            
+            # Store project ID in session state for other components to use
+            st.session_state.current_project_id = project.id if project else None
+            
         st.success(f"Project created successfully with transaction signature: {result['signature'][:7]}...{result['signature'][-4:]}")
         st.session_state.show_confirmation = True
         st.session_state.latest_tx_signature = result['signature']
@@ -151,9 +163,30 @@ def render_smart_contract():
         from components.transaction_submitter import render_milestone_submission_form
         
         # Add milestone form
-        success, result = render_milestone_submission_form()
+        from utils.database import create_milestone
+        
+        # Get current project ID from session state or use a default
+        project_id = st.session_state.get('current_project_id', 1)
+        
+        success, result = render_milestone_submission_form(project_id=project_id)
         
         if success:
+            # Store the milestone in the database
+            if 'data' in result and 'args' in result['data']:
+                # Convert Unix timestamp to datetime
+                deadline_timestamp = result['data']['args'].get('deadline')
+                deadline_date = datetime.fromtimestamp(deadline_timestamp) if deadline_timestamp else None
+                
+                milestone = create_milestone(
+                    project_id=project_id,
+                    title=result['data']['args']['title'],
+                    description=result['data']['args']['description'],
+                    deadline=deadline_date,
+                    payment_amount=result['data']['args']['payment_amount'] / 1_000_000 if 'payment_amount' in result['data']['args'] else 0,
+                    deliverables=result['data']['args'].get('deliverables'),
+                    transaction_signature=result['signature']
+                )
+            
             st.success(f"Milestone added successfully with transaction signature: {result['signature'][:7]}...{result['signature'][-4:]}")
             st.session_state.show_milestone_confirmation = True
             st.session_state.latest_milestone_tx = result['signature']
@@ -236,9 +269,26 @@ def render_smart_contract():
         from components.transaction_submitter import render_participant_submission_form
         
         # Add participant form
-        success, result = render_participant_submission_form()
+        from utils.database import create_participant
+        
+        # Get current project ID from session state or use a default
+        project_id = st.session_state.get('current_project_id', 1)
+        
+        success, result = render_participant_submission_form(project_id=project_id)
         
         if success:
+            # Store the participant in the database
+            if 'data' in result and 'args' in result['data'] and 'accounts' in result['data']:
+                participant = create_participant(
+                    project_id=project_id,
+                    name=result['data']['args']['name'],
+                    role=result['data']['args']['role'],
+                    wallet_address=result['data']['accounts']['participant'],
+                    contribution_percentage=result['data']['args'].get('contribution_percentage', 0),
+                    confidential_details=result['data']['args'].get('confidential_details'),
+                    transaction_signature=result['signature']
+                )
+            
             st.success(f"Participant added successfully with transaction signature: {result['signature'][:7]}...{result['signature'][-4:]}")
             st.session_state.show_participant_confirmation = True
             st.session_state.latest_participant_tx = result['signature']
