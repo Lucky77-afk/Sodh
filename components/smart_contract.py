@@ -154,7 +154,8 @@ def render_smart_contract():
             {"name": "initialize_project", "description": "Creates a new collaboration project"},
             {"name": "add_participant", "description": "Adds a participant to a project"},
             {"name": "add_milestone", "description": "Creates a milestone for the project"},
-            {"name": "fund_milestone", "description": "Funds a milestone with USDC"},
+            {"name": "fund_milestone_sol", "description": "Funds a milestone with SOL"},
+            {"name": "fund_milestone_usdt", "description": "Funds a milestone with USDT stablecoin"},
             {"name": "complete_milestone", "description": "Marks a milestone as completed"},
             {"name": "approve_milestone", "description": "Approves a completed milestone"},
             {"name": "distribute_milestone_payment", "description": "Distributes payment to participants"}
@@ -243,7 +244,7 @@ def render_smart_contract():
                     "title": m['title'],
                     "description": m['description'],
                     "deadline": m['deadline'],
-                    "payment": f"{m['payment_amount']} USDC",
+                    "payment": f"{m['payment_amount']} {m.get('token_type', 'USDT')}",
                     "status": m['status']
                 })
         
@@ -271,11 +272,19 @@ def render_smart_contract():
             if 'latest_milestone_tx' in st.session_state:
                 # Add the new milestone to the top of the list
                 if result and 'data' in result and 'args' in result['data']:
+                    # Get token type and calculate correct amount based on decimals
+                    token_type = result['data']['args'].get('token_type', 'USDT')  # Default to USDT if not specified
+                    
+                    if token_type == "SOL":
+                        payment_display = result['data']['args']['payment_amount'] / 1_000_000_000  # 9 decimals for SOL
+                    else:  # USDT or other tokens with 6 decimals
+                        payment_display = result['data']['args']['payment_amount'] / 1_000_000  # 6 decimals
+                    
                     new_milestone = {
                         "title": result['data']['args']['title'],
                         "description": result['data']['args']['description'],
                         "deadline": datetime.fromtimestamp(result['data']['args']['deadline']).strftime("%Y-%m-%d"),
-                        "payment": f"{result['data']['args']['payment_amount'] / 1_000_000} USDC",
+                        "payment": f"{payment_display} {token_type}",
                         "status": "Pending"
                     }
                     milestones.insert(0, new_milestone)

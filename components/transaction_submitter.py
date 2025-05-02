@@ -145,6 +145,15 @@ def render_project_submission_form():
         st.markdown("### Create New Project")
         project_name = st.text_input("Project Name", placeholder="Enter a name for your research collaboration")
         project_description = st.text_area("Project Description", placeholder="Describe the goals and scope of this project")
+        
+        # Add currency preference for the project
+        st.markdown("#### Project Funding Options")
+        col1, col2 = st.columns(2)
+        with col1:
+            default_currency = st.selectbox("Default Currency", options=["SOL", "USDT"])
+        with col2:
+            accept_multiple = st.checkbox("Accept multiple currencies", value=True)
+            
         ip_terms = st.text_area("IP Terms", 
                                  value="All intellectual property developed through this collaboration will be jointly owned by participants proportional to their contribution percentage.")
         
@@ -153,21 +162,39 @@ def render_project_submission_form():
         
         if submit_button:
             if project_name and project_description:
-                # Create transaction data
-                tx_data = {
-                    "instruction": "initialize_project",
-                    "accounts": {
+                # Create transaction data with appropriate token information based on selection
+                if default_currency == "SOL":
+                    token_accounts = {
                         "admin": "connected_wallet_address",
                         "project": "derived_project_pda",
-                        "usdc_mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",  # USDC on Solana
+                        "system_program": "11111111111111111111111111111111",
+                    }
+                    # Add token program accounts if accepting multiple currencies
+                    if accept_multiple:
+                        token_accounts.update({
+                            "usdt_mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",  # USDT on Solana
+                            "token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                        })
+                else:  # USDT is default
+                    token_accounts = {
+                        "admin": "connected_wallet_address",
+                        "project": "derived_project_pda",
+                        "usdt_mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",  # USDT on Solana
                         "escrow_account": "derived_escrow_pda",
                         "token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
                         "system_program": "11111111111111111111111111111111",
-                    },
+                    }
+                
+                # Create transaction data
+                tx_data = {
+                    "instruction": "initialize_project",
+                    "accounts": token_accounts,
                     "args": {
                         "name": project_name,
                         "description": project_description,
-                        "ip_terms": ip_terms
+                        "ip_terms": ip_terms,
+                        "default_currency": default_currency,
+                        "accept_multiple_currencies": accept_multiple
                     }
                 }
                 
@@ -191,8 +218,18 @@ def render_milestone_submission_form(project_id="Proj1"):
             # Use a date input for the deadline
             deadline_date = st.date_input("Deadline Date")
         with col2:
+            # Currency selection
+            currency = st.selectbox("Currency", options=["SOL", "USDT"])
+            
             # Use a numeric input for the payment amount
-            payment_amount = st.number_input("Payment Amount (USDC)", min_value=1, value=50)
+            if currency == "SOL":
+                payment_amount = st.number_input(f"Payment Amount ({currency})", min_value=0.1, value=1.0, step=0.1)
+                # SOL has 9 decimals
+                decimal_multiplier = 1_000_000_000
+            else:  # USDT
+                payment_amount = st.number_input(f"Payment Amount ({currency})", min_value=1, value=50)
+                # USDT has 6 decimals
+                decimal_multiplier = 1_000_000
         
         deliverables = st.text_area("Deliverables", placeholder="List the specific outputs expected for this milestone")
         
@@ -206,26 +243,50 @@ def render_milestone_submission_form(project_id="Proj1"):
                 deadline_datetime = datetime.datetime.combine(deadline_date, datetime.time())
                 deadline_timestamp = int(deadline_datetime.timestamp())
                 
-                # Convert payment to proper units (USDC has 6 decimals)
-                payment_amount_units = payment_amount * 1_000_000  # Convert to USDC's smallest unit
+                # Convert payment to proper units (using decimal_multiplier)
+                payment_amount_units = int(payment_amount * decimal_multiplier)
                 
-                # Create transaction data
-                tx_data = {
-                    "instruction": "add_milestone",
-                    "accounts": {
-                        "admin": "connected_wallet_address",
-                        "project": project_id,
-                        "milestone_account": "derived_milestone_pda",
-                        "system_program": "11111111111111111111111111111111",
-                    },
-                    "args": {
-                        "title": milestone_title,
-                        "description": milestone_description,
-                        "deadline": deadline_timestamp,
-                        "payment_amount": payment_amount_units,
-                        "deliverables": deliverables
+                # Create transaction data based on selected currency
+                if currency == "SOL":
+                    # SOL transaction data
+                    tx_data = {
+                        "instruction": "add_milestone",
+                        "accounts": {
+                            "admin": "connected_wallet_address",
+                            "project": project_id,
+                            "milestone_account": "derived_milestone_pda",
+                            "system_program": "11111111111111111111111111111111",
+                        },
+                        "args": {
+                            "title": milestone_title,
+                            "description": milestone_description,
+                            "deadline": deadline_timestamp,
+                            "payment_amount": payment_amount_units,
+                            "token_type": "SOL",
+                            "deliverables": deliverables
+                        }
                     }
-                }
+                else:
+                    # USDT transaction data (add SPL token program accounts)
+                    tx_data = {
+                        "instruction": "add_milestone",
+                        "accounts": {
+                            "admin": "connected_wallet_address",
+                            "project": project_id,
+                            "milestone_account": "derived_milestone_pda",
+                            "usdt_mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",  # USDT on Solana
+                            "token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                            "system_program": "11111111111111111111111111111111",
+                        },
+                        "args": {
+                            "title": milestone_title,
+                            "description": milestone_description,
+                            "deadline": deadline_timestamp,
+                            "payment_amount": payment_amount_units,
+                            "token_type": "USDT",
+                            "deliverables": deliverables
+                        }
+                    }
                 
                 # Render the transaction submitter
                 return render_transaction_submitter("add_milestone", tx_data)
