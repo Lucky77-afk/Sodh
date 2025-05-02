@@ -255,14 +255,14 @@ def render_smart_contract():
                     "title": "Initial Quantum Algorithm Design",
                     "description": "Develop the theoretical framework for quantum algorithms targeting protein folding predictions",
                     "deadline": "2025-05-23",
-                    "payment": "50 USDC",
+                    "payment": "50 USDT",
                     "status": "Funded"
                 },
                 {
                     "title": "Prototype Implementation",
                     "description": "Implement prototype of quantum algorithm on simulator and analyze performance",
                     "deadline": "2025-06-23",
-                    "payment": "100 USDC",
+                    "payment": "1.5 SOL",
                     "status": "Pending"
                 }
             ]
