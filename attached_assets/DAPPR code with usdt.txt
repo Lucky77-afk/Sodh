@@ -1,0 +1,909 @@
+// DAPPR: Decentralized Autonomous Platform for Propagation of Research
+// Solana Smart Contract
+
+use anchor_lang::prelude::*;
+use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use anchor_spl::associated_token::AssociatedToken;
+use solana_program::program::invoke_signed;
+use solana_program::system_instruction;
+
+declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // Replace with your program ID
+
+#[program]
+pub mod dappr_program {
+    use super::*;
+    
+    // Initialize a new research collaboration
+    pub fn initialize_collaboration(
+        ctx: Context<InitializeCollaboration>,
+        collaboration_id: String,
+        project_name: String,
+        funding_amount: u64,
+        milestones: Vec<Milestone>,
+    ) -> Result<()> {
+        let collaboration = &mut ctx.accounts.collaboration;
+        let clock = Clock::get()?;
+        
+        // Set collaboration details
+        collaboration.authority = ctx.accounts.authority.key();
+        collaboration.collaboration_id = collaboration_id;
+        collaboration.project_name = project_name;
+        collaboration.total_funding = funding_amount;
+        collaboration.remaining_funding = funding_amount;
+        collaboration.created_at = clock.unix_timestamp;
+        collaboration.status = CollaborationStatus::Active;
+        collaboration.milestones = milestones;
+        collaboration.contributors = Vec::new();
+        
+        emit!(CollaborationCreated {
+            collaboration_id: collaboration.collaboration_id.clone(),
+            project_name: collaboration.project_name.clone(),
+            funding_amount,
+            timestamp: clock.unix_timestamp,
+        });
+        
+        Ok(())
+    }
+    
+    // Fund a collaboration with SOL
+    pub fn fund_collaboration_sol(
+        ctx: Context<FundCollaboration>, 
+        amount: u64
+    ) -> Result<()> {
+        let collaboration = &mut ctx.accounts.collaboration;
+        let funding_amount = amount;
+        
+        // Transfer SOL from funder to collaboration vault
+        let transfer_instruction = system_instruction::transfer(
+            ctx.accounts.funder.key,
+            ctx.accounts.collaboration_vault.key,
+            funding_amount,
+        );
+        
+        invoke_signed(
+            &transfer_instruction,
+            &[
+                ctx.accounts.funder.to_account_info(),
+                ctx.accounts.collaboration_vault.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+            ],
+            &[],
+        )?;
+        
+        // Update collaboration funding
+        collaboration.total_funding = collaboration.total_funding.checked_add(funding_amount).ok_or(ErrorCode::AmountOverflow)?;
+        collaboration.remaining_funding = collaboration.remaining_funding.checked_add(funding_amount).ok_or(ErrorCode::AmountOverflow)?;
+        
+        emit!(CollaborationFunded {
+            collaboration_id: collaboration.collaboration_id.clone(),
+            funder: ctx.accounts.funder.key(),
+            amount: funding_amount,
+            token_type: "SOL".to_string(),
+            timestamp: Clock::get()?.unix_timestamp,
+        });
+        
+        Ok(())
+    }
+    
+    // Fund a collaboration with USDT or other SPL tokens
+    pub fn fund_collaboration_token(
+        ctx: Context<FundCollaborationToken>,
+        amount: u64,
+    ) -> Result<()> {
+        let collaboration = &mut ctx.accounts.collaboration;
+        
+        // Transfer tokens from funder to collaboration token account
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.funder_token_account.to_account_info(),
+            to: ctx.accounts.collaboration_token_account.to_account_info(),
+            authority: ctx.accounts.funder.to_account_info(),
+        };
+        
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        
+        token::transfer(cpi_ctx, amount)?;
+        
+        // Note: In a real implementation, you might want to convert SPL token amount to a standard value
+        // For simplicity, we're directly adding the token amount
+        collaboration.total_funding = collaboration.total_funding.checked_add(amount).ok_or(ErrorCode::AmountOverflow)?;
+        collaboration.remaining_funding = collaboration.remaining_funding.checked_add(amount).ok_or(ErrorCode::AmountOverflow)?;
+        
+        emit!(CollaborationFunded {
+            collaboration_id: collaboration.collaboration_id.clone(),
+            funder: ctx.accounts.funder.key(),
+            amount: amount,
+            token_type: "SPL".to_string(), // In a production environment, you might want to store the token mint
+            timestamp: Clock::get()?.unix_timestamp,
+        });
+        
+        Ok(())
+    }
+    
+    // Add contributor to collaboration
+    pub fn add_contributor(
+        ctx: Context<AddContributor>,
+        contributor_type: ContributorType,
+        expertise: String,
+    ) -> Result<()> {
+        let collaboration = &mut ctx.accounts.collaboration;
+        let contributor = &ctx.accounts.contributor;
+        let clock = Clock::get()?;
+        
+        // Create a new contributor record
+        let contributor_record = Contributor {
+            address: contributor.key(),
+            contributor_type,
+            expertise,
+            joined_at: clock.unix_timestamp,
+            reputation: 0, // Initial reputation score
+            total_rewards: 0,
+        };
+        
+        // Add to list of contributors
+        collaboration.contributors.push(contributor_record);
+        
+        emit!(ContributorAdded {
+            collaboration_id: collaboration.collaboration_id.clone(),
+            contributor: contributor.key(),
+            contributor_type,
+            timestamp: clock.unix_timestamp,
+        });
+        
+        Ok(())
+    }
+    
+    // Complete a milestone and distribute rewards in SOL
+    pub fn complete_milestone_sol(
+        ctx: Context<CompleteMilestone>,
+        milestone_index: u8,
+        rewards: Vec<RewardDistribution>,
+    ) -> Result<()> {
+        let collaboration = &mut ctx.accounts.collaboration;
+        let authority = &ctx.accounts.authority;
+        let clock = Clock::get()?;
+        
+        // Ensure milestone index is valid
+        if milestone_index as usize >= collaboration.milestones.len() {
+            return Err(ErrorCode::InvalidMilestoneIndex.into());
+        }
+        
+        let milestone = &mut collaboration.milestones[milestone_index as usize];
+        
+        // Check if milestone is already completed
+        if milestone.status == MilestoneStatus::Completed {
+            return Err(ErrorCode::MilestoneAlreadyCompleted.into());
+        }
+        
+        // Calculate total rewards
+        let mut total_reward_amount = 0;
+        for reward in &rewards {
+            total_reward_amount = total_reward_amount.checked_add(reward.amount).ok_or(ErrorCode::AmountOverflow)?;
+        }
+        
+        // Ensure sufficient funds
+        if total_reward_amount > collaboration.remaining_funding {
+            return Err(ErrorCode::InsufficientFunds.into());
+        }
+        
+        // Update milestone status
+        milestone.status = MilestoneStatus::Completed;
+        milestone.completed_at = Some(clock.unix_timestamp);
+        
+        // Transfer rewards to contributors
+        for reward in rewards {
+            // Derive the vault PDA
+            let (vault_pda, bump_seed) = Pubkey::find_program_address(
+                &[b"vault", collaboration.collaboration_id.as_bytes()],
+                ctx.program_id,
+            );
+            
+            // Create the seeds for signing
+            let seeds = &[
+                b"vault",
+                collaboration.collaboration_id.as_bytes(),
+                &[bump_seed],
+            ];
+            let signer = &[&seeds[..]];
+            
+            // Transfer SOL from vault to contributor
+            let transfer_instruction = system_instruction::transfer(
+                &vault_pda,
+                &reward.recipient,
+                reward.amount,
+            );
+            
+            invoke_signed(
+                &transfer_instruction,
+                &[
+                    ctx.accounts.collaboration_vault.to_account_info(),
+                    ctx.accounts.system_program.to_account_info(),
+                ],
+                signer,
+            )?;
+            
+            // Update contributor's rewards
+            for contributor in &mut collaboration.contributors {
+                if contributor.address == reward.recipient {
+                    contributor.total_rewards = contributor.total_rewards.checked_add(reward.amount).ok_or(ErrorCode::AmountOverflow)?;
+                    // Update reputation based on contribution value
+                    contributor.reputation = contributor.reputation.checked_add(
+                        (reward.amount / 100_000_000) as u16 // Simple reputation calculation
+                    ).unwrap_or(u16::MAX);
+                    break;
+                }
+            }
+            
+            // Emit reward event
+            emit!(RewardDistributed {
+                collaboration_id: collaboration.collaboration_id.clone(),
+                milestone_index,
+                recipient: reward.recipient,
+                amount: reward.amount,
+                token_type: "SOL".to_string(),
+                timestamp: clock.unix_timestamp,
+            });
+        }
+        
+        // Update remaining funding
+        collaboration.remaining_funding = collaboration.remaining_funding.checked_sub(total_reward_amount).ok_or(ErrorCode::AmountUnderflow)?;
+        
+        // Emit milestone completion event
+        emit!(MilestoneCompleted {
+            collaboration_id: collaboration.collaboration_id.clone(),
+            milestone_index,
+            timestamp: clock.unix_timestamp,
+        });
+        
+        Ok(())
+    }
+    
+    // Complete a milestone and distribute rewards in SPL tokens (e.g., USDT)
+    pub fn complete_milestone_token(
+        ctx: Context<CompleteMilestoneToken>,
+        milestone_index: u8,
+        rewards: Vec<RewardDistribution>,
+    ) -> Result<()> {
+        let collaboration = &mut ctx.accounts.collaboration;
+        let clock = Clock::get()?;
+        
+        // Ensure milestone index is valid
+        if milestone_index as usize >= collaboration.milestones.len() {
+            return Err(ErrorCode::InvalidMilestoneIndex.into());
+        }
+        
+        let milestone = &mut collaboration.milestones[milestone_index as usize];
+        
+        // Check if milestone is already completed
+        if milestone.status == MilestoneStatus::Completed {
+            return Err(ErrorCode::MilestoneAlreadyCompleted.into());
+        }
+        
+        // Calculate total rewards
+        let mut total_reward_amount = 0;
+        for reward in &rewards {
+            total_reward_amount = total_reward_amount.checked_add(reward.amount).ok_or(ErrorCode::AmountOverflow)?;
+        }
+        
+        // Ensure sufficient funds
+        if total_reward_amount > collaboration.remaining_funding {
+            return Err(ErrorCode::InsufficientFunds.into());
+        }
+        
+        // Update milestone status
+        milestone.status = MilestoneStatus::Completed;
+        milestone.completed_at = Some(clock.unix_timestamp);
+        
+        // Get token mint info
+        let token_mint = ctx.accounts.token_mint.key();
+        
+        // Transfer rewards to contributors
+        for reward in &rewards {
+            // Derive the vault authority PDA
+            let (vault_authority, _bump_seed) = Pubkey::find_program_address(
+                &[b"vault_authority", collaboration.collaboration_id.as_bytes()],
+                ctx.program_id,
+            );
+            
+            // Get contributor's associated token account
+            let contributor_token_account = get_associated_token_address(
+                &reward.recipient,
+                &token_mint
+            );
+            
+            // Transfer tokens from vault to contributor
+            let cpi_accounts = Transfer {
+                from: ctx.accounts.collaboration_token_account.to_account_info(),
+                to: ctx.accounts.recipient_token_account.to_account_info(),
+                authority: ctx.accounts.vault_authority.to_account_info(),
+            };
+            
+            let seeds = &[
+                b"vault_authority",
+                collaboration.collaboration_id.as_bytes(),
+                &[ctx.bumps.vault_authority],
+            ];
+            let signer = &[&seeds[..]];
+            
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+            
+            token::transfer(cpi_ctx, reward.amount)?;
+            
+            // Update contributor's rewards
+            for contributor in &mut collaboration.contributors {
+                if contributor.address == reward.recipient {
+                    contributor.total_rewards = contributor.total_rewards.checked_add(reward.amount).ok_or(ErrorCode::AmountOverflow)?;
+                    // Update reputation based on contribution value
+                    contributor.reputation = contributor.reputation.checked_add(
+                        (reward.amount / 1_000_000) as u16 // Different calculation for SPL tokens
+                    ).unwrap_or(u16::MAX);
+                    break;
+                }
+            }
+            
+            // Emit reward event
+            emit!(RewardDistributed {
+                collaboration_id: collaboration.collaboration_id.clone(),
+                milestone_index,
+                recipient: reward.recipient,
+                amount: reward.amount,
+                token_type: "SPL".to_string(),
+                timestamp: clock.unix_timestamp,
+            });
+        }
+        
+        // Update remaining funding
+        collaboration.remaining_funding = collaboration.remaining_funding.checked_sub(total_reward_amount).ok_or(ErrorCode::AmountUnderflow)?;
+        
+        // Emit milestone completion event
+        emit!(MilestoneCompleted {
+            collaboration_id: collaboration.collaboration_id.clone(),
+            milestone_index,
+            timestamp: clock.unix_timestamp,
+        });
+        
+        Ok(())
+    }
+    
+    // Register intellectual property
+    pub fn register_ip(
+        ctx: Context<RegisterIP>,
+        ip_id: String,
+        title: String,
+        description: String,
+        ip_type: IPType,
+        creators: Vec<Pubkey>,
+        ownership_shares: Vec<u8>,
+    ) -> Result<()> {
+        let collaboration = &mut ctx.accounts.collaboration;
+        let ip_registry = &mut ctx.accounts.ip_registry;
+        let clock = Clock::get()?;
+        
+        // Validate ownership shares total to 100%
+        let total_shares: u8 = ownership_shares.iter().sum();
+        if total_shares != 100 {
+            return Err(ErrorCode::InvalidOwnershipShares.into());
+        }
+        
+        // Validate creators and ownership_shares have the same length
+        if creators.len() != ownership_shares.len() {
+            return Err(ErrorCode::CreatorsOwnershipMismatch.into());
+        }
+        
+        // Create ownership records
+        let mut ownership_records = Vec::new();
+        for i in 0..creators.len() {
+            ownership_records.push(OwnershipRecord {
+                owner: creators[i],
+                share_percentage: ownership_shares[i],
+            });
+        }
+        
+        // Set IP registry data
+        ip_registry.collaboration = collaboration.key();
+        ip_registry.ip_id = ip_id;
+        ip_registry.title = title;
+        ip_registry.description = description;
+        ip_registry.ip_type = ip_type;
+        ip_registry.registered_at = clock.unix_timestamp;
+        ip_registry.ownership_records = ownership_records;
+        ip_registry.license_status = LicenseStatus::Unlicensed;
+        
+        emit!(IPRegistered {
+            collaboration_id: collaboration.collaboration_id.clone(),
+            ip_id: ip_registry.ip_id.clone(),
+            title: ip_registry.title.clone(),
+            ip_type,
+            timestamp: clock.unix_timestamp,
+        });
+        
+        Ok(())
+    }
+    
+    // Issue a license for IP
+    pub fn issue_license(
+        ctx: Context<IssueLicense>,
+        license_terms: String,
+        license_fee: u64,
+        license_duration: i64, // In seconds, 0 for perpetual
+    ) -> Result<()> {
+        let ip_registry = &mut ctx.accounts.ip_registry;
+        let licensee = &ctx.accounts.licensee;
+        let clock = Clock::get()?;
+        
+        // Create license record
+        let license = License {
+            licensee: licensee.key(),
+            terms: license_terms,
+            fee: license_fee,
+            issued_at: clock.unix_timestamp,
+            expires_at: if license_duration > 0 {
+                Some(clock.unix_timestamp.checked_add(license_duration).ok_or(ErrorCode::TimestampOverflow)?)
+            } else {
+                None // Perpetual license
+            },
+            status: LicenseStatus::Active,
+        };
+        
+        // Add license to IP registry
+        ip_registry.licenses.push(license);
+        ip_registry.license_status = LicenseStatus::Licensed;
+        
+        emit!(LicenseIssued {
+            ip_id: ip_registry.ip_id.clone(),
+            licensee: licensee.key(),
+            license_fee,
+            timestamp: clock.unix_timestamp,
+        });
+        
+        Ok(())
+    }
+    
+    // Close a collaboration
+    pub fn close_collaboration(ctx: Context<CloseCollaboration>) -> Result<()> {
+        let collaboration = &mut ctx.accounts.collaboration;
+        let authority = &ctx.accounts.authority;
+        let clock = Clock::get()?;
+        
+        // Ensure all milestones are completed
+        for milestone in &collaboration.milestones {
+            if milestone.status != MilestoneStatus::Completed {
+                return Err(ErrorCode::ActiveMilestonesExist.into());
+            }
+        }
+        
+        // Update collaboration status
+        collaboration.status = CollaborationStatus::Closed;
+        collaboration.closed_at = Some(clock.unix_timestamp);
+        
+        emit!(CollaborationClosed {
+            collaboration_id: collaboration.collaboration_id.clone(),
+            timestamp: clock.unix_timestamp,
+        });
+        
+        // Any remaining funds could be handled here (e.g., returned to authority)
+        
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+#[instruction(collaboration_id: String, project_name: String)]
+pub struct InitializeCollaboration<'info> {
+    #[account(
+        init,
+        payer = authority,
+        space = Collaboration::space(&collaboration_id, &project_name),
+        seeds = [b"collaboration", collaboration_id.as_bytes()],
+        bump
+    )]
+    pub collaboration: Account<'info, Collaboration>,
+    
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct FundCollaboration<'info> {
+    #[account(mut)]
+    pub collaboration: Account<'info, Collaboration>,
+    
+    #[account(mut)]
+    pub funder: Signer<'info>,
+    
+    #[account(
+        mut,
+        seeds = [b"vault", collaboration.collaboration_id.as_bytes()],
+        bump
+    )]
+    /// CHECK: This is a PDA that serves as the vault
+    pub collaboration_vault: AccountInfo<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct FundCollaborationToken<'info> {
+    #[account(mut)]
+    pub collaboration: Account<'info, Collaboration>,
+    
+    #[account(mut)]
+    pub funder: Signer<'info>,
+    
+    #[account(mut)]
+    pub funder_token_account: Account<'info, TokenAccount>,
+    
+    #[account(
+        mut,
+        associated_token::mint = token_mint,
+        associated_token::authority = collaboration_vault
+    )]
+    pub collaboration_token_account: Account<'info, TokenAccount>,
+    
+    #[account(
+        seeds = [b"vault", collaboration.collaboration_id.as_bytes()],
+        bump
+    )]
+    /// CHECK: This is a PDA that serves as the vault
+    pub collaboration_vault: AccountInfo<'info>,
+    
+    pub token_mint: Account<'info, token::Mint>,
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct AddContributor<'info> {
+    #[account(mut)]
+    pub collaboration: Account<'info, Collaboration>,
+    
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    
+    /// CHECK: This account will be stored as a contributor
+    pub contributor: AccountInfo<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CompleteMilestone<'info> {
+    #[account(mut)]
+    pub collaboration: Account<'info, Collaboration>,
+    
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    
+    #[account(mut, seeds = [b"vault", collaboration.collaboration_id.as_bytes()], bump)]
+    /// CHECK: This is the vault PDA
+    pub collaboration_vault: AccountInfo<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CompleteMilestoneToken<'info> {
+    #[account(mut)]
+    pub collaboration: Account<'info, Collaboration>,
+    
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    
+    #[account(
+        mut,
+        seeds = [b"vault_authority", collaboration.collaboration_id.as_bytes()],
+        bump
+    )]
+    /// CHECK: This is the vault authority PDA
+    pub vault_authority: AccountInfo<'info>,
+    
+    #[account(
+        mut,
+        associated_token::mint = token_mint,
+        associated_token::authority = vault_authority
+    )]
+    pub collaboration_token_account: Account<'info, TokenAccount>,
+    
+    #[account(mut)]
+    /// CHECK: Verified in the instruction
+    pub recipient_token_account: Account<'info, TokenAccount>,
+    
+    pub token_mint: Account<'info, token::Mint>,
+    pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(ip_id: String)]
+pub struct RegisterIP<'info> {
+    #[account(mut)]
+    pub collaboration: Account<'info, Collaboration>,
+    
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    
+    #[account(
+        init,
+        payer = authority,
+        space = IPRegistry::space(&ip_id),
+        seeds = [b"ip", ip_id.as_bytes()],
+        bump
+    )]
+    pub ip_registry: Account<'info, IPRegistry>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct IssueLicense<'info> {
+    #[account(mut)]
+    pub ip_registry: Account<'info, IPRegistry>,
+    
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    
+    /// CHECK: This is the licensee
+    pub licensee: AccountInfo<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CloseCollaboration<'info> {
+    #[account(
+        mut,
+        constraint = collaboration.authority == authority.key() @ ErrorCode::Unauthorized
+    )]
+    pub collaboration: Account<'info, Collaboration>,
+    
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    
+    pub system_program: Program<'info, System>,
+}
+
+#[account]
+pub struct Collaboration {
+    pub authority: Pubkey,
+    pub collaboration_id: String,
+    pub project_name: String,
+    pub total_funding: u64,
+    pub remaining_funding: u64,
+    pub created_at: i64,
+    pub closed_at: Option<i64>,
+    pub status: CollaborationStatus,
+    pub milestones: Vec<Milestone>,
+    pub contributors: Vec<Contributor>,
+}
+
+impl Collaboration {
+    fn space(collaboration_id: &str, project_name: &str) -> usize {
+        // Base size
+        8 + // discriminator
+        32 + // authority pubkey
+        4 + collaboration_id.len() + // collaboration_id string
+        4 + project_name.len() + // project_name string
+        8 + // total_funding
+        8 + // remaining_funding
+        8 + // created_at
+        9 + // closed_at (1 + 8)
+        1 + // status enum
+        4 + 100 * (32 + 1 + 4 + 30 + 8 + 2 + 8) + // milestones (estimated for 10 milestones)
+        4 + 20 * (32 + 1 + 4 + 30 + 8 + 2 + 8) // contributors (estimated for 10 contributors)
+    }
+}
+
+#[account]
+pub struct IPRegistry {
+    pub collaboration: Pubkey,
+    pub ip_id: String,
+    pub title: String,
+    pub description: String,
+    pub ip_type: IPType,
+    pub registered_at: i64,
+    pub ownership_records: Vec<OwnershipRecord>,
+    pub license_status: LicenseStatus,
+    pub licenses: Vec<License>,
+}
+
+impl IPRegistry {
+    fn space(ip_id: &str) -> usize {
+        // Base size
+        8 + // discriminator
+        32 + // collaboration pubkey
+        4 + ip_id.len() + // ip_id string
+        4 + 100 + // title string (estimate)
+        4 + 500 + // description string (estimate)
+        1 + // ip_type enum
+        8 + // registered_at
+        4 + 10 * (32 + 1) + // ownership_records (estimated for 10 records)
+        1 + // license_status enum
+        4 + 5 * (32 + 4 + 100 + 8 + 9 + 1) // licenses (estimated for 5 licenses)
+    }
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub struct Milestone {
+    pub title: String,
+    pub description: String,
+    pub due_date: i64,
+    pub status: MilestoneStatus,
+    pub completed_at: Option<i64>,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub enum MilestoneStatus {
+    Active,
+    Completed,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub struct Contributor {
+    pub address: Pubkey,
+    pub contributor_type: ContributorType,
+    pub expertise: String,
+    pub joined_at: i64,
+    pub reputation: u16,
+    pub total_rewards: u64,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub enum ContributorType {
+    Researcher,
+    IndustryPartner,
+    AcademicInstitution,
+    FundingAgency,
+    Government,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub enum CollaborationStatus {
+    Active,
+    Paused,
+    Closed,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug)]
+pub struct RewardDistribution {
+    pub recipient: Pubkey,
+    pub amount: u64,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub struct OwnershipRecord {
+    pub owner: Pubkey,
+    pub share_percentage: u8,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub struct License {
+    pub licensee: Pubkey,
+    pub terms: String,
+    pub fee: u64,
+    pub issued_at: i64,
+    pub expires_at: Option<i64>,
+    pub status: LicenseStatus,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub enum LicenseStatus {
+    Unlicensed,
+    Licensed,
+    Active,
+    Expired,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq)]
+pub enum IPType {
+    Patent,
+    Copyright,
+    Trademark,
+    TradeSecret,
+    Software,
+    Dataset,
+    Other,
+}
+
+// Events
+#[event]
+pub struct CollaborationCreated {
+    pub collaboration_id: String,
+    pub project_name: String,
+    pub funding_amount: u64,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct CollaborationFunded {
+    pub collaboration_id: String,
+    pub funder: Pubkey,
+    pub amount: u64,
+    pub token_type: String, // "SOL" or "SPL"
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct ContributorAdded {
+    pub collaboration_id: String,
+    pub contributor: Pubkey,
+    pub contributor_type: ContributorType,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct MilestoneCompleted {
+    pub collaboration_id: String,
+    pub milestone_index: u8,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct RewardDistributed {
+    pub collaboration_id: String,
+    pub milestone_index: u8,
+    pub recipient: Pubkey,
+    pub amount: u64,
+    pub token_type: String, // "SOL" or "SPL"
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct IPRegistered {
+    pub collaboration_id: String,
+    pub ip_id: String,
+    pub title: String,
+    pub ip_type: IPType,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct LicenseIssued {
+    pub ip_id: String,
+    pub licensee: Pubkey,
+    pub license_fee: u64,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct CollaborationClosed {
+    pub collaboration_id: String,
+    pub timestamp: i64,
+}
+
+// Error codes
+#[error_code]
+pub enum ErrorCode {
+    #[msg("Amount overflow")]
+    AmountOverflow,
+    
+    #[msg("Amount underflow")]
+    AmountUnderflow,
+    
+    #[msg("Invalid milestone index")]
+    InvalidMilestoneIndex,
+    
+    #[msg("Milestone already completed")]
+    MilestoneAlreadyCompleted,
+    
+    #[msg("Insufficient funds")]
+    InsufficientFunds,
+    
+    #[msg("Unauthorized access")]
+    Unauthorized,
+    
+    #[msg("Active milestones exist")]
+    ActiveMilestonesExist,
+    
+    #[msg("Invalid ownership shares")]
+    InvalidOwnershipShares,
+    
+    #[msg("Creators and ownership shares mismatch")]
+    CreatorsOwnershipMismatch,
+    
+    #[msg("Timestamp overflow")]
+    TimestampOverflow,
+}

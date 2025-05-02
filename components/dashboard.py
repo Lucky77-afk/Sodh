@@ -4,6 +4,7 @@ import plotly.express as px
 import pandas as pd
 from datetime import datetime, timedelta
 import random
+import time
 from utils.solana_client import get_solana_client, get_recent_blocks, get_latest_block_time
 from utils.database import get_recent_transactions
 
@@ -236,31 +237,176 @@ def render_dashboard():
         else:
             st.info("No transactions found in the database. Create a project, milestone, or participant to see transactions here.")
         
-        # Token metrics
-        st.markdown("### Top Solana Tokens", unsafe_allow_html=True)
+        # Token metrics with a tab selection for main view
+        st.markdown("### Token Dashboard", unsafe_allow_html=True)
         
-        # Sample token data (in a real app, this would come from an API)
-        token_data = {
-            'Token': ['SOL', 'USDC', 'BONK', 'JUP', 'RAY', 'ORCA'],
-            'Price': ['$165.32', '$1.00', '$0.00002', '$0.82', '$1.23', '$0.57'],
-            'Change': ['+2.4%', '+0.1%', '+15.2%', '-3.1%', '+5.7%', '-1.2%'],
-            'Volume': ['$1.2B', '$453M', '$112M', '$87M', '$45M', '$23M'],
-            'Market Cap': ['$68.9B', '$24.7B', '$1.2B', '$827M', '$245M', '$115M'],
-        }
+        # Create tabs for different token views
+        token_tabs = st.tabs(["Top Tokens", "SOL", "USDT"])
         
-        token_df = pd.DataFrame(token_data)
-        
-        # Add color styling to change column
-        def color_change(val):
-            color = '#00FFA3' if '+' in val else '#FF5C5C'
-            return f'color: {color}'
-        
-        # Display styled dataframe
-        st.dataframe(
-            token_df.style.applymap(color_change, subset=['Change']),
-            use_container_width=True,
-            hide_index=True
-        )
+        with token_tabs[0]:
+            # Top tokens tab
+            st.markdown("#### Top Solana Tokens", unsafe_allow_html=True)
+            
+            # Sample token data (in a real app, this would come from an API)
+            token_data = {
+                'Token': ['SOL', 'USDT', 'USDC', 'BONK', 'JUP', 'RAY', 'ORCA'],
+                'Price': ['$165.32', '$1.00', '$1.00', '$0.00002', '$0.82', '$1.23', '$0.57'],
+                'Change': ['+2.4%', '+0.0%', '+0.1%', '+15.2%', '-3.1%', '+5.7%', '-1.2%'],
+                'Volume': ['$1.2B', '$872M', '$453M', '$112M', '$87M', '$45M', '$23M'],
+                'Market Cap': ['$68.9B', '$43.2B', '$24.7B', '$1.2B', '$827M', '$245M', '$115M'],
+            }
+            
+            token_df = pd.DataFrame(token_data)
+            
+            # Add color styling to change column
+            def color_change(val):
+                color = '#00FFA3' if '+' in val else ('#FF5C5C' if '-' in val else '#AAAAAA')
+                return f'color: {color}'
+            
+            # Display styled dataframe
+            st.dataframe(
+                token_df.style.applymap(color_change, subset=['Change']),
+                use_container_width=True,
+                hide_index=True
+            )
+            
+        with token_tabs[1]:
+            # SOL specific tab
+            st.markdown("#### SOL Token Details", unsafe_allow_html=True)
+            
+            # Create two columns for statistics and chart
+            sol_col1, sol_col2 = st.columns([1, 2])
+            
+            with sol_col1:
+                # SOL statistics
+                st.markdown("""
+                <div class="stCard">
+                    <div style="font-size: 0.9rem; color: #AAA;">CURRENT PRICE</div>
+                    <div class="metric-value" style="font-size: 1.8rem;">$165.32</div>
+                    <div style="font-size: 0.8rem; color: #00FFA3;">+2.4% (24h)</div>
+                </div>
+                
+                <div class="stCard">
+                    <div style="font-size: 0.9rem; color: #AAA;">MARKET CAP</div>
+                    <div class="metric-value" style="font-size: 1.8rem;">$68.9B</div>
+                    <div style="font-size: 0.8rem; color: #AAA;">Rank #5</div>
+                </div>
+                
+                <div class="stCard">
+                    <div style="font-size: 0.9rem; color: #AAA;">TRADING VOLUME (24H)</div>
+                    <div class="metric-value" style="font-size: 1.8rem;">$1.2B</div>
+                    <div style="font-size: 0.8rem; color: #00FFA3;">+12.3%</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with sol_col2:
+                # SOL price chart for the last week
+                dates = [(datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(7, 0, -1)]
+                
+                # Mock price data with a trend
+                base_price = 165.32
+                price_trend = [
+                    base_price * 0.92,  # 7 days ago
+                    base_price * 0.95,
+                    base_price * 0.99,
+                    base_price * 0.96,
+                    base_price * 1.02,
+                    base_price * 1.05,
+                    base_price,         # Today
+                ]
+                
+                # Create dataframe for chart
+                sol_price_df = pd.DataFrame({
+                    'Date': dates,
+                    'Price': price_trend
+                })
+                
+                # Create the chart
+                fig = px.line(sol_price_df, x='Date', y='Price', title='SOL Price (7 Day)')
+                fig.update_layout(
+                    plot_bgcolor='#1E1E1E',
+                    paper_bgcolor='#1E1E1E',
+                    font=dict(color='#FFFFFF'),
+                    xaxis=dict(showgrid=False),
+                    yaxis=dict(showgrid=True, gridcolor='#333333', title='Price (USD)'),
+                    margin=dict(l=10, r=10, t=40, b=10),
+                    height=300
+                )
+                fig.update_traces(line=dict(color='#14F195', width=3))
+                st.plotly_chart(fig, use_container_width=True)
+                
+        with token_tabs[2]:
+            # USDT specific tab
+            st.markdown("#### USDT (Tether) Token Details", unsafe_allow_html=True)
+            
+            # Create two columns for statistics and chart
+            usdt_col1, usdt_col2 = st.columns([1, 2])
+            
+            with usdt_col1:
+                # USDT statistics
+                st.markdown("""
+                <div class="stCard">
+                    <div style="font-size: 0.9rem; color: #AAA;">CURRENT PRICE</div>
+                    <div class="metric-value" style="font-size: 1.8rem;">$1.00</div>
+                    <div style="font-size: 0.8rem; color: #AAAAAA;">+0.0% (24h)</div>
+                </div>
+                
+                <div class="stCard">
+                    <div style="font-size: 0.9rem; color: #AAA;">MARKET CAP</div>
+                    <div class="metric-value" style="font-size: 1.8rem;">$43.2B</div>
+                    <div style="font-size: 0.8rem; color: #AAA;">Rank #3</div>
+                </div>
+                
+                <div class="stCard">
+                    <div style="font-size: 0.9rem; color: #AAA;">TRADING VOLUME (24H)</div>
+                    <div class="metric-value" style="font-size: 1.8rem;">$872M</div>
+                    <div style="font-size: 0.8rem; color: #00FFA3;">+4.1%</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with usdt_col2:
+                # USDT price chart for the last week (should be stable around $1)
+                dates = [(datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(7, 0, -1)]
+                
+                # Mock price data with very minor fluctuations (stablecoin)
+                base_price = 1.00
+                price_trend = [
+                    base_price * 0.998,  # 7 days ago
+                    base_price * 1.001,
+                    base_price * 0.999,
+                    base_price * 0.997,
+                    base_price * 1.002,
+                    base_price * 1.001,
+                    base_price,         # Today
+                ]
+                
+                # Create dataframe for chart
+                usdt_price_df = pd.DataFrame({
+                    'Date': dates,
+                    'Price': price_trend
+                })
+                
+                # Create the chart with a very narrow y-axis range to show the tiny fluctuations
+                fig = px.line(usdt_price_df, x='Date', y='Price', title='USDT Price (7 Day)')
+                fig.update_layout(
+                    plot_bgcolor='#1E1E1E',
+                    paper_bgcolor='#1E1E1E',
+                    font=dict(color='#FFFFFF'),
+                    xaxis=dict(showgrid=False),
+                    yaxis=dict(
+                        showgrid=True,
+                        gridcolor='#333333',
+                        title='Price (USD)',
+                        range=[0.995, 1.005]  # Narrow range to show tiny fluctuations
+                    ),
+                    margin=dict(l=10, r=10, t=40, b=10),
+                    height=300
+                )
+                fig.update_traces(line=dict(color='#26A17B', width=3))  # Tether green color
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Add info about Tether USDT on Solana
+                st.info("USDT on Solana is a stablecoin token that maintains a 1:1 peg with the US Dollar. It's used for fast transfers, trading, and as a medium of exchange on Solana blockchain applications.")
         
     except Exception as e:
         st.error(f"Error retrieving Solana network data: {str(e)}")
