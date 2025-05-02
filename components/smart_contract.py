@@ -181,9 +181,11 @@ def render_smart_contract():
         
         for function in functions:
             st.markdown(f"""
-            <div style="background-color: #1E1E1E; padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+            <div style="background-color: #1E1E1E; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;"
+                 onclick="window.open('https://explorer.solana.com/address/Coll1ABbXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX/instructions', '_blank')">
                 <div style="font-family: 'Roboto Mono', monospace; color: #14F195;">{function["name"]}</div>
                 <div style="font-size: 0.9rem; color: #AAAAAA; margin-top: 4px;">{function["description"]}</div>
+                <div style="font-size: 0.8rem; color: #9945FF; margin-top: 6px;">View on Solana Explorer ↗</div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -195,8 +197,13 @@ def render_smart_contract():
         ]
         
         for event in events:
+            # Generate a valid Solana transaction URL
+            tx_hash = event["transaction"].replace("...", "1" * 32)  # Replace with a valid mock hash
+            tx_url = f"https://explorer.solana.com/tx/{tx_hash}"
+            
             st.markdown(f"""
-            <div style="background-color: #1E1E1E; padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+            <div style="background-color: #1E1E1E; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;"
+                 onclick="window.open('{tx_url}', '_blank')">
                 <div style="display: flex; justify-content: space-between;">
                     <div style="font-family: 'Roboto Mono', monospace; color: #9945FF;">{event["name"]}</div>
                     <div style="font-size: 0.8rem; color: #AAAAAA;">{event["time"]}</div>
@@ -204,6 +211,7 @@ def render_smart_contract():
                 <div style="font-size: 0.9rem; color: #AAAAAA; margin-top: 4px;">
                     Tx: <span class="transaction-hash">{event["transaction"]}</span>
                 </div>
+                <div style="font-size: 0.8rem; color: #14F195; margin-top: 6px; text-align: right;">View transaction ↗</div>
             </div>
             """, unsafe_allow_html=True)
     
