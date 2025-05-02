@@ -46,15 +46,20 @@ def simulate_transaction(tx_type, tx_data):
         status_text.text("Transaction confirmed!")
         progress_bar.progress(100)
         
-        # Record transaction in database
-        record_transaction(
-            signature=tx_signature,
-            tx_type=tx_type,
-            status="Confirmed",
-            blocktime=current_time,
-            slot=slot,
-            data=tx_json
-        )
+        # Record transaction in database with error handling
+        try:
+            record_transaction(
+                signature=tx_signature,
+                tx_type=tx_type,
+                status="Confirmed",
+                blocktime=current_time,
+                slot=slot,
+                data=tx_json
+            )
+            print(f"Successfully recorded transaction: {tx_signature}")
+        except Exception as e:
+            print(f"Error recording transaction: {str(e)}")
+            # Continue with the flow even if DB recording fails
         
         # Return successful transaction data
         return {
@@ -68,15 +73,20 @@ def simulate_transaction(tx_type, tx_data):
     else:
         status_text.text("Transaction failed.")
         
-        # Record failed transaction in database
-        record_transaction(
-            signature=tx_signature,
-            tx_type=tx_type,
-            status="Failed",
-            blocktime=current_time,
-            slot=slot,
-            data=tx_json
-        )
+        # Record failed transaction in database with error handling
+        try:
+            record_transaction(
+                signature=tx_signature,
+                tx_type=tx_type,
+                status="Failed",
+                blocktime=current_time,
+                slot=slot,
+                data=tx_json
+            )
+            print(f"Recorded failed transaction: {tx_signature}")
+        except Exception as e:
+            print(f"Error recording failed transaction: {str(e)}")
+            # Continue with the flow even if DB recording fails
         
         # Return failure data
         return {

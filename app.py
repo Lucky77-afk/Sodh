@@ -414,7 +414,10 @@ st.toast("📱 For mobile access, use the 'Open in new tab' button in Replit's p
 with st.sidebar:
     # Add health check access
     if st.button("⚡ Check Server Status"):
-        st.query_params["health_check"] = True
+        # Use experimental_set_query_params instead of the query_params syntax
+        # This is safer across Streamlit versions
+        import streamlit.web.server.server as streamlit_server
+        st.experimental_set_query_params(health_check="true")
         st.rerun()
     st.markdown('<p class="gradient-text">NAVIGATION</p>', unsafe_allow_html=True)
     page = st.radio(
@@ -454,7 +457,9 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # Add health check/status page
-if 'health_check' in st.query_params:
+# Get query params in a way that works across Streamlit versions
+query_params = st.experimental_get_query_params()
+if 'health_check' in query_params:
     st.success("Server is up and running! 🚀")
     st.write(f"Server Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     try:
