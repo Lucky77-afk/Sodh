@@ -13,8 +13,10 @@ from components.whitepaper import render_whitepaper
 from components.tutorial import render_tutorial
 from utils.database import init_db
 
-# Initialize database
-init_db()
+# Initialize database with error handling
+db_initialized = init_db()
+if not db_initialized:
+    print("Warning: Database initialization failed, using in-memory mode")
 
 # Print connection information for debugging
 hostname = socket.gethostname()

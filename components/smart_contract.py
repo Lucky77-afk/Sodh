@@ -21,61 +21,79 @@ def render_contract_projects():
     
     st.markdown("### Collaborative Projects")
     
-    # Get projects from database
-    db_projects = get_projects()
+    # Example/fallback projects to show if database access fails
+    example_projects = [
+        {
+            "id": "Proj1",
+            "name": "Quantum Research Collaboration",
+            "description": "A collaborative project to research quantum computing applications in bioinformatics",
+            "participants": 3,
+            "milestones": 2,
+            "created_at": "2025-04-15",
+            "status": "Active"
+        },
+        {
+            "id": "Proj2",
+            "name": "Decentralized AI Training Framework",
+            "description": "Developing a framework for decentralized AI model training using blockchain validation",
+            "participants": 5,
+            "milestones": 4,
+            "created_at": "2025-03-28",
+            "status": "Active"
+        },
+        {
+            "id": "Proj3",
+            "name": "Carbon Credit Tokenization System",
+            "description": "Building a system to tokenize and trade carbon credits on Solana blockchain",
+            "participants": 4,
+            "milestones": 3,
+            "created_at": "2025-03-10",
+            "status": "Completed"
+        }
+    ]
     
-    # Combine database projects with example projects if needed
+    # Initialize projects list
     projects = []
     
-    # Process projects from database
-    if db_projects:
-        for project in db_projects:
-            # Get related data
-            participants_count = len(get_participants(project_id=project['id']))
-            milestones_count = len(get_milestones(project_id=project['id']))
-            
-            # Format data for display
-            projects.append({
-                "id": project['id'],
-                "name": project['name'],
-                "description": project['description'],
-                "participants": participants_count,
-                "milestones": milestones_count,
-                "created_at": project['created_at'],
-                "status": "Active"  # Default status for now
-            })
-    
-    # Add example projects if no projects in database
+    try:
+        # Get projects from database
+        db_projects = get_projects()
+        
+        # Process projects from database
+        if db_projects:
+            for project in db_projects:
+                try:
+                    # Get related data with error handling
+                    try:
+                        participants_count = len(get_participants(project_id=project['id']))
+                    except:
+                        participants_count = 0
+                        
+                    try:
+                        milestones_count = len(get_milestones(project_id=project['id']))
+                    except:
+                        milestones_count = 0
+                    
+                    # Format data for display
+                    projects.append({
+                        "id": project['id'],
+                        "name": project['name'],
+                        "description": project['description'],
+                        "participants": participants_count,
+                        "milestones": milestones_count,
+                        "created_at": project['created_at'],
+                        "status": "Active"  # Default status for now
+                    })
+                except Exception as e:
+                    st.warning(f"Error processing project data: {str(e)}")
+    except Exception as e:
+        st.warning(f"Error retrieving projects from database: {str(e)}")
+        # Use example projects as fallback
+        projects = example_projects
+        
+    # If still no projects, use examples
     if not projects:
-        projects = [
-            {
-                "id": "Proj1",
-                "name": "Quantum Research Collaboration",
-                "description": "A collaborative project to research quantum computing applications in bioinformatics",
-                "participants": 3,
-                "milestones": 2,
-                "created_at": "2025-04-15",
-                "status": "Active"
-            },
-            {
-                "id": "Proj2",
-                "name": "Decentralized AI Training Framework",
-                "description": "Developing a framework for decentralized AI model training using blockchain validation",
-                "participants": 5,
-                "milestones": 4,
-                "created_at": "2025-03-28",
-                "status": "Active"
-            },
-            {
-                "id": "Proj3",
-                "name": "Carbon Credit Tokenization System",
-                "description": "Building a system to tokenize and trade carbon credits on Solana blockchain",
-                "participants": 4,
-                "milestones": 3,
-                "created_at": "2025-03-10",
-                "status": "Completed"
-            }
-        ]
+        projects = example_projects
     
     for project in projects:
         status_color = "#14F195" if project["status"] == "Active" else "#9945FF"

@@ -6,11 +6,22 @@ from sqlalchemy.sql import func
 import pandas as pd
 from datetime import datetime
 
-# Get the database URL from environment variables
+# Get the database URL from environment variables or use a fallback in-memory database
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Create engine
-engine = create_engine(DATABASE_URL)
+try:
+    # Create engine with connection pooling and timeout settings
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,  # Test connections before using them
+        pool_recycle=3600,   # Recycle connections after 1 hour
+        connect_args={"connect_timeout": 15}  # Connection timeout in seconds
+    )
+except Exception as e:
+    print(f"Error creating database engine: {str(e)}")
+    # Fallback to SQLite in-memory for development
+    print("Using fallback in-memory SQLite database")
+    engine = create_engine("sqlite:///:memory:")
 
 # Create base class for declarative models
 Base = declarative_base()
@@ -131,8 +142,13 @@ def get_db():
 
 # Initialize database
 def init_db():
-    create_tables()
-    print("Database tables created")
+    try:
+        create_tables()
+        print("Database tables created")
+        return True
+    except Exception as e:
+        print(f"Database initialization error: {str(e)}")
+        return False
 
 # CRUD Operations
 
