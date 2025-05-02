@@ -414,9 +414,7 @@ st.toast("📱 For mobile access, use the 'Open in new tab' button in Replit's p
 with st.sidebar:
     # Add health check access
     if st.button("⚡ Check Server Status"):
-        # Use experimental_set_query_params instead of the query_params syntax
-        # This is safer across Streamlit versions
-        import streamlit.web.server.server as streamlit_server
+        # Use experimental_set_query_params for setting the query parameter
         st.experimental_set_query_params(health_check="true")
         st.rerun()
     st.markdown('<p class="gradient-text">NAVIGATION</p>', unsafe_allow_html=True)

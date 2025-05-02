@@ -113,7 +113,7 @@ def render_contract_projects():
 
 def render_project_form():
     """Renders a form to create a new collaboration project"""
-    from components.transaction_submitter import render_project_submission_form
+    from components.transaction_submitter_simplified import render_project_submission_form
     from utils.database import create_project
     
     success, result = render_project_submission_form()
@@ -193,7 +193,7 @@ def render_smart_contract():
         st.markdown("### Project Milestones")
         
         # Import transaction forms for adding milestones
-        from components.transaction_submitter import render_milestone_submission_form
+        from components.transaction_submitter_simplified import render_milestone_submission_form
         
         # Add milestone form
         from utils.database import create_milestone
@@ -330,7 +330,7 @@ def render_smart_contract():
         st.markdown("### Project Participants")
         
         # Import transaction form for adding participants
-        from components.transaction_submitter import render_participant_submission_form
+        from components.transaction_submitter_simplified import render_participant_submission_form
         
         # Add participant form
         from utils.database import create_participant

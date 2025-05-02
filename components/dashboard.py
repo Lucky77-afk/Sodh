@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import random
 import time
-from utils.solana_client import get_solana_client, get_recent_blocks, get_latest_block_time
+from utils.solana_client_new import get_solana_client, get_recent_blocks, get_latest_block_time
 from utils.database import get_recent_transactions
 
 def render_dashboard():

@@ -1,25 +1,21 @@
 import streamlit as st
-from solana.rpc.api import Client
-from solana.publickey import PublicKey
-from solana.transaction import Transaction, TransactionInstruction, AccountMeta
-from solana.blockhash import Blockhash
-from solana.keypair import Keypair
-from solana.rpc.types import TxOpts
-from datetime import datetime, timedelta
-import base64
-import json
 import time
-import base58
-import struct
+import json
+import base64
+import solders.pubkey
+from typing import Optional, Dict, List, Any
+from datetime import datetime, timedelta
 
-# Define constants for Solana and USDT SPL token program
-SYSTEM_PROGRAM_ID = PublicKey("11111111111111111111111111111111")
-TOKEN_PROGRAM_ID = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-USDT_MINT = PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB")  # USDT on Solana
+# Use solders.pubkey.Pubkey instead of solana.publickey.PublicKey
+SYSTEM_PROGRAM_ID = "11111111111111111111111111111111"
+TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+USDT_MINT = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"  # USDT on Solana
 
 @st.cache_resource(ttl=60)
 def get_solana_client():
     """Returns a Solana client instance for the specified network"""
+    # Import here to avoid module resolution issues
+    from solana.rpc.api import Client
     # Using Solana Devnet for development (switch to mainnet for production)
     return Client("https://api.devnet.solana.com")
 
@@ -181,16 +177,9 @@ def get_account_info(client, address):
         # Check if the address is valid
         if not address or len(address) < 32:
             return None
-            
-        try:
-            # Convert address string to PublicKey object
-            pubkey = PublicKey(address)
-        except Exception:
-            st.error("Invalid Solana address format")
-            return None
         
         # Get SOL balance
-        balance_response = client.get_balance(pubkey)
+        balance_response = client.get_balance(address)
         if 'result' not in balance_response:
             return None
             
@@ -199,7 +188,7 @@ def get_account_info(client, address):
         balance_sol = balance_lamports / 1_000_000_000  # 1 SOL = 10^9 lamports
         
         # Get transaction count
-        tx_signatures = client.get_signatures_for_address(pubkey, limit=100)
+        tx_signatures = client.get_signatures_for_address(address, limit=100)
         tx_count = len(tx_signatures.get('result', []))
         
         # Try to get USDT token balance if address has associated token account
@@ -207,8 +196,8 @@ def get_account_info(client, address):
         try:
             # Find USDT associated token account for this wallet
             associated_token_response = client.get_token_accounts_by_owner(
-                pubkey, 
-                {'mint': str(USDT_MINT)}
+                address, 
+                {'mint': USDT_MINT}
             )
             
             token_accounts = associated_token_response.get('result', {}).get('value', [])
@@ -254,17 +243,10 @@ def get_account_transactions(client, address, limit=5):
         # Check if address is valid
         if not address or len(address) < 32:
             return []
-            
-        try:
-            # Convert address string to PublicKey object
-            pubkey = PublicKey(address)
-        except Exception:
-            st.error("Invalid Solana address format")
-            return []
         
         # Get recent signatures for this account
         signatures_response = client.get_signatures_for_address(
-            pubkey,
+            address,
             limit=limit
         )
         
@@ -367,3 +349,21 @@ def get_account_transactions(client, address, limit=5):
     except Exception as e:
         st.error(f"Error fetching account transactions: {str(e)}")
         return []
+
+# Helper functions to create and submit transactions
+def create_keypair():
+    """Creates a keypair for demo purposes"""
+    # Import here to avoid module resolution issues
+    from solana.keypair import Keypair
+    return Keypair()
+
+def get_recent_blockhash(client):
+    """Gets a recent blockhash from the Solana blockchain"""
+    try:
+        response = client.get_recent_blockhash()
+        if 'result' in response and 'value' in response['result']:
+            return response['result']['value']['blockhash']
+        return None
+    except Exception as e:
+        st.error(f"Error getting recent blockhash: {str(e)}")
+        return None

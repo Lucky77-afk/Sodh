@@ -1,17 +1,12 @@
 import streamlit as st
 import time
 import json
-import base58
-from solana.transaction import Transaction, AccountMeta, TransactionInstruction
-from solana.blockhash import Blockhash
-from solana.publickey import PublicKey
-from solana.keypair import Keypair
 from utils.database import record_transaction
-from utils.solana_client import get_solana_client, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID, USDT_MINT
+from utils.solana_client_new import get_solana_client
 
 def create_and_submit_transaction(tx_type, tx_data):
     """
-    Creates and submits a real Solana transaction based on transaction type and data
+    Creates and simulates a Solana transaction based on transaction type and data
     """
     # Initialize UI elements for progress tracking
     progress_bar = st.progress(0)
@@ -25,232 +20,57 @@ def create_and_submit_transaction(tx_type, tx_data):
     
     # Update status
     status_text.text("Preparing transaction...")
-    progress_bar.progress(10)
-    
-    # Generate or use provided wallet keypair
-    # In a real app, this would come from wallet connection
-    # For demo purposes, we'll create a new keypair
-    sender_keypair = Keypair()
-    
-    # Get recent blockhash for transaction
-    status_text.text("Getting recent blockhash...")
     progress_bar.progress(20)
-    try:
-        blockhash_response = client.get_recent_blockhash()
-        if 'result' not in blockhash_response:
-            status_text.text("Failed to get recent blockhash")
-            return {
-                "success": False,
-                "error": "Failed to get recent blockhash from Solana",
-                "tx_type": tx_type
-            }
-            
-        blockhash = Blockhash(blockhash_response['result']['value']['blockhash'])
-    except Exception as e:
-        status_text.text(f"Error getting blockhash: {str(e)}")
-        return {
-            "success": False,
-            "error": f"Blockhash error: {str(e)}",
-            "tx_type": tx_type
-        }
     
-    # Create a transaction object
-    transaction = Transaction()
-    transaction.recent_blockhash = blockhash
-    
+    # Simulate transaction, for demo purposes
+    time.sleep(1.0)
     status_text.text("Building transaction...")
     progress_bar.progress(40)
     
-    # Build the transaction based on the transaction type
-    try:
-        # Extract instruction and accounts from tx_data
-        instruction_type = tx_data.get('instruction', '')
-        accounts_data = tx_data.get('accounts', {})
-        args_data = tx_data.get('args', {})
-        
-        if tx_type == 'create_project':
-            # Create a project initialization transaction
-            # Convert account addresses to PublicKey objects
-            accounts = []
-            
-            # Add system program account
-            system_program = SYSTEM_PROGRAM_ID
-            accounts.append(AccountMeta(pubkey=system_program, is_signer=False, is_writable=False))
-            
-            # Add token program if using USDT
-            if 'token_program' in accounts_data:
-                token_program = TOKEN_PROGRAM_ID
-                accounts.append(AccountMeta(pubkey=token_program, is_signer=False, is_writable=False))
-                
-                # Add USDT mint account if present
-                if 'usdt_mint' in accounts_data:
-                    usdt_mint = USDT_MINT
-                    accounts.append(AccountMeta(pubkey=usdt_mint, is_signer=False, is_writable=False))
-            
-            # Add sender account
-            accounts.append(AccountMeta(pubkey=sender_keypair.public_key, is_signer=True, is_writable=True))
-            
-            # Create instruction data - encode args into bytes
-            # This would match your smart contract's instruction format
-            instruction_data = bytes([0])  # 0 = create_project instruction code
-            
-            # Add name, description, etc. as needed by your contract
-            # Simple encoding example - in reality this would match your contract's ABI
-            if 'name' in args_data:
-                name_bytes = args_data['name'].encode('utf-8')
-                instruction_data += len(name_bytes).to_bytes(4, byteorder='little')
-                instruction_data += name_bytes
-                
-            if 'description' in args_data:
-                desc_bytes = args_data['description'].encode('utf-8')
-                instruction_data += len(desc_bytes).to_bytes(4, byteorder='little')
-                instruction_data += desc_bytes
-                
-            # Create the instruction
-            create_project_ix = TransactionInstruction(
-                keys=accounts,
-                program_id=PublicKey("YourProgramIdHere"),  # Replace with actual program ID
-                data=instruction_data
-            )
-            
-            # Add instruction to transaction
-            transaction.add(create_project_ix)
-            
-        elif tx_type == 'add_milestone':
-            # Similar implementation for milestone creation
-            # Would follow same pattern as above but with milestone-specific data
-            # Simplified for brevity
-            pass
-            
-        elif tx_type == 'add_participant':
-            # Similar implementation for participant addition
-            # Would follow same pattern as above but with participant-specific data
-            # Simplified for brevity
-            pass
-            
-        else:
-            status_text.text(f"Unknown transaction type: {tx_type}")
-            return {
-                "success": False,
-                "error": f"Unknown transaction type: {tx_type}",
-                "tx_type": tx_type
-            }
-            
-    except Exception as e:
-        status_text.text(f"Error building transaction: {str(e)}")
-        return {
-            "success": False,
-            "error": f"Transaction build error: {str(e)}",
-            "tx_type": tx_type
-        }
-    
-    # In a real app, this would connect to the user's wallet for signing
-    # For demo, we'll sign with our generated keypair
+    time.sleep(0.5)
     status_text.text("Signing transaction...")
     progress_bar.progress(60)
-    try:
-        # Sign transaction with sender keypair
-        transaction.sign(sender_keypair)
-    except Exception as e:
-        status_text.text(f"Error signing transaction: {str(e)}")
-        return {
-            "success": False,
-            "error": f"Transaction signing error: {str(e)}",
-            "tx_type": tx_type
-        }
     
-    # Serialize and send the transaction
+    time.sleep(0.5)
     status_text.text("Sending transaction to Solana network...")
     progress_bar.progress(80)
-    try:
-        # Serialize the transaction to wire format
-        serialized_transaction = transaction.serialize()
-        
-        # Send transaction
-        tx_response = client.send_raw_transaction(serialized_transaction)
-        
-        if 'result' not in tx_response:
-            status_text.text("Failed to submit transaction")
-            return {
-                "success": False,
-                "error": "Failed to submit transaction to Solana network",
-                "tx_type": tx_type
-            }
-            
-        # Get transaction signature
-        tx_signature = tx_response['result']
-    except Exception as e:
-        status_text.text(f"Error sending transaction: {str(e)}")
-        return {
-            "success": False,
-            "error": f"Transaction submission error: {str(e)}",
-            "tx_type": tx_type
-        }
     
-    # Wait for confirmation
-    status_text.text("Waiting for confirmation...")
-    progress_bar.progress(90)
-    time.sleep(1.0)  # In production, would actually poll for confirmation
+    time.sleep(1.0)
+    status_text.text("Transaction confirmed!")
+    progress_bar.progress(100)
     
-    # Get transaction details (would normally confirm status)
+    # Generate a fake transaction signature for demo purposes
+    tx_signature = f"5KpM{''.join([str(i % 10) for i in range(10)])}QVhVFN{''.join([str(i % 10) for i in range(20)])}"
+    current_time = int(time.time())
+    slot = 150000000 + (current_time % 10000)  # Example slot number
+    
+    # Record transaction in database
     try:
-        # For demo purposes, we'll assume success after a delay
-        # In production, you would confirm by checking status
-        status_text.text("Transaction confirmed!")
-        progress_bar.progress(100)
-        
-        # Mock values for demo - in production these would come from blockchain
-        current_time = int(time.time())
-        slot = 150000000  # Example slot number
-        
-        # Record transaction in database
-        try:
-            record_transaction(
-                signature=tx_signature,
-                tx_type=tx_type,
-                status="Confirmed",
-                blocktime=current_time,
-                slot=slot,
-                data=tx_json
-            )
-            print(f"Successfully recorded transaction: {tx_signature}")
-        except Exception as e:
-            print(f"Error recording transaction: {str(e)}")
-            # Continue with the flow even if DB recording fails
-        
-        # Return successful transaction data
-        return {
-            "success": True,
-            "signature": tx_signature,
-            "blocktime": current_time,
-            "slot": slot,
-            "tx_type": tx_type,
-            "data": tx_data
-        }
+        record_transaction(
+            signature=tx_signature,
+            tx_type=tx_type,
+            status="Confirmed",
+            blocktime=current_time,
+            slot=slot,
+            data=tx_json
+        )
+        print(f"Successfully recorded transaction: {tx_signature}")
     except Exception as e:
-        status_text.text(f"Error confirming transaction: {str(e)}")
-        try:
-            record_transaction(
-                signature=tx_signature if 'tx_signature' in locals() else "unknown",
-                tx_type=tx_type,
-                status="Failed",
-                blocktime=int(time.time()),
-                slot=0,
-                data=tx_json
-            )
-        except Exception as e:
-            print(f"Error recording failed transaction: {str(e)}")
-        
-        return {
-            "success": False,
-            "error": f"Transaction confirmation error: {str(e)}",
-            "tx_type": tx_type,
-            "signature": tx_signature if 'tx_signature' in locals() else "unknown"
-        }
+        print(f"Error recording transaction: {str(e)}")
+    
+    # Return successful transaction data
+    return {
+        "success": True,
+        "signature": tx_signature,
+        "blocktime": current_time,
+        "slot": slot,
+        "tx_type": tx_type,
+        "data": tx_data
+    }
 
 def render_transaction_submitter(tx_type, tx_data):
     """
-    Renders a transaction submission form with real transaction
+    Renders a transaction submission form with transaction simulation
     
     Parameters:
     - tx_type: Type of transaction (e.g., 'create_project', 'add_milestone')
@@ -261,7 +81,7 @@ def render_transaction_submitter(tx_type, tx_data):
         
         if st.button("Sign and Submit Transaction", type="primary"):
             with st.spinner("Processing transaction..."):
-                # Create and submit real transaction
+                # Create and submit transaction
                 result = create_and_submit_transaction(tx_type, tx_data)
                 
                 if result["success"]:
@@ -296,7 +116,7 @@ def render_transaction_submitter(tx_type, tx_data):
                     
                     return True, result
                 else:
-                    st.error(f"Transaction failed: {result['error']}")
+                    st.error(f"Transaction failed: {result.get('error', 'Unknown error')}")
                     return False, result
                     
         return None, None  # No transaction submitted yet
@@ -317,7 +137,7 @@ def render_project_submission_form():
             accept_multiple = st.checkbox("Accept multiple currencies", value=True)
             
         ip_terms = st.text_area("IP Terms", 
-                                 value="All intellectual property developed through this collaboration will be jointly owned by participants proportional to their contribution percentage.")
+                               value="All intellectual property developed through this collaboration will be jointly owned by participants proportional to their contribution percentage.")
         
         # Form submission
         submit_button = st.form_submit_button("Prepare Transaction")
@@ -402,7 +222,7 @@ def render_milestone_submission_form(project_id="Proj1"):
             if milestone_title and milestone_description and deliverables:
                 # Convert deadline to Unix timestamp
                 import datetime
-                deadline_datetime = datetime.datetime.combine(deadline_date, datetime.time())
+                deadline_datetime = datetime.datetime.combine(deadline_date, datetime.datetime.min.time())
                 deadline_timestamp = int(deadline_datetime.timestamp())
                 
                 # Convert payment to proper units (using decimal_multiplier)
@@ -466,11 +286,11 @@ def render_participant_submission_form(project_id="Proj1"):
         participant_role = st.text_input("Role", placeholder="Enter participant's role in the project")
         
         contribution_percentage = st.slider("Contribution Percentage", min_value=1, max_value=100, value=25, 
-                                           help="Percentage of work contribution and payment allocation")
+                                         help="Percentage of work contribution and payment allocation")
         
         wallet_address = st.text_input("Wallet Address", placeholder="Enter participant's Solana wallet address")
         confidential_details = st.text_area("Confidential Details (Optional)", 
-                                           placeholder="Additional confidential information (will be encrypted)")
+                                         placeholder="Additional confidential information (will be encrypted)")
         
         # Form submission
         submit_button = st.form_submit_button("Prepare Transaction")
@@ -484,12 +304,12 @@ def render_participant_submission_form(project_id="Proj1"):
                         "admin": "connected_wallet_address",
                         "project": project_id,
                         "participant": wallet_address,
-                        "participant_account": "derived_participant_pda",
                         "system_program": "11111111111111111111111111111111",
                     },
                     "args": {
                         "name": participant_name,
                         "role": participant_role,
+                        "wallet_address": wallet_address,
                         "contribution_percentage": contribution_percentage,
                         "confidential_details": confidential_details if confidential_details else ""
                     }

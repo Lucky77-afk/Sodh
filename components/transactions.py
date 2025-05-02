@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from utils.solana_client import get_solana_client, get_recent_transactions, get_transaction_details
+from utils.solana_client_new import get_solana_client, get_recent_transactions, get_transaction_details
 
 def render_transaction_card(tx):
     """Renders a transaction card with details"""

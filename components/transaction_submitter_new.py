@@ -2,12 +2,8 @@ import streamlit as st
 import time
 import json
 import base58
-from solana.transaction import Transaction, AccountMeta, TransactionInstruction
-from solana.blockhash import Blockhash
-from solana.publickey import PublicKey
-from solana.keypair import Keypair
 from utils.database import record_transaction
-from utils.solana_client import get_solana_client, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID, USDT_MINT
+from utils.solana_client_new import get_solana_client, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID, USDT_MINT, create_keypair, get_recent_blockhash
 
 def create_and_submit_transaction(tx_type, tx_data):
     """
@@ -238,8 +234,8 @@ def create_and_submit_transaction(tx_type, tx_data):
                 slot=0,
                 data=tx_json
             )
-        except Exception as e:
-            print(f"Error recording failed transaction: {str(e)}")
+        except Exception as db_error:
+            print(f"Error recording failed transaction: {str(db_error)}")
         
         return {
             "success": False,
@@ -317,7 +313,7 @@ def render_project_submission_form():
             accept_multiple = st.checkbox("Accept multiple currencies", value=True)
             
         ip_terms = st.text_area("IP Terms", 
-                                 value="All intellectual property developed through this collaboration will be jointly owned by participants proportional to their contribution percentage.")
+                               value="All intellectual property developed through this collaboration will be jointly owned by participants proportional to their contribution percentage.")
         
         # Form submission
         submit_button = st.form_submit_button("Prepare Transaction")
@@ -402,7 +398,7 @@ def render_milestone_submission_form(project_id="Proj1"):
             if milestone_title and milestone_description and deliverables:
                 # Convert deadline to Unix timestamp
                 import datetime
-                deadline_datetime = datetime.datetime.combine(deadline_date, datetime.time())
+                deadline_datetime = datetime.datetime.combine(deadline_date, datetime.datetime.min.time())
                 deadline_timestamp = int(deadline_datetime.timestamp())
                 
                 # Convert payment to proper units (using decimal_multiplier)
@@ -466,11 +462,11 @@ def render_participant_submission_form(project_id="Proj1"):
         participant_role = st.text_input("Role", placeholder="Enter participant's role in the project")
         
         contribution_percentage = st.slider("Contribution Percentage", min_value=1, max_value=100, value=25, 
-                                           help="Percentage of work contribution and payment allocation")
+                                         help="Percentage of work contribution and payment allocation")
         
         wallet_address = st.text_input("Wallet Address", placeholder="Enter participant's Solana wallet address")
         confidential_details = st.text_area("Confidential Details (Optional)", 
-                                           placeholder="Additional confidential information (will be encrypted)")
+                                         placeholder="Additional confidential information (will be encrypted)")
         
         # Form submission
         submit_button = st.form_submit_button("Prepare Transaction")
@@ -483,13 +479,13 @@ def render_participant_submission_form(project_id="Proj1"):
                     "accounts": {
                         "admin": "connected_wallet_address",
                         "project": project_id,
-                        "participant": wallet_address,
                         "participant_account": "derived_participant_pda",
                         "system_program": "11111111111111111111111111111111",
                     },
                     "args": {
                         "name": participant_name,
                         "role": participant_role,
+                        "wallet_address": wallet_address,
                         "contribution_percentage": contribution_percentage,
                         "confidential_details": confidential_details if confidential_details else ""
                     }
