@@ -1,6 +1,8 @@
 import streamlit as st
 import socket
 import datetime
+import os
+import base64
 from datetime import datetime
 from components.header import render_header
 from components.dashboard import render_dashboard
@@ -27,10 +29,21 @@ except Exception as e:
     print(f"Server hostname: {hostname}")
     print(f"Server running on http://0.0.0.0:5000")
 
+# Check for logo to use as icon
+
+logo_path = os.path.join("assets", "logo.jpeg")
+if os.path.exists(logo_path):
+    with open(logo_path, "rb") as f:
+        logo_bytes = f.read()
+    encoded_logo = base64.b64encode(logo_bytes).decode()
+    page_icon = f"data:image/jpeg;base64,{encoded_logo}"
+else:
+    page_icon = "🔍"
+
 # Set page configuration
 st.set_page_config(
     page_title="Sodh - Solana Blockchain Explorer",
-    page_icon="🔍",
+    page_icon=page_icon,
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={

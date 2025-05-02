@@ -405,8 +405,25 @@ def render_dashboard():
                 fig.update_traces(line=dict(color='#26A17B', width=3))  # Tether green color
                 st.plotly_chart(fig, use_container_width=True)
                 
-                # Add info about Tether USDT on Solana
-                st.info("USDT on Solana is a stablecoin token that maintains a 1:1 peg with the US Dollar. It's used for fast transfers, trading, and as a medium of exchange on Solana blockchain applications.")
+                # Add info about USDT on Solana and its role in DAPPR platform
+                st.markdown("""
+                <div class="stCard">
+                    <h4 style="margin-top: 0;">USDT in DAPPR Platform</h4>
+                    <p>USDT on Solana is a stablecoin token that maintains a 1:1 peg with the US Dollar. The DAPPR platform uses USDT for:</p>
+                    <ul>
+                        <li><strong>Research Funding</strong>: Collaborators can fund research projects with USDT, providing stability against cryptocurrency volatility</li>
+                        <li><strong>Milestone Payments</strong>: Contributors receive payments in USDT when completing project milestones</li>
+                        <li><strong>Budget Planning</strong>: Project managers can budget research costs in a stable currency</li>
+                    </ul>
+                    <p><strong>Technical Details:</strong></p>
+                    <ul>
+                        <li>SPL Token with 6 decimal places (unlike SOL's 9 decimals)</li>
+                        <li>Transactions utilize the SPL token program for transfers</li>
+                        <li>Associated Token Accounts (ATAs) required for receiving USDT</li>
+                    </ul>
+                    <p><strong>Implementation:</strong> DAPPR smart contracts support both SOL and USDT funding through specialized transaction endpoints.</p>
+                </div>
+                """, unsafe_allow_html=True)
         
     except Exception as e:
         st.error(f"Error retrieving Solana network data: {str(e)}")

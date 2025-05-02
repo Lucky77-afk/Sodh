@@ -7,10 +7,23 @@ def render_header():
     col1, col2 = st.columns([1, 5])
     
     with col1:
-        # Try to load logo from assets directory
-        logo_path = os.path.join("assets", "logo.svg")
-        if os.path.exists(logo_path):
-            with open(logo_path, "r") as f:
+        # Try to load JPEG logo first
+        logo_path_jpeg = os.path.join("assets", "logo.jpeg")
+        logo_path_svg = os.path.join("assets", "logo.svg")
+        
+        if os.path.exists(logo_path_jpeg):
+            # Use the JPEG logo file with proper encoding
+            with open(logo_path_jpeg, "rb") as f:
+                logo_bytes = f.read()
+                encoded_logo = base64.b64encode(logo_bytes).decode()
+                st.markdown(f"""
+                <div style="width: 90px; height: 90px; display: flex; align-items: center; justify-content: center;">
+                    <img src="data:image/jpeg;base64,{encoded_logo}" style="max-width: 100%; max-height: 100%; border-radius: 50%;">
+                </div>
+                """, unsafe_allow_html=True)
+        elif os.path.exists(logo_path_svg):
+            # Fallback to SVG if JPEG not found
+            with open(logo_path_svg, "r") as f:
                 svg_content = f.read()
                 st.markdown(f"""
                 <div style="width: 60px; height: 60px;">
@@ -18,7 +31,7 @@ def render_header():
                 </div>
                 """, unsafe_allow_html=True)
         else:
-            # Fallback to inline SVG if file not found
+            # Fallback to inline SVG if no logo files found
             st.markdown("""
             <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="30" cy="30" r="28" fill="#131313" stroke="#14F195" stroke-width="2"/>
