@@ -418,7 +418,7 @@ with st.sidebar:
     if st.button("⚡ Check Server Status"):
         # Use experimental_set_query_params for setting the query parameter
         st.experimental_set_query_params(health_check="true")
-        st.rerun()
+        st.experimental_rerun()
     st.markdown('<p class="gradient-text">NAVIGATION</p>', unsafe_allow_html=True)
     page = st.radio(
         "Select a page",
@@ -431,13 +431,13 @@ with st.sidebar:
     wallet_address = st.text_input("Wallet Address", placeholder="Enter Solana wallet address")
     if st.button("Connect"):
         st.session_state.wallet_address = wallet_address
-        st.rerun()
+        st.experimental_rerun()
     
     # Clear wallet
     if 'wallet_address' in st.session_state and st.session_state.wallet_address:
         if st.button("Disconnect Wallet"):
             del st.session_state.wallet_address
-            st.rerun()
+            st.experimental_rerun()
     
     # About section in sidebar
     st.markdown("---")

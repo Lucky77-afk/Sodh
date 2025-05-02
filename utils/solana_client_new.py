@@ -159,9 +159,13 @@ def get_recent_transactions(client, limit=10):
         return []
 
 @st.cache_data(ttl=300)
-def get_transaction_details(client, signature):
+def get_transaction_details(_client, signature):
     """Get detailed information for a specific transaction"""
     try:
+        # Import client here to avoid streamlit hashing issues
+        from solana.rpc.api import Client
+        client = Client("https://api.devnet.solana.com")
+        
         tx_response = client.get_transaction(signature)
         if tx_response and 'result' in tx_response:
             return tx_response['result']
@@ -171,12 +175,16 @@ def get_transaction_details(client, signature):
         return None
 
 @st.cache_data(ttl=60)
-def get_account_info(client, address):
+def get_account_info(_client, address):
     """Get account information for a wallet address"""
     try:
         # Check if the address is valid
         if not address or len(address) < 32:
             return None
+        
+        # Import client here to avoid streamlit hashing issues
+        from solana.rpc.api import Client
+        client = Client("https://api.devnet.solana.com")
         
         # Get SOL balance
         balance_response = client.get_balance(address)
@@ -237,12 +245,16 @@ def get_account_info(client, address):
         return None
 
 @st.cache_data(ttl=60)
-def get_account_transactions(client, address, limit=5):
+def get_account_transactions(_client, address, limit=5):
     """Get recent transactions for an account"""
     try:
         # Check if address is valid
         if not address or len(address) < 32:
             return []
+        
+        # Import client here to avoid streamlit hashing issues
+        from solana.rpc.api import Client
+        client = Client("https://api.devnet.solana.com")
         
         # Get recent signatures for this account
         signatures_response = client.get_signatures_for_address(
