@@ -13,6 +13,18 @@ from components.whitepaper import render_whitepaper
 from components.tutorial import render_tutorial
 from utils.database import init_db
 
+# Replace the original solana_client with our fixed version
+import sys
+import importlib
+try:
+    # Try to import the fixed version first
+    from utils.solana_client_fixed import *
+    # If successful, update sys.modules to use this instead of the original
+    sys.modules['utils.solana_client'] = sys.modules['utils.solana_client_fixed']
+    print("Using fixed Solana client")
+except ImportError:
+    print("Could not load fixed Solana client, using original")
+
 # Initialize database with error handling
 db_initialized = init_db()
 if not db_initialized:

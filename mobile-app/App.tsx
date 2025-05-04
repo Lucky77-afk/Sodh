@@ -1,24 +1,23 @@
 import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
+import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { 
-  Provider as PaperProvider, 
-  DefaultTheme as PaperDefaultTheme
-} from 'react-native-paper';
 import AppNavigator from './src/navigation/AppNavigator';
-import { WalletProvider } from './src/context/WalletContext';
+import { UniversalWalletProvider } from './src/context/UniversalWalletProvider';
 
-// Create custom theme with Solana colors
+// Define custom theme for Solana aesthetics
 const theme = {
-  ...PaperDefaultTheme,
+  ...DefaultTheme,
   colors: {
-    ...PaperDefaultTheme.colors,
+    ...DefaultTheme.colors,
     primary: '#14F195', // Solana green
-    accent: '#9945FF',  // Solana purple
-    background: '#131313',
-    surface: '#1E1E1E',
+    accent: '#9945FF', // Solana purple
+    background: '#131313', // Dark background
+    surface: '#1E1E1E', // Card background
     text: '#FFFFFF',
     error: '#FF5C5C',
+    notification: '#14F195',
   },
   dark: true,
 };
@@ -27,10 +26,22 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
-        <WalletProvider>
-          <StatusBar style="light" />
-          <AppNavigator />
-        </WalletProvider>
+        <UniversalWalletProvider>
+          <NavigationContainer theme={{
+            dark: true,
+            colors: {
+              primary: '#14F195',
+              background: '#131313', 
+              card: '#1E1E1E',
+              text: '#FFFFFF',
+              border: '#333333',
+              notification: '#9945FF',
+            }
+          }}>
+            <StatusBar style="light" />
+            <AppNavigator />
+          </NavigationContainer>
+        </UniversalWalletProvider>
       </PaperProvider>
     </SafeAreaProvider>
   );
