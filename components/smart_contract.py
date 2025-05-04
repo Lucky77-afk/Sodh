@@ -127,7 +127,7 @@ def render_contract_projects():
         if st.button(f"Select: {project['name']}", key=f"select_project_{project['id']}"):
             st.session_state.current_project_id = project['id']
             st.success(f"Selected project: {project['name']}")
-            st.rerun()
+            st.experimental_rerun()
 
 def render_project_form():
     """Renders a form to create a new collaboration project"""

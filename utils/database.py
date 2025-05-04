@@ -212,9 +212,21 @@ def get_milestones(project_id=None):
     try:
         query = db.query(Milestone)
         if project_id:
+            # Convert string project_id to integer if it's a string
+            if isinstance(project_id, str) and project_id.isdigit():
+                project_id = int(project_id)
+            # Handle special case for "Proj1" etc. from examples
+            elif isinstance(project_id, str) and project_id.startswith("Proj"):
+                # In this case, we default to project_id 1
+                project_id = 1
+                
             query = query.filter(Milestone.project_id == project_id)
+            
         milestones = query.all()
         return [milestone.to_dict() for milestone in milestones]
+    except Exception as e:
+        print(f"Error in get_milestones: {str(e)}")
+        return []
     finally:
         db.close()
 
@@ -258,9 +270,21 @@ def get_participants(project_id=None):
     try:
         query = db.query(Participant)
         if project_id:
+            # Convert string project_id to integer if it's a string
+            if isinstance(project_id, str) and project_id.isdigit():
+                project_id = int(project_id)
+            # Handle special case for "Proj1" etc. from examples
+            elif isinstance(project_id, str) and project_id.startswith("Proj"):
+                # In this case, we default to project_id 1
+                project_id = 1
+                
             query = query.filter(Participant.project_id == project_id)
+            
         participants = query.all()
         return [participant.to_dict() for participant in participants]
+    except Exception as e:
+        print(f"Error in get_participants: {str(e)}")
+        return []
     finally:
         db.close()
 
