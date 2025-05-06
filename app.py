@@ -16,14 +16,15 @@ from utils.database import init_db
 # Replace the original solana_client with our fixed version
 import sys
 import importlib
-try:
-    # Try to import the fixed version first
-    from utils.solana_client_fixed import *
-    # If successful, update sys.modules to use this instead of the original
-    sys.modules['utils.solana_client'] = sys.modules['utils.solana_client_fixed']
-    print("Using fixed Solana client")
-except ImportError:
-    print("Could not load fixed Solana client, using original")
+import os
+
+# Create a stub for solana_client.py that just re-exports everything from solana_client_fixed
+print("Using solana_client_fixed.py with solders.pubkey")
+
+# Simplify the import approach - just make solana_client.py a pass-through to solana_client_fixed
+import sys
+from utils import solana_client_fixed
+sys.modules['utils.solana_client'] = solana_client_fixed
 
 # Initialize database with error handling
 db_initialized = init_db()

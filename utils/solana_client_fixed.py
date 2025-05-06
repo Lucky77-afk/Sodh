@@ -1,10 +1,18 @@
 import streamlit as st
 from solana.rpc.api import Client
-from solana.publickey import PublicKey
-from solana.transaction import Transaction, TransactionInstruction, AccountMeta
-from solana.blockhash import Blockhash
-from solana.keypair import Keypair
+# Use solders pubkey instead of solana.publickey
+import solders.pubkey
+from solana.transaction import Transaction
+# These imports may have changed with the newer solana package
+import solders.instruction
+from solders.keypair import Keypair
 from solana.rpc.types import TxOpts
+
+# Define compatibility layer for PublicKey
+PublicKey = solders.pubkey.Pubkey
+# Aliases for compatibility
+TransactionInstruction = solders.instruction.Instruction
+AccountMeta = solders.instruction.AccountMeta
 from datetime import datetime, timedelta
 import base64
 import json
@@ -13,9 +21,10 @@ import base58
 import struct
 
 # Define constants for Solana and USDT SPL token program
-SYSTEM_PROGRAM_ID = PublicKey("11111111111111111111111111111111")
-TOKEN_PROGRAM_ID = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-USDT_MINT = PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB")  # USDT on Solana
+# Convert string to bytes then to PublicKey
+SYSTEM_PROGRAM_ID = PublicKey.from_string("11111111111111111111111111111111")
+TOKEN_PROGRAM_ID = PublicKey.from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+USDT_MINT = PublicKey.from_string("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB")  # USDT on Solana
 
 @st.cache_resource(ttl=60)
 def get_solana_client():
@@ -196,10 +205,10 @@ def get_account_info(_client, address):
             return None
             
         try:
-            # Convert address string to PublicKey object
-            pubkey = PublicKey(address)
-        except Exception:
-            st.error("Invalid Solana address format")
+            # Convert address string to PublicKey object using from_string
+            pubkey = PublicKey.from_string(address)
+        except Exception as e:
+            st.error(f"Invalid Solana address format: {str(e)}")
             return None
         
         # Get SOL balance
@@ -260,6 +269,23 @@ def get_account_info(_client, address):
         st.error(f"Error fetching account info: {str(e)}")
         return None
 
+# Helper functions for transaction creation
+def create_keypair():
+    """Creates a keypair for demo purposes"""
+    # Return a new keypair
+    return Keypair()
+
+def get_recent_blockhash(client):
+    """Gets a recent blockhash from the Solana blockchain"""
+    try:
+        response = client.get_recent_blockhash()
+        if 'result' in response and 'value' in response['result']:
+            return response['result']['value']['blockhash']
+        return None
+    except Exception as e:
+        st.error(f"Error getting recent blockhash: {str(e)}")
+        return None
+        
 def get_account_transactions(_client, address, limit=5):
     """Get recent transactions for an account"""
     try:
@@ -271,10 +297,10 @@ def get_account_transactions(_client, address, limit=5):
             return []
             
         try:
-            # Convert address string to PublicKey object
-            pubkey = PublicKey(address)
-        except Exception:
-            st.error("Invalid Solana address format")
+            # Convert address string to PublicKey object using from_string
+            pubkey = PublicKey.from_string(address)
+        except Exception as e:
+            st.error(f"Invalid Solana address format: {str(e)}")
             return []
         
         # Get recent signatures for this account
@@ -383,19 +409,3 @@ def get_account_transactions(_client, address, limit=5):
         st.error(f"Error fetching account transactions: {str(e)}")
         return []
 
-# Creates a new keypair for demo purposes
-def create_keypair():
-    """Creates a keypair for demo purposes"""
-    return Keypair()
-
-# Gets a recent blockhash from the Solana blockchain
-def get_recent_blockhash(client):
-    """Gets a recent blockhash from the Solana blockchain"""
-    try:
-        response = client.get_recent_blockhash()
-        if 'result' in response:
-            return response['result']['value']['blockhash']
-        return None
-    except Exception as e:
-        st.error(f"Error getting recent blockhash: {str(e)}")
-        return None

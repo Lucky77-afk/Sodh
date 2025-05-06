@@ -76,50 +76,57 @@ def render_transaction_submitter(tx_type, tx_data):
     - tx_type: Type of transaction (e.g., 'create_project', 'add_milestone')
     - tx_data: Dictionary of transaction data
     """
+    submit_clicked = False
+    result = None
+    
     with st.expander(f"Transaction Details ({tx_type})"):
         st.json(tx_data)
         
-        if st.button("Sign and Submit Transaction", type="primary"):
-            with st.spinner("Processing transaction..."):
-                # Create and submit transaction
-                result = create_and_submit_transaction(tx_type, tx_data)
+        # Move the button outside any form to avoid StreamlitAPIException
+        submit_clicked = st.button("Sign and Submit Transaction", type="primary")
+    
+    # Handle button click outside the expander
+    if submit_clicked:
+        with st.spinner("Processing transaction..."):
+            # Create and submit transaction
+            result = create_and_submit_transaction(tx_type, tx_data)
+            
+            if result["success"]:
+                st.success("Transaction successful!")
                 
-                if result["success"]:
-                    st.success("Transaction successful!")
-                    
-                    # Display transaction details
-                    st.markdown(f"""
-                    <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin: 15px 0;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span style="color: #AAA;">Transaction Signature:</span>
-                            <span class="transaction-hash">{result["signature"][:20]}...{result["signature"][-8:]}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span style="color: #AAA;">Block Time:</span>
-                            <span style="color: #FFFFFF;">{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(result["blocktime"]))}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span style="color: #AAA;">Slot:</span>
-                            <span style="color: #FFFFFF;">{result["slot"]}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span style="color: #AAA;">Type:</span>
-                            <span style="color: #14F195;">{result["tx_type"]}</span>
-                        </div>
-                        <div style="text-align: center; margin-top: 15px;">
-                            <a href="javascript:void(0)" style="color: #9945FF; text-decoration: none;">
-                                View on Solana Explorer
-                            </a>
-                        </div>
+                # Display transaction details
+                st.markdown(f"""
+                <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #AAA;">Transaction Signature:</span>
+                        <span class="transaction-hash">{result["signature"][:20]}...{result["signature"][-8:]}</span>
                     </div>
-                    """, unsafe_allow_html=True)
-                    
-                    return True, result
-                else:
-                    st.error(f"Transaction failed: {result.get('error', 'Unknown error')}")
-                    return False, result
-                    
-        return None, None  # No transaction submitted yet
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #AAA;">Block Time:</span>
+                        <span style="color: #FFFFFF;">{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(result["blocktime"]))}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #AAA;">Slot:</span>
+                        <span style="color: #FFFFFF;">{result["slot"]}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #AAA;">Type:</span>
+                        <span style="color: #14F195;">{result["tx_type"]}</span>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <a href="javascript:void(0)" style="color: #9945FF; text-decoration: none;">
+                            View on Solana Explorer
+                        </a>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                return True, result
+            else:
+                st.error(f"Transaction failed: {result.get('error', 'Unknown error')}")
+                return False, result
+    
+    return None, None  # No transaction submitted yet
 
 def render_project_submission_form():
     """Renders a form to create a new collaboration project with transaction simulation"""
