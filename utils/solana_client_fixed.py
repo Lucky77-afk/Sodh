@@ -349,16 +349,14 @@ def get_account_info(_client, address):
                     
                     # Try with direct approach as fallback
                     try:
-                        associated_token_response = client.get_token_accounts_by_owner(
-                            pubkey,
-                            {"programId": token_program_id}  # Just get all SPL tokens instead
-                        )
-                        st.write("DEBUG - Token accounts fetched with programId filter")
-                    except Exception as e_alt:
-                        st.write(f"DEBUG - ProgramId filter failed: {str(e_alt)}")
-                        # Final fallback - just set an empty result
+                        # Just set an empty result directly
                         associated_token_response = {"result": {"value": []}}
                         st.write("DEBUG - Using empty token accounts fallback")
+                    except Exception as e_alt:
+                        st.write(f"DEBUG - Empty token accounts fallback failed: {str(e_alt)}")
+                        # Final fallback in case of any errors
+                        associated_token_response = {"result": {"value": []}}
+                        st.write("DEBUG - Using last resort empty token accounts fallback")
             except Exception as e_token_obj:
                 st.write(f"DEBUG - All token accounts fetch approaches failed: {str(e_token_obj)}")
                 # Final fallback - just set an empty result
@@ -369,10 +367,14 @@ def get_account_info(_client, address):
             # Handle different response types for token accounts
             st.write(f"DEBUG - Token accounts response type: {type(associated_token_response)}")
             
-            if hasattr(associated_token_response, 'value'):
-                # This is a typed response object
+            if hasattr(associated_token_response, 'value') and not hasattr(associated_token_response, 'message'):
+                # This is a typed response object with value (success case)
                 token_accounts = associated_token_response.value if hasattr(associated_token_response, 'value') else []
                 st.write(f"DEBUG - Using value attribute for token accounts: {len(token_accounts)} accounts found")
+            elif hasattr(associated_token_response, 'message'):
+                # This is an error response
+                st.write(f"DEBUG - Error response for token accounts: {associated_token_response.message if hasattr(associated_token_response, 'message') else str(associated_token_response)}")
+                token_accounts = []
             elif isinstance(associated_token_response, dict) and 'result' in associated_token_response:
                 # This is the dictionary response type
                 token_accounts = associated_token_response.get('result', {}).get('value', [])
