@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from utils.solana_client_new import get_solana_client, get_account_info, get_account_transactions
+from utils.solana_client_fixed import get_solana_client, get_account_info, get_account_transactions
 
 def render_account():
     """Renders the account/wallet page with balance and transactions"""

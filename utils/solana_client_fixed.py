@@ -207,9 +207,26 @@ def get_account_info(_client, address):
             
         try:
             # Convert address string to PublicKey object using from_string
-            # Make sure address is a string first
+            # Make sure address is a string first and print debug info
             address_str = str(address).strip()
-            pubkey = PublicKey.from_string(address_str)
+            st.write(f"DEBUG - Address type: {type(address_str)}, Value: {address_str}")
+            
+            # Try different methods of creating a PublicKey
+            try:
+                # Method 1: Direct from_string
+                pubkey = PublicKey.from_string(address_str)
+                st.write("DEBUG - PublicKey created with from_string")
+            except Exception as e1:
+                st.write(f"DEBUG - from_string failed: {str(e1)}")
+                try:
+                    # Method this includes Bs58 decoding if needed
+                    decoded = base58.b58decode(address_str)
+                    pubkey = PublicKey(decoded)
+                    st.write("DEBUG - PublicKey created with base58 decode")
+                except Exception as e2:
+                    st.write(f"DEBUG - base58 decode failed: {str(e2)}")
+                    raise Exception(f"All PublicKey creation methods failed: {str(e1)}, {str(e2)}")
+            
         except Exception as e:
             st.error(f"Invalid Solana address format: {str(e)}")
             return None
@@ -311,9 +328,26 @@ def get_account_transactions(_client, address, limit=5):
             
         try:
             # Convert address string to PublicKey object using from_string
-            # Make sure address is a string first
+            # Make sure address is a string first and print debug info
             address_str = str(address).strip()
-            pubkey = PublicKey.from_string(address_str)
+            st.write(f"DEBUG - Tx Address type: {type(address_str)}, Value: {address_str}")
+            
+            # Try different methods of creating a PublicKey
+            try:
+                # Method 1: Direct from_string
+                pubkey = PublicKey.from_string(address_str)
+                st.write("DEBUG - Tx PublicKey created with from_string")
+            except Exception as e1:
+                st.write(f"DEBUG - Tx from_string failed: {str(e1)}")
+                try:
+                    # Method this includes Bs58 decoding if needed
+                    decoded = base58.b58decode(address_str)
+                    pubkey = PublicKey(decoded)
+                    st.write("DEBUG - Tx PublicKey created with base58 decode")
+                except Exception as e2:
+                    st.write(f"DEBUG - Tx base58 decode failed: {str(e2)}")
+                    raise Exception(f"All PublicKey creation methods failed: {str(e1)}, {str(e2)}")
+            
         except Exception as e:
             st.error(f"Invalid Solana address format: {str(e)}")
             return []
