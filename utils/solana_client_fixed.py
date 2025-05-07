@@ -323,22 +323,47 @@ def get_account_info(_client, address):
         try:
             # Find USDT associated token account for this wallet
             try:
-                associated_token_response = client.get_token_accounts_by_owner(
-                    pubkey, 
-                    {'mint': str(USDT_MINT)}
-                )
-                st.write("DEBUG - Token accounts fetched with pubkey object")
-            except Exception as e_token_obj:
-                st.write(f"DEBUG - Token accounts fetch with object failed: {str(e_token_obj)}")
+                # The {'mint': str(USDT_MINT)} is causing the issue
+                # Let's try with the proper filters structure
+                filter_obj = {'mint': str(USDT_MINT)}
+                st.write(f"DEBUG - Using filter object: {filter_obj}, type: {type(filter_obj)}")
+                
+                # For token program ID
+                token_program_id = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+                
+                # Try to create a proper filter
                 try:
+                    from solana.rpc.types import TokenAccountOpts
+                    from solders.pubkey import Pubkey
+                    
+                    # Try with the proper TokenAccountOpts structure if available
+                    mint_pubkey = Pubkey.from_string(str(USDT_MINT))
+                    filter_opts = TokenAccountOpts(mint=mint_pubkey)
                     associated_token_response = client.get_token_accounts_by_owner(
-                        str(pubkey), 
-                        {'mint': str(USDT_MINT)}
+                        pubkey, 
+                        filter_opts
                     )
-                    st.write("DEBUG - Token accounts fetched with string representation")
-                except Exception as e_token_str:
-                    st.write(f"DEBUG - Token accounts fetch with string failed: {str(e_token_str)}")
-                    raise Exception(f"Could not fetch token accounts: {str(e_token_obj)}, {str(e_token_str)}")
+                    st.write("DEBUG - Token accounts fetched with TokenAccountOpts")
+                except Exception as e_opts:
+                    st.write(f"DEBUG - TokenAccountOpts approach failed: {str(e_opts)}")
+                    
+                    # Try with direct approach as fallback
+                    try:
+                        associated_token_response = client.get_token_accounts_by_owner(
+                            pubkey,
+                            {"programId": token_program_id}  # Just get all SPL tokens instead
+                        )
+                        st.write("DEBUG - Token accounts fetched with programId filter")
+                    except Exception as e_alt:
+                        st.write(f"DEBUG - ProgramId filter failed: {str(e_alt)}")
+                        # Final fallback - just set an empty result
+                        associated_token_response = {"result": {"value": []}}
+                        st.write("DEBUG - Using empty token accounts fallback")
+            except Exception as e_token_obj:
+                st.write(f"DEBUG - All token accounts fetch approaches failed: {str(e_token_obj)}")
+                # Final fallback - just set an empty result
+                associated_token_response = {"result": {"value": []}}
+                st.write("DEBUG - Using empty token accounts fallback after all failures")
             
             
             # Handle different response types for token accounts
