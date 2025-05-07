@@ -233,7 +233,23 @@ def get_account_info(_client, address):
         
         # Get SOL balance
         try:
-            balance_response = client.get_balance(pubkey)
+            # Debug the pubkey object
+            st.write(f"DEBUG - Pubkey type: {type(pubkey)}, Value: {pubkey}")
+            
+            # Try to get balance with the pubkey
+            try:
+                balance_response = client.get_balance(pubkey)
+                st.write("DEBUG - Balance fetched with pubkey object")
+            except Exception as e_obj:
+                st.write(f"DEBUG - Balance fetch with object failed: {str(e_obj)}")
+                # Try with string representation
+                try:
+                    balance_response = client.get_balance(str(pubkey))
+                    st.write("DEBUG - Balance fetched with string representation")
+                except Exception as e_str:
+                    st.write(f"DEBUG - Balance fetch with string failed: {str(e_str)}")
+                    raise Exception(f"Could not fetch balance: {str(e_obj)}, {str(e_str)}")
+            
             if 'result' not in balance_response:
                 st.error("Could not retrieve balance information")
                 return None
@@ -247,7 +263,18 @@ def get_account_info(_client, address):
         
         # Get transaction count
         try:
-            tx_signatures = client.get_signatures_for_address(pubkey, limit=100)
+            try:
+                tx_signatures = client.get_signatures_for_address(pubkey, limit=100)
+                st.write("DEBUG - Signatures fetched with pubkey object")
+            except Exception as e_sig_obj:
+                st.write(f"DEBUG - Signatures fetch with object failed: {str(e_sig_obj)}")
+                try:
+                    tx_signatures = client.get_signatures_for_address(str(pubkey), limit=100)
+                    st.write("DEBUG - Signatures fetched with string representation")
+                except Exception as e_sig_str:
+                    st.write(f"DEBUG - Signatures fetch with string failed: {str(e_sig_str)}")
+                    raise Exception(f"Could not fetch signatures: {str(e_sig_obj)}, {str(e_sig_str)}")
+                    
             tx_count = len(tx_signatures.get('result', []))
         except Exception as tx_error:
             st.warning(f"Could not fetch transaction count: {str(tx_error)}")
@@ -257,10 +284,24 @@ def get_account_info(_client, address):
         usdt_balance = 0.0
         try:
             # Find USDT associated token account for this wallet
-            associated_token_response = client.get_token_accounts_by_owner(
-                pubkey, 
-                {'mint': str(USDT_MINT)}
-            )
+            try:
+                associated_token_response = client.get_token_accounts_by_owner(
+                    pubkey, 
+                    {'mint': str(USDT_MINT)}
+                )
+                st.write("DEBUG - Token accounts fetched with pubkey object")
+            except Exception as e_token_obj:
+                st.write(f"DEBUG - Token accounts fetch with object failed: {str(e_token_obj)}")
+                try:
+                    associated_token_response = client.get_token_accounts_by_owner(
+                        str(pubkey), 
+                        {'mint': str(USDT_MINT)}
+                    )
+                    st.write("DEBUG - Token accounts fetched with string representation")
+                except Exception as e_token_str:
+                    st.write(f"DEBUG - Token accounts fetch with string failed: {str(e_token_str)}")
+                    raise Exception(f"Could not fetch token accounts: {str(e_token_obj)}, {str(e_token_str)}")
+            
             
             token_accounts = associated_token_response.get('result', {}).get('value', [])
             
@@ -353,10 +394,23 @@ def get_account_transactions(_client, address, limit=5):
             return []
         
         # Get recent signatures for this account
-        signatures_response = client.get_signatures_for_address(
-            pubkey,
-            limit=limit
-        )
+        try:
+            signatures_response = client.get_signatures_for_address(
+                pubkey,
+                limit=limit
+            )
+            st.write("DEBUG - Tx Signatures fetched with pubkey object")
+        except Exception as e_sig_obj:
+            st.write(f"DEBUG - Tx Signatures fetch with object failed: {str(e_sig_obj)}")
+            try:
+                signatures_response = client.get_signatures_for_address(
+                    str(pubkey),
+                    limit=limit
+                )
+                st.write("DEBUG - Tx Signatures fetched with string representation")
+            except Exception as e_sig_str:
+                st.write(f"DEBUG - Tx Signatures fetch with string failed: {str(e_sig_str)}")
+                raise Exception(f"Could not fetch tx signatures: {str(e_sig_obj)}, {str(e_sig_str)}")
         
         if 'result' not in signatures_response:
             st.error("Failed to get transactions for this account")
