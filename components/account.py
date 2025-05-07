@@ -11,15 +11,20 @@ def render_account():
     if 'wallet_address' in st.session_state and st.session_state.wallet_address:
         wallet_address = st.session_state.wallet_address
         
+        # Initialize wallet_type in session state if not already present
+        if 'wallet_type' not in st.session_state:
+            st.session_state['wallet_type'] = "Phantom"
+            
         # Display wallet type selection
+        wallet_options = ["Phantom", "Solflare", "Trust Wallet", "Binance", "CoinDCX", "Other"]
+        wallet_index = wallet_options.index(st.session_state['wallet_type']) if st.session_state['wallet_type'] in wallet_options else 0
+        
         wallet_type = st.selectbox(
             "Wallet Provider", 
-            ["Phantom", "Solflare", "Trust Wallet", "Binance", "CoinDCX", "Other"],
-            index=st.session_state.get('wallet_type_index', 0),
-            key='wallet_type_selector'
+            wallet_options,
+            index=wallet_index
         )
-        # Store the selected wallet type index in session state
-        st.session_state['wallet_type_index'] = st.session_state.wallet_type_selector
+        # Store the selected wallet type in session state
         st.session_state['wallet_type'] = wallet_type
     else:
         wallet_address = st.text_input("Enter a Solana wallet address to explore", placeholder="Solana wallet address...")

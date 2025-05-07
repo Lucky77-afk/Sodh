@@ -202,27 +202,39 @@ def get_account_info(_client, address):
         
         # Check if the address is valid
         if not address or len(address) < 32:
+            st.error("Invalid wallet address length")
             return None
             
         try:
             # Convert address string to PublicKey object using from_string
-            pubkey = PublicKey.from_string(address)
+            # Make sure address is a string first
+            address_str = str(address).strip()
+            pubkey = PublicKey.from_string(address_str)
         except Exception as e:
             st.error(f"Invalid Solana address format: {str(e)}")
             return None
         
         # Get SOL balance
-        balance_response = client.get_balance(pubkey)
-        if 'result' not in balance_response:
+        try:
+            balance_response = client.get_balance(pubkey)
+            if 'result' not in balance_response:
+                st.error("Could not retrieve balance information")
+                return None
+                
+            # Convert lamports to SOL
+            balance_lamports = balance_response['result']['value']
+            balance_sol = balance_lamports / 1_000_000_000  # 1 SOL = 10^9 lamports
+        except Exception as balance_error:
+            st.error(f"Balance fetch error: {str(balance_error)}")
             return None
-            
-        # Convert lamports to SOL
-        balance_lamports = balance_response['result']['value']
-        balance_sol = balance_lamports / 1_000_000_000  # 1 SOL = 10^9 lamports
         
         # Get transaction count
-        tx_signatures = client.get_signatures_for_address(pubkey, limit=100)
-        tx_count = len(tx_signatures.get('result', []))
+        try:
+            tx_signatures = client.get_signatures_for_address(pubkey, limit=100)
+            tx_count = len(tx_signatures.get('result', []))
+        except Exception as tx_error:
+            st.warning(f"Could not fetch transaction count: {str(tx_error)}")
+            tx_count = 0
         
         # Try to get USDT token balance if address has associated token account
         usdt_balance = 0.0
@@ -294,11 +306,14 @@ def get_account_transactions(_client, address, limit=5):
         
         # Check if address is valid
         if not address or len(address) < 32:
+            st.error("Invalid wallet address length")
             return []
             
         try:
             # Convert address string to PublicKey object using from_string
-            pubkey = PublicKey.from_string(address)
+            # Make sure address is a string first
+            address_str = str(address).strip()
+            pubkey = PublicKey.from_string(address_str)
         except Exception as e:
             st.error(f"Invalid Solana address format: {str(e)}")
             return []
