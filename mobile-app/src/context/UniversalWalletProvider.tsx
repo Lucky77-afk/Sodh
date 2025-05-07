@@ -12,6 +12,8 @@ export enum WalletType {
   SOLLET = 'sollet',
   SLOPE = 'slope',
   TRUSTWALLET = 'trustwallet',
+  BINANCE = 'binance',
+  COINDCX = 'coindcx',
   CUSTOM = 'custom'
 }
 
@@ -177,6 +179,12 @@ export const UniversalWalletProvider: React.FC<{children: React.ReactNode}> = ({
       case WalletType.TRUSTWALLET:
         url = 'https://trustwallet.com';
         break;
+      case WalletType.BINANCE:
+        url = 'https://www.binance.com/en/wallet-direct';
+        break;
+      case WalletType.COINDCX:
+        url = 'https://coindcx.com';
+        break;
       default:
         Alert.alert('Cannot Open Wallet', 'No deep link available for this wallet type');
         return;
@@ -230,6 +238,8 @@ export const UniversalWalletProvider: React.FC<{children: React.ReactNode}> = ({
                   { text: 'Phantom', onPress: () => setWalletType(WalletType.PHANTOM) },
                   { text: 'Solflare', onPress: () => setWalletType(WalletType.SOLFLARE) },
                   { text: 'Trust Wallet', onPress: () => setWalletType(WalletType.TRUSTWALLET) },
+                  { text: 'Binance', onPress: () => setWalletType(WalletType.BINANCE) },
+                  { text: 'CoinDCX', onPress: () => setWalletType(WalletType.COINDCX) },
                   { text: 'Other', onPress: () => setWalletType(WalletType.CUSTOM) },
                 ]
               );

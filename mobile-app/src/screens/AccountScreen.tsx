@@ -57,6 +57,8 @@ const AccountScreen: React.FC<AccountScreenProps> = () => {
         { text: 'Phantom', onPress: () => connectWallet(address || newAddress, WalletType.PHANTOM) },
         { text: 'Solflare', onPress: () => connectWallet(address || newAddress, WalletType.SOLFLARE) },
         { text: 'Trust Wallet', onPress: () => connectWallet(address || newAddress, WalletType.TRUSTWALLET) },
+        { text: 'Binance', onPress: () => connectWallet(address || newAddress, WalletType.BINANCE) },
+        { text: 'CoinDCX', onPress: () => connectWallet(address || newAddress, WalletType.COINDCX) },
         { text: 'Slope', onPress: () => connectWallet(address || newAddress, WalletType.SLOPE) },
         { text: 'Custom', onPress: () => connectWallet(address || newAddress, WalletType.CUSTOM) },
         { text: 'Cancel', style: 'cancel' }
