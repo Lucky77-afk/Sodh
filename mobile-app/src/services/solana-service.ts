@@ -1,9 +1,77 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, clusterApiUrl, PublicKey, Transaction } from '@solana/web3.js';
 
 // Constants
 const SYSTEM_PROGRAM_ID = "11111111111111111111111111111111";
 const TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 const USDT_MINT = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"; // USDT on Solana
+
+class SolanaService {
+  private connection: Connection;
+  
+  constructor(network: 'mainnet-beta' | 'testnet' | 'devnet' = 'devnet') {
+    this.connection = new Connection(clusterApiUrl(network));
+  }
+  
+  // Get account balance
+  async getBalance(publicKey: string): Promise<number> {
+    try {
+      const pubKey = new PublicKey(publicKey);
+      const balance = await this.connection.getBalance(pubKey);
+      return balance / 1000000000; // Convert lamports to SOL
+    } catch (error) {
+      console.error('Error getting balance:', error);
+      throw error;
+    }
+  }
+  
+  // Get transaction history for an account
+  async getTransactionHistory(publicKey: string): Promise<any[]> {
+    try {
+      const pubKey = new PublicKey(publicKey);
+      const transactions = await this.connection.getSignaturesForAddress(pubKey);
+      return transactions;
+    } catch (error) {
+      console.error('Error getting transaction history:', error);
+      throw error;
+    }
+  }
+  
+  // Get transaction details
+  async getTransactionDetails(signature: string): Promise<any> {
+    try {
+      const transaction = await this.connection.getTransaction(signature);
+      return transaction;
+    } catch (error) {
+      console.error('Error getting transaction details:', error);
+      throw error;
+    }
+  }
+  
+  // Get network status
+  async getNetworkStatus(): Promise<any> {
+    try {
+      const version = await this.connection.getVersion();
+      const slot = await this.connection.getSlot();
+      const blockTime = await this.connection.getBlockTime(slot);
+      
+      return {
+        version,
+        slot,
+        blockTime
+      };
+    } catch (error) {
+      console.error('Error getting network status:', error);
+      throw error;
+    }
+  }
+  
+  // Change network
+  changeNetwork(network: 'mainnet-beta' | 'testnet' | 'devnet'): void {
+    this.connection = new Connection(clusterApiUrl(network));
+  }
+}
+
+export default new SolanaService();
 
 /**
  * Get recent blocks from the Solana blockchain
@@ -121,22 +189,6 @@ export const getRecentTransactions = async (connection: Connection, limit: numbe
     return transactions;
   } catch (error) {
     console.error('Error fetching recent transactions:', error);
-    throw error;
-  }
-};
-
-/**
- * Get detailed information for a specific transaction
- * @param connection Solana connection instance
- * @param signature Transaction signature
- * @returns Transaction details or null
- */
-export const getTransactionDetails = async (connection: Connection, signature: string) => {
-  try {
-    const tx = await connection.getTransaction(signature);
-    return tx;
-  } catch (error) {
-    console.error('Error fetching transaction details:', error);
     throw error;
   }
 };

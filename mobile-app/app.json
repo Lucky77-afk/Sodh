@@ -9,21 +9,21 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#131313"
+      "backgroundColor": "#1E1E1E"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dappr.sodhexplorer"
+      "bundleIdentifier": "com.sodh.solanaexplorer"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#131313"
+        "backgroundColor": "#1E1E1E"
       },
-      "package": "com.dappr.sodhexplorer",
+      "package": "com.sodh.solanaexplorer",
       "versionCode": 1,
       "permissions": [
         "INTERNET",
@@ -55,6 +55,7 @@
       }
     },
     "plugins": [
+      "expo-clipboard",
       [
         "expo-build-properties",
         {

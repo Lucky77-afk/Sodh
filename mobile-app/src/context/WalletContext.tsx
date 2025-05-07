@@ -1,130 +1,74 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 
-// Define types
-type WalletContextType = {
-  connected: boolean;
-  walletAddress: string | null;
-  balance: number;
-  connectWallet: (address: string) => Promise<void>;
+interface WalletContextType {
+  publicKey: string | null;
+  connectWallet: (publicKey: string) => Promise<void>;
   disconnectWallet: () => Promise<void>;
-  getBalance: () => Promise<void>;
-  connection: Connection | null;
-};
+  isConnected: boolean;
+}
 
-// Create context with default values
-const WalletContext = createContext<WalletContextType>({
-  connected: false,
-  walletAddress: null,
-  balance: 0,
-  connectWallet: async () => {},
-  disconnectWallet: async () => {},
-  getBalance: async () => {},
-  connection: null,
-});
+const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-// Create provider component
-export const WalletProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
-  const [connected, setConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [balance, setBalance] = useState(0);
-  const [connection, setConnection] = useState<Connection | null>(null);
+export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [publicKey, setPublicKey] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
 
-  // Initialize Solana connection
-  useEffect(() => {
-    // Connect to Solana devnet
-    const conn = new Connection(clusterApiUrl('devnet'));
-    setConnection(conn);
-
-    // Check if wallet was previously connected
-    const checkStoredWallet = async () => {
+  // Load saved wallet on initialization
+  React.useEffect(() => {
+    const loadWallet = async () => {
       try {
-        const storedAddress = await AsyncStorage.getItem('walletAddress');
-        if (storedAddress) {
-          setWalletAddress(storedAddress);
-          setConnected(true);
+        const savedPublicKey = await AsyncStorage.getItem('walletPublicKey');
+        if (savedPublicKey) {
+          setPublicKey(savedPublicKey);
+          setIsConnected(true);
         }
       } catch (error) {
-        console.error('Error loading wallet from storage:', error);
+        console.error('Error loading wallet:', error);
       }
     };
 
-    checkStoredWallet();
+    loadWallet();
   }, []);
 
-  // Get wallet balance whenever the wallet address changes
-  useEffect(() => {
-    if (connected && walletAddress && connection) {
-      getBalance();
-    }
-  }, [connected, walletAddress, connection]);
-
-  // Connect to wallet by storing the address
-  const connectWallet = async (address: string) => {
+  const connectWallet = async (publicKeyString: string) => {
     try {
-      // Validate address format
-      new PublicKey(address);
+      // Validate that the string is a valid public key
+      new PublicKey(publicKeyString);
       
-      setWalletAddress(address);
-      setConnected(true);
-      
-      // Store wallet address for persistence
-      await AsyncStorage.setItem('walletAddress', address);
-      
-      // Get initial balance
-      await getBalance();
+      // Save to state and storage
+      setPublicKey(publicKeyString);
+      await AsyncStorage.setItem('walletPublicKey', publicKeyString);
+      setIsConnected(true);
     } catch (error) {
-      console.error('Error connecting wallet:', error);
-      throw new Error('Invalid wallet address format');
+      console.error('Invalid public key:', error);
+      throw new Error('Invalid public key format');
     }
   };
 
-  // Disconnect wallet
   const disconnectWallet = async () => {
     try {
-      setWalletAddress(null);
-      setConnected(false);
-      setBalance(0);
-      await AsyncStorage.removeItem('walletAddress');
+      setPublicKey(null);
+      await AsyncStorage.removeItem('walletPublicKey');
+      setIsConnected(false);
     } catch (error) {
       console.error('Error disconnecting wallet:', error);
-    }
-  };
-
-  // Get SOL balance
-  const getBalance = async () => {
-    if (!connection || !walletAddress) {
-      return;
-    }
-
-    try {
-      const publicKey = new PublicKey(walletAddress);
-      const bal = await connection.getBalance(publicKey);
-      
-      // Convert lamports to SOL (1 SOL = 1,000,000,000 lamports)
-      setBalance(bal / 1000000000);
-    } catch (error) {
-      console.error('Error fetching balance:', error);
+      throw error;
     }
   };
 
   return (
-    <WalletContext.Provider
-      value={{
-        connected,
-        walletAddress,
-        balance,
-        connectWallet,
-        disconnectWallet,
-        getBalance,
-        connection,
-      }}
-    >
+    <WalletContext.Provider value={{ publicKey, connectWallet, disconnectWallet, isConnected }}>
       {children}
     </WalletContext.Provider>
   );
 };
 
-// Custom hook to use the wallet context
-export const useWallet = () => useContext(WalletContext);
+export const useWallet = () => {
+  const context = useContext(WalletContext);
+  if (context === undefined) {
+    throw new Error('useWallet must be used within a WalletProvider');
+  }
+  return context;
+};

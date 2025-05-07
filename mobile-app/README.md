@@ -1,162 +1,134 @@
 # Sodh Solana Explorer Mobile App
 
-A comprehensive Solana blockchain explorer and smart contract interaction platform for Android and iOS.
+A mobile application for exploring the Solana blockchain, built with React Native and Expo.
 
 ## Features
 
-- Real-time Solana blockchain data exploration
-- Secure wallet connection (view-only)
-- Transaction history and details
-- Smart contract interaction
-- Project collaboration management
-- SOL and USDT token support
-- Modern, dark-themed UI designed for mobile
+- View-only wallet connection
+- Real-time SOL balance tracking
+- Transaction history
+- Network status monitoring
+- Dark mode UI
+- Cross-platform support (iOS & Android)
 
-## Tech Stack
+## Prerequisites
 
-- React Native / Expo
-- Solana Web3.js for blockchain interaction
-- React Navigation for seamless routing
-- React Native Paper for UI components
-- AsyncStorage for local data persistence
-- TypeScript for type safety
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v14 or newer)
+- Node.js (v14 or later)
 - npm or yarn
-- Expo CLI (`npm install -g expo-cli`)
+- Expo CLI
+- iOS Simulator (for iOS development)
+- Android Studio (for Android development)
 
-### Installation
+## Installation
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/your-username/sodh-solana-explorer.git
-   cd sodh-solana-explorer/mobile-app
-   ```
+```bash
+git clone https://github.com/yourusername/sodh-solana-explorer.git
+cd sodh-solana-explorer
+```
 
 2. Install dependencies:
-   ```
-   npm install
-   ```
-   
+```bash
+npm install
+# or
+yarn install
+```
+
 3. Start the development server:
-   ```
-   npm start
-   ```
+```bash
+npm start
+# or
+yarn start
+```
 
-4. Open the app in the Expo Go app on your phone or use an emulator.
+4. Run on your preferred platform:
+- Press `i` for iOS simulator
+- Press `a` for Android emulator
+- Scan QR code with Expo Go app for physical device
 
-## Building for Production
-
-### Android Build
-
-1. Install EAS CLI:
-   ```
-   npm install -g eas-cli
-   ```
-
-2. Configure EAS Build (one-time setup):
-   ```
-   eas build:configure
-   ```
-
-3. Create a build:
-   ```
-   eas build --platform android
-   ```
-
-4. Follow the prompts to set up signing credentials.
-
-### Google Play Store Deployment
-
-1. Set up a Google Play Developer account.
-
-2. Create a new application in the Google Play Console.
-
-3. Prepare store listing materials:
-   - App screenshots (various device sizes)
-   - App icon (512x512 px)
-   - Feature graphic (1024x500 px)
-   - Short description (80 characters max)
-   - Full description (4000 characters max)
-   - Promotional video (optional)
-
-4. Build an AAB (Android App Bundle) for the Play Store:
-   ```
-   eas build --platform android --profile production
-   ```
-
-5. Upload the AAB to the Google Play Console.
-
-6. Configure Store Listing, Content Rating, and Pricing & Distribution.
-
-7. Submit for review.
-
-## App Structure
+## Project Structure
 
 ```
 mobile-app/
-├── assets/                 # App icons and images
 ├── src/
-│   ├── components/         # Reusable UI components
-│   ├── context/            # React context providers
-│   ├── navigation/         # Navigation configuration
-│   ├── screens/            # App screens
-│   ├── services/           # API services
-│   └── utils/              # Utility functions
-├── App.tsx                 # Main app component
-├── app.json                # Expo configuration
-└── package.json            # Dependencies and scripts
+│   ├── components/     # Reusable UI components
+│   ├── context/       # React Context providers
+│   ├── navigation/    # Navigation configuration
+│   ├── screens/       # Screen components
+│   ├── services/      # API and blockchain services
+│   ├── types/         # TypeScript type definitions
+│   └── utils/         # Utility functions
+├── assets/           # Images and other static assets
+├── docs/            # Documentation
+└── tests/           # Test files
 ```
 
-## Solana Network Configuration
+## Development
 
-By default, the app connects to Solana's Devnet. To change the network:
+### TypeScript
 
-1. Open `src/services/solana-service.ts`
-2. Modify the connection URL to:
-   - Mainnet: `clusterApiUrl('mainnet-beta')`
-   - Testnet: `clusterApiUrl('testnet')`
-   - Devnet: `clusterApiUrl('devnet')`
-   - Custom RPC: `new Connection('https://your-rpc-url')`
+The project uses TypeScript for type safety. Run type checking:
 
-## Security Considerations
+```bash
+npm run type-check
+# or
+yarn type-check
+```
 
-- The app uses view-only wallet connections by default.
-- Transaction signing requires explicit user confirmation.
-- No private keys are stored in the app.
-- All sensitive operations include confirmation dialogs.
+### Linting
 
-## Play Store Requirements
+ESLint is configured for code quality. Run the linter:
 
-- Privacy Policy URL is required for Play Store submission.
-- Content Rating questionnaire must be completed.
-- App signing key should be securely stored.
-- Test thoroughly on different Android versions and device sizes.
+```bash
+npm run lint
+# or
+yarn lint
+```
 
-## Custom Wallet Integration
+### Testing
 
-For enhanced security and functionality, you can integrate hardware wallet support:
+Jest is used for testing. Run tests:
 
-1. Install additional dependencies:
-   ```
-   npm install @solana/wallet-adapter-react @solana/wallet-adapter-base @solana/wallet-adapter-wallets
-   ```
+```bash
+npm test
+# or
+yarn test
+```
 
-2. Follow the integration guide in the Solana documentation.
+## Building for Production
+
+### Android
+
+```bash
+npm run build:android
+# or
+yarn build:android
+```
+
+### iOS
+
+```bash
+npm run build:ios
+# or
+yarn build:ios
+```
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
-
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [React Native](https://reactnative.dev/)
+- [Expo](https://expo.dev/)
+- [Solana Web3.js](https://solana-labs.github.io/solana-web3.js/)
+- [React Navigation](https://reactnavigation.org/)
+- [React Native Paper](https://callstack.github.io/react-native-paper/)
