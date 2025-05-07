@@ -222,17 +222,36 @@ def get_account_info(_client, address):
                 try:
                     # Remove 0x prefix and convert to bytes
                     hex_str = address_str[2:]  # Remove 0x prefix
-                    if len(hex_str) < 32:
-                        # Pad with zeros if needed
-                        hex_str = hex_str.zfill(64)
+                    
+                    # Ethereum addresses are 20 bytes (40 hex chars)
+                    # Solana needs 32 bytes (64 hex chars)
+                    # Calculate actual byte length
+                    byte_length = len(hex_str) // 2
+                    st.write(f"DEBUG - Ethereum address byte length: {byte_length}")
+                    
+                    if byte_length == 20:  # Standard Ethereum address
+                        # Properly pad the address to 32 bytes by adding zeros at the end (not beginning)
+                        # This preserves the address identity at the front
+                        hex_str = hex_str + '0' * 24
+                        st.write(f"DEBUG - Padded hex string to 32 bytes: {hex_str}")
+                    elif len(hex_str) < 64:
+                        # Other non-standard length, pad with zeros
+                        hex_str = hex_str.ljust(64, '0')
+                        st.write(f"DEBUG - Non-standard length padded to 32 bytes: {hex_str}")
                     elif len(hex_str) > 64:
                         # Truncate if too long
                         hex_str = hex_str[:64]
-                        
+                        st.write(f"DEBUG - Truncated to 32 bytes: {hex_str}")
+                    
                     # Convert to bytes
-                    hex_bytes = bytes.fromhex(hex_str)
-                    pubkey = PublicKey(hex_bytes[:32])  # Take first 32 bytes
-                    st.write(f"DEBUG - Created PublicKey from Ethereum address: {pubkey}")
+                    try:
+                        hex_bytes = bytes.fromhex(hex_str)
+                        st.write(f"DEBUG - Converted to bytes, length: {len(hex_bytes)}")
+                        pubkey = PublicKey(hex_bytes)  # Use all bytes
+                        st.write(f"DEBUG - Successfully created PublicKey: {pubkey}")
+                    except Exception as e_bytes:
+                        st.write(f"DEBUG - Bytes conversion failed: {str(e_bytes)}")
+                        raise e_bytes
                     
                     # Show the equivalent Solana address
                     st.info(f"Converted to Solana format: {str(pubkey)}")
@@ -502,17 +521,36 @@ def get_account_transactions(_client, address, limit=5):
                 try:
                     # Remove 0x prefix and convert to bytes
                     hex_str = address_str[2:]  # Remove 0x prefix
-                    if len(hex_str) < 32:
-                        # Pad with zeros if needed
-                        hex_str = hex_str.zfill(64)
+                    
+                    # Ethereum addresses are 20 bytes (40 hex chars)
+                    # Solana needs 32 bytes (64 hex chars)
+                    # Calculate actual byte length
+                    byte_length = len(hex_str) // 2
+                    st.write(f"DEBUG - Tx Ethereum address byte length: {byte_length}")
+                    
+                    if byte_length == 20:  # Standard Ethereum address
+                        # Properly pad the address to 32 bytes by adding zeros at the end (not beginning)
+                        # This preserves the address identity at the front
+                        hex_str = hex_str + '0' * 24
+                        st.write(f"DEBUG - Tx Padded hex string to 32 bytes: {hex_str}")
+                    elif len(hex_str) < 64:
+                        # Other non-standard length, pad with zeros
+                        hex_str = hex_str.ljust(64, '0')
+                        st.write(f"DEBUG - Tx Non-standard length padded to 32 bytes: {hex_str}")
                     elif len(hex_str) > 64:
                         # Truncate if too long
                         hex_str = hex_str[:64]
-                        
+                        st.write(f"DEBUG - Tx Truncated to 32 bytes: {hex_str}")
+                    
                     # Convert to bytes
-                    hex_bytes = bytes.fromhex(hex_str)
-                    pubkey = PublicKey(hex_bytes[:32])  # Take first 32 bytes
-                    st.write(f"DEBUG - Tx Created PublicKey from Ethereum address: {pubkey}")
+                    try:
+                        hex_bytes = bytes.fromhex(hex_str)
+                        st.write(f"DEBUG - Tx Converted to bytes, length: {len(hex_bytes)}")
+                        pubkey = PublicKey(hex_bytes)  # Use all bytes
+                        st.write(f"DEBUG - Tx Successfully created PublicKey: {pubkey}")
+                    except Exception as e_bytes:
+                        st.write(f"DEBUG - Tx Bytes conversion failed: {str(e_bytes)}")
+                        raise e_bytes
                 except Exception as e_eth:
                     st.write(f"DEBUG - Tx Ethereum conversion failed: {str(e_eth)}")
                     # Continue with other methods
