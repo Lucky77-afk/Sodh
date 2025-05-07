@@ -240,22 +240,46 @@ def get_account_info(_client, address):
             try:
                 balance_response = client.get_balance(pubkey)
                 st.write("DEBUG - Balance fetched with pubkey object")
+                st.write(f"DEBUG - Balance response type: {type(balance_response)}")
+                
+                # Handle different response types
+                if hasattr(balance_response, 'value'):
+                    # This is the solders.rpc.responses.GetBalanceResp type
+                    balance_lamports = balance_response.value
+                    st.write(f"DEBUG - Using value attribute: {balance_lamports}")
+                elif isinstance(balance_response, dict) and 'result' in balance_response:
+                    # This is the dictionary response type
+                    balance_lamports = balance_response['result']['value']
+                    st.write(f"DEBUG - Using result dictionary: {balance_lamports}")
+                else:
+                    # Try to convert to a string and evaluate
+                    st.write(f"DEBUG - Unknown response format: {str(balance_response)}")
+                    raise Exception(f"Unknown balance response format: {type(balance_response)}")
+                    
             except Exception as e_obj:
                 st.write(f"DEBUG - Balance fetch with object failed: {str(e_obj)}")
                 # Try with string representation
                 try:
                     balance_response = client.get_balance(str(pubkey))
                     st.write("DEBUG - Balance fetched with string representation")
+                    
+                    # Handle different response types
+                    if hasattr(balance_response, 'value'):
+                        # This is the solders.rpc.responses.GetBalanceResp type
+                        balance_lamports = balance_response.value
+                    elif isinstance(balance_response, dict) and 'result' in balance_response:
+                        # This is the dictionary response type
+                        balance_lamports = balance_response['result']['value']
+                    else:
+                        # Try to convert to a string and evaluate
+                        st.write(f"DEBUG - Unknown response format with string: {str(balance_response)}")
+                        raise Exception(f"Unknown balance response format: {type(balance_response)}")
+                        
                 except Exception as e_str:
                     st.write(f"DEBUG - Balance fetch with string failed: {str(e_str)}")
                     raise Exception(f"Could not fetch balance: {str(e_obj)}, {str(e_str)}")
             
-            if 'result' not in balance_response:
-                st.error("Could not retrieve balance information")
-                return None
-                
             # Convert lamports to SOL
-            balance_lamports = balance_response['result']['value']
             balance_sol = balance_lamports / 1_000_000_000  # 1 SOL = 10^9 lamports
         except Exception as balance_error:
             st.error(f"Balance fetch error: {str(balance_error)}")
@@ -275,7 +299,21 @@ def get_account_info(_client, address):
                     st.write(f"DEBUG - Signatures fetch with string failed: {str(e_sig_str)}")
                     raise Exception(f"Could not fetch signatures: {str(e_sig_obj)}, {str(e_sig_str)}")
                     
-            tx_count = len(tx_signatures.get('result', []))
+            # Handle different response types
+            st.write(f"DEBUG - Signatures response type: {type(tx_signatures)}")
+            
+            if hasattr(tx_signatures, 'value'):
+                # This is a typed response object
+                tx_count = len(tx_signatures.value) if hasattr(tx_signatures, 'value') else 0
+                st.write(f"DEBUG - Using value attribute for tx count: {tx_count}")
+            elif isinstance(tx_signatures, dict) and 'result' in tx_signatures:
+                # This is the dictionary response type
+                tx_count = len(tx_signatures.get('result', []))
+                st.write(f"DEBUG - Using result dictionary for tx count: {tx_count}")
+            else:
+                # Try to convert to a string and log
+                st.write(f"DEBUG - Unknown tx signatures format: {str(tx_signatures)}")
+                tx_count = 0
         except Exception as tx_error:
             st.warning(f"Could not fetch transaction count: {str(tx_error)}")
             tx_count = 0
@@ -303,7 +341,21 @@ def get_account_info(_client, address):
                     raise Exception(f"Could not fetch token accounts: {str(e_token_obj)}, {str(e_token_str)}")
             
             
-            token_accounts = associated_token_response.get('result', {}).get('value', [])
+            # Handle different response types for token accounts
+            st.write(f"DEBUG - Token accounts response type: {type(associated_token_response)}")
+            
+            if hasattr(associated_token_response, 'value'):
+                # This is a typed response object
+                token_accounts = associated_token_response.value if hasattr(associated_token_response, 'value') else []
+                st.write(f"DEBUG - Using value attribute for token accounts: {len(token_accounts)} accounts found")
+            elif isinstance(associated_token_response, dict) and 'result' in associated_token_response:
+                # This is the dictionary response type
+                token_accounts = associated_token_response.get('result', {}).get('value', [])
+                st.write(f"DEBUG - Using result dictionary for token accounts: {len(token_accounts)} accounts found")
+            else:
+                # Try to convert to a string and log
+                st.write(f"DEBUG - Unknown token accounts format: {str(associated_token_response)}")
+                token_accounts = []
             
             if token_accounts:
                 # Get token account info for the first matching account
@@ -412,11 +464,20 @@ def get_account_transactions(_client, address, limit=5):
                 st.write(f"DEBUG - Tx Signatures fetch with string failed: {str(e_sig_str)}")
                 raise Exception(f"Could not fetch tx signatures: {str(e_sig_obj)}, {str(e_sig_str)}")
         
-        if 'result' not in signatures_response:
+        # Handle different response types for signatures
+        if hasattr(signatures_response, 'value'):
+            # This is a typed response object
+            signatures_data = signatures_response.value if hasattr(signatures_response, 'value') else []
+            st.write(f"DEBUG - Using value attribute for signatures data: {len(signatures_data)} signatures found")
+        elif isinstance(signatures_response, dict) and 'result' in signatures_response:
+            # This is the dictionary response type 
+            signatures_data = signatures_response['result']
+            st.write(f"DEBUG - Using result dictionary for signatures data: {len(signatures_data)} signatures found")
+        else:
+            # Try to convert to a string and log
+            st.write(f"DEBUG - Unknown signatures data format: {str(signatures_response)}")
             st.error("Failed to get transactions for this account")
             return []
-            
-        signatures_data = signatures_response['result']
         account_txs = []
         
         # Process each transaction
