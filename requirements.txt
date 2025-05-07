@@ -8,3 +8,4 @@ solana
 base58
 solana
 solana
+anthropic

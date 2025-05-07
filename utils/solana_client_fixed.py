@@ -200,94 +200,59 @@ def get_account_info(_client, address):
         # Create a fresh client instance to avoid hashing errors
         client = Client("https://api.devnet.solana.com")
         
-        # Check if the address is valid
-        if not address or len(address) < 32:
-            st.error("Invalid wallet address length")
-            return None
+        # Import our wallet validator
+        from utils.wallet_validator import get_valid_pubkey
             
-        try:
-            # Convert address string to PublicKey object using from_string
-            # Make sure address is a string first and print debug info
-            address_str = str(address).strip()
-            st.write(f"DEBUG - Address type: {type(address_str)}, Value: {address_str}")
+        # Validate the address and get a pubkey
+        pubkey, address_type, error_message = get_valid_pubkey(address)
+        
+        # Display validation results
+        if address_type == "ethereum":
+            st.write(f"DEBUG - Address type: {type(address)}, Value: {address}")
+            st.write("DEBUG - Ethereum style address detected")
             
-            # Check for Ethereum style addresses (starting with 0x)
-            if address_str.startswith("0x"):
-                st.write("DEBUG - Ethereum style address detected, attempting conversion")
-                
+            if pubkey:
                 # For Ethereum addresses, we need to inform the user
-                st.warning(f"You entered an Ethereum address: {address_str}. Note that Solana addresses don't start with '0x'. Please enter a native Solana address for best results.")
+                st.warning(f"You entered an Ethereum address: {address}. Note that Solana addresses don't start with '0x'. Please enter a native Solana address for best results.")
+                st.info(f"Converted to Solana format: {str(pubkey)}")
+                st.write(f"DEBUG - Successfully created PublicKey from Ethereum address: {pubkey}")
+            else:
+                st.error(f"Error converting Ethereum address: {error_message}")
                 
-                # We can try to convert from hex to bytes and create a PublicKey
+                # For demo purposes, use a fallback address
+                fallback_address = "8HGyAAB4dL4GhdQidH6WfCvkm2MF8wZCDm4XRmiWHnnm"
                 try:
-                    # Remove 0x prefix and convert to bytes
-                    hex_str = address_str[2:]  # Remove 0x prefix
-                    
-                    # Ethereum addresses are 20 bytes (40 hex chars)
-                    # Solana needs 32 bytes (64 hex chars)
-                    # Calculate actual byte length
-                    byte_length = len(hex_str) // 2
-                    st.write(f"DEBUG - Ethereum address byte length: {byte_length}")
-                    
-                    if byte_length == 20:  # Standard Ethereum address
-                        # Properly pad the address to 32 bytes by adding zeros at the end (not beginning)
-                        # This preserves the address identity at the front
-                        hex_str = hex_str + '0' * 24
-                        st.write(f"DEBUG - Padded hex string to 32 bytes: {hex_str}")
-                    elif len(hex_str) < 64:
-                        # Other non-standard length, pad with zeros
-                        hex_str = hex_str.ljust(64, '0')
-                        st.write(f"DEBUG - Non-standard length padded to 32 bytes: {hex_str}")
-                    elif len(hex_str) > 64:
-                        # Truncate if too long
-                        hex_str = hex_str[:64]
-                        st.write(f"DEBUG - Truncated to 32 bytes: {hex_str}")
-                    
-                    # Convert to bytes
-                    try:
-                        hex_bytes = bytes.fromhex(hex_str)
-                        st.write(f"DEBUG - Converted to bytes, length: {len(hex_bytes)}")
-                        pubkey = PublicKey(hex_bytes)  # Use all bytes
-                        st.write(f"DEBUG - Successfully created PublicKey: {pubkey}")
-                    except Exception as e_bytes:
-                        st.write(f"DEBUG - Bytes conversion failed: {str(e_bytes)}")
-                        raise e_bytes
-                    
-                    # Show the equivalent Solana address
-                    st.info(f"Converted to Solana format: {str(pubkey)}")
-                except Exception as e_eth:
-                    st.write(f"DEBUG - Ethereum conversion failed: {str(e_eth)}")
-                    # Continue with other methods
+                    st.warning(f"Invalid Ethereum address format. Using demo address for demonstration purposes.")
+                    pubkey = PublicKey.from_string(fallback_address)
+                    st.write(f"DEBUG - Using fallback demo address: {fallback_address}")
+                except Exception as e:
+                    st.error(f"Fallback address failed: {str(e)}")
+                    return None
+        
+        elif address_type == "solana":
+            st.write(f"DEBUG - Address type: {type(address)}, Value: {address}")
+            st.write("DEBUG - Solana native address detected")
+            st.write(f"DEBUG - PublicKey created: {pubkey}")
+        
+        else:
+            st.error(f"Invalid address format: {error_message}")
             
-            # Try different methods of creating a PublicKey
+            # For demo purposes, use a fallback address
+            fallback_address = "8HGyAAB4dL4GhdQidH6WfCvkm2MF8wZCDm4XRmiWHnnm"
             try:
-                # Method 1: Direct from_string
-                pubkey = PublicKey.from_string(address_str)
-                st.write("DEBUG - PublicKey created with from_string")
-            except Exception as e1:
-                st.write(f"DEBUG - from_string failed: {str(e1)}")
-                try:
-                    # Check if it's a valid Base58 string
-                    if not any(c in address_str for c in '0xOIl+/'):  # Characters not in Base58
-                        # Method this includes Bs58 decoding if needed
-                        decoded = base58.b58decode(address_str)
-                        pubkey = PublicKey(decoded)
-                        st.write("DEBUG - PublicKey created with base58 decode")
-                    else:
-                        raise ValueError("Contains invalid Base58 characters")
-                except Exception as e2:
-                    st.write(f"DEBUG - base58 decode failed: {str(e2)}")
-                    
-                    # For demo purposes, if all else fails, use a default demo address
-                    fallback_address = "8HGyAAB4dL4GhdQidH6WfCvkm2MF8wZCDm4XRmiWHnnm"
-                    try:
-                        st.warning(f"Invalid Solana address format. Using demo address for demonstration purposes.")
-                        pubkey = PublicKey.from_string(fallback_address)
-                        st.write(f"DEBUG - Using fallback demo address: {fallback_address}")
-                    except Exception as e3:
-                        st.write(f"DEBUG - Fallback address failed: {str(e3)}")
-                        raise Exception(f"All PublicKey creation methods failed: {str(e1)}, {str(e2)}, {str(e3)}")
-            
+                st.warning(f"Invalid address format. Using demo address for demonstration purposes.")
+                pubkey = PublicKey.from_string(fallback_address)
+                st.write(f"DEBUG - Using fallback demo address: {fallback_address}")
+            except Exception as e:
+                st.error(f"Fallback address failed: {str(e)}")
+                return None
+        
+        if not pubkey:
+            st.error("Failed to create a valid PublicKey")
+            return None
+        
+        try:
+            pass  # Just to keep the try-except structure intact
         except Exception as e:
             st.error(f"Invalid Solana address format: {str(e)}")
             return None
@@ -502,87 +467,56 @@ def get_account_transactions(_client, address, limit=5):
         # Create a fresh client instance to avoid hashing errors
         client = Client("https://api.devnet.solana.com")
         
-        # Check if address is valid
-        if not address or len(address) < 32:
-            st.error("Invalid wallet address length")
+        # Import our wallet validator
+        from utils.wallet_validator import get_valid_pubkey
+            
+        # Validate the address and get a pubkey
+        pubkey, address_type, error_message = get_valid_pubkey(address)
+        
+        # Display validation results
+        if address_type == "ethereum":
+            st.write(f"DEBUG - Tx Address type: {type(address)}, Value: {address}")
+            st.write("DEBUG - Tx Ethereum style address detected")
+            
+            if pubkey:
+                st.write(f"DEBUG - Tx Successfully created PublicKey from Ethereum address: {pubkey}")
+            else:
+                st.error(f"Error converting Ethereum address: {error_message}")
+                
+                # For demo purposes, use a fallback address
+                fallback_address = "8HGyAAB4dL4GhdQidH6WfCvkm2MF8wZCDm4XRmiWHnnm"
+                try:
+                    st.warning(f"Invalid Ethereum address format. Using demo address for transaction history.")
+                    pubkey = PublicKey.from_string(fallback_address)
+                    st.write(f"DEBUG - Tx Using fallback demo address: {fallback_address}")
+                except Exception as e:
+                    st.error(f"Fallback address failed: {str(e)}")
+                    return []
+        
+        elif address_type == "solana":
+            st.write(f"DEBUG - Tx Address type: {type(address)}, Value: {address}")
+            st.write("DEBUG - Tx Solana native address detected")
+            st.write(f"DEBUG - Tx PublicKey created: {pubkey}")
+        
+        else:
+            st.error(f"Invalid address format: {error_message}")
+            
+            # For demo purposes, use a fallback address
+            fallback_address = "8HGyAAB4dL4GhdQidH6WfCvkm2MF8wZCDm4XRmiWHnnm"
+            try:
+                st.warning(f"Invalid address format. Using demo address for transaction history.")
+                pubkey = PublicKey.from_string(fallback_address)
+                st.write(f"DEBUG - Tx Using fallback demo address: {fallback_address}")
+            except Exception as e:
+                st.error(f"Fallback address failed: {str(e)}")
+                return []
+        
+        if not pubkey:
+            st.error("Failed to create a valid PublicKey for transactions")
             return []
             
         try:
-            # Convert address string to PublicKey object using from_string
-            # Make sure address is a string first and print debug info
-            address_str = str(address).strip()
-            st.write(f"DEBUG - Tx Address type: {type(address_str)}, Value: {address_str}")
-            
-            # Check for Ethereum style addresses (starting with 0x)
-            if address_str.startswith("0x"):
-                st.write("DEBUG - Tx Ethereum style address detected, attempting conversion")
-                
-                # We can try to convert from hex to bytes and create a PublicKey
-                try:
-                    # Remove 0x prefix and convert to bytes
-                    hex_str = address_str[2:]  # Remove 0x prefix
-                    
-                    # Ethereum addresses are 20 bytes (40 hex chars)
-                    # Solana needs 32 bytes (64 hex chars)
-                    # Calculate actual byte length
-                    byte_length = len(hex_str) // 2
-                    st.write(f"DEBUG - Tx Ethereum address byte length: {byte_length}")
-                    
-                    if byte_length == 20:  # Standard Ethereum address
-                        # Properly pad the address to 32 bytes by adding zeros at the end (not beginning)
-                        # This preserves the address identity at the front
-                        hex_str = hex_str + '0' * 24
-                        st.write(f"DEBUG - Tx Padded hex string to 32 bytes: {hex_str}")
-                    elif len(hex_str) < 64:
-                        # Other non-standard length, pad with zeros
-                        hex_str = hex_str.ljust(64, '0')
-                        st.write(f"DEBUG - Tx Non-standard length padded to 32 bytes: {hex_str}")
-                    elif len(hex_str) > 64:
-                        # Truncate if too long
-                        hex_str = hex_str[:64]
-                        st.write(f"DEBUG - Tx Truncated to 32 bytes: {hex_str}")
-                    
-                    # Convert to bytes
-                    try:
-                        hex_bytes = bytes.fromhex(hex_str)
-                        st.write(f"DEBUG - Tx Converted to bytes, length: {len(hex_bytes)}")
-                        pubkey = PublicKey(hex_bytes)  # Use all bytes
-                        st.write(f"DEBUG - Tx Successfully created PublicKey: {pubkey}")
-                    except Exception as e_bytes:
-                        st.write(f"DEBUG - Tx Bytes conversion failed: {str(e_bytes)}")
-                        raise e_bytes
-                except Exception as e_eth:
-                    st.write(f"DEBUG - Tx Ethereum conversion failed: {str(e_eth)}")
-                    # Continue with other methods
-            
-            # Try different methods of creating a PublicKey
-            try:
-                # Method 1: Direct from_string
-                pubkey = PublicKey.from_string(address_str)
-                st.write("DEBUG - Tx PublicKey created with from_string")
-            except Exception as e1:
-                st.write(f"DEBUG - Tx from_string failed: {str(e1)}")
-                try:
-                    # Check if it's a valid Base58 string
-                    if not any(c in address_str for c in '0xOIl+/'):  # Characters not in Base58
-                        # Method this includes Bs58 decoding if needed
-                        decoded = base58.b58decode(address_str)
-                        pubkey = PublicKey(decoded)
-                        st.write("DEBUG - Tx PublicKey created with base58 decode")
-                    else:
-                        raise ValueError("Contains invalid Base58 characters")
-                except Exception as e2:
-                    st.write(f"DEBUG - Tx base58 decode failed: {str(e2)}")
-                    
-                    # For demo purposes, if all else fails, use a default demo address
-                    fallback_address = "8HGyAAB4dL4GhdQidH6WfCvkm2MF8wZCDm4XRmiWHnnm"
-                    try:
-                        pubkey = PublicKey.from_string(fallback_address)
-                        st.write(f"DEBUG - Tx Using fallback demo address: {fallback_address}")
-                    except Exception as e3:
-                        st.write(f"DEBUG - Tx Fallback address failed: {str(e3)}")
-                        raise Exception(f"All PublicKey creation methods failed: {str(e1)}, {str(e2)}, {str(e3)}")
-            
+            pass  # Just to keep the try-except structure intact
         except Exception as e:
             st.error(f"Invalid Solana address format: {str(e)}")
             return []
