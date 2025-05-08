@@ -213,29 +213,40 @@ export const getAccountInfo = async (connection: Connection, address: string) =>
     const balanceSol = balance / 1_000_000_000; // Convert lamports to SOL
     
     // Get transaction count
-    const signatures = await connection.getSignaturesForAddress(publicKey, { limit: 100 });
+    const signatures = await connection.getSignaturesForAddress(publicKey);
     const txCount = signatures.length;
     
-    // Try to get USDT token balance
-    let usdtBalance = 0;
-    
+    // Get token accounts
+    let tokenAccounts = [];
     try {
-      // Find USDT associated token account for this wallet
-      const tokenAccounts = await connection.getTokenAccountsByOwner(
+      const tokenAccountsResponse = await connection.getParsedTokenAccountsByOwner(
         publicKey,
-        { mint: new PublicKey(USDT_MINT) }
+        { programId: new PublicKey(TOKEN_PROGRAM_ID) }
       );
       
-      if (tokenAccounts.value.length > 0) {
-        // Get token account info for the first matching account
-        const tokenAccountPubkey = tokenAccounts.value[0].pubkey;
-        const tokenAccountInfo = await connection.getTokenAccountBalance(tokenAccountPubkey);
-        
-        // Extract USDT balance
-        usdtBalance = tokenAccountInfo.value.uiAmount || 0;
+      if (tokenAccountsResponse && tokenAccountsResponse.value) {
+        tokenAccounts = tokenAccountsResponse.value.map(account => {
+          const amount = account.account.data.parsed.info.tokenAmount.uiAmount || 0;
+          const mint = account.account.data.parsed.info.mint;
+          
+          // Map known token mints to symbols
+          const tokenSymbols = {
+            [USDT_MINT]: 'USDT',
+            [TOKEN_PROGRAM_ID]: 'SOL' // Fallback for native SOL
+          };
+          
+          const symbol = tokenSymbols[mint] || 'UNKNOWN';
+          
+          return {
+            symbol,
+            balance: amount,
+            usd_value: amount * (symbol === 'SOL' ? 150.00 : 1) // Use 1 for USDT as it's pegged to USD
+          };
+        });
       }
-    } catch (e) {
-      console.warn('Error fetching token balances:', e);
+    } catch (tokenError) {
+      console.error('Error fetching token accounts:', tokenError);
+      // Don't throw the error, just continue with basic account info
     }
     
     // Current market values (would come from price API in production)
@@ -244,7 +255,7 @@ export const getAccountInfo = async (connection: Connection, address: string) =>
     return {
       address,
       balance_sol: balanceSol,
-      balance_usdt: usdtBalance,
+      balance_usdt: tokenAccounts.find(t => t.symbol === 'USDT')?.balance || 0,
       transaction_count: txCount,
       creation_time: Math.floor(Date.now() / 1000) - (3600 * 24 * 30), // Placeholder
       tokens: [
