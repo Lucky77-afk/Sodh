@@ -1,17 +1,63 @@
 [server]
+# Set to false to disable browser launch on start
 headless = true
+
+# Enable CORS protection for the server. Set to false if needed for certain APIs
 enableCORS = false
-enableXsrfProtection = false
+
+# Enable CSRF protection for the server. Set to false if you need to disable it
+enableXsrfProtection = true
+
+# The address where the server will listen for client and/or websocket connections
 address = "0.0.0.0"
-runOnSave = true
+
+# The port where the server will listen for browser connections
+port = 8501
+
+# Enable development mode for hot reloading
+runOnSave = false
+
+# Controls file watcher type for development
+# Options: "auto", "watchdog", "poll", or "none"
 fileWatcherType = "none"
 
+# Set to true to enable websocket compression
+enableWebsocketCompression = true
+
+# Set to false to disable the run-on-save feature
+development = false
+
+[runner]
+# Enable or disable the run-on-save feature
+fastRerun = false
+
+# Enable or disable the run button in the UI
+showErrorDetails = false
+
 [browser]
+# Set to false to disable the "Get started" menu
 gatherUsageStats = false
 
+# Set to true to open the app in the browser on startup
+serverAddress = "localhost"
+
+[client]
+# Enable or disable the display of the hamburger menu in the top-right corner
+showSidebarNavigation = true
+
 [theme]
+# Theme settings
+base = "dark"
 primaryColor = "#14F195"
 backgroundColor = "#131313"
 secondaryBackgroundColor = "#1E1E1E"
 textColor = "#FFFFFF"
 font = "sans serif"
+
+[logger]
+# Log level for the application
+level = "info"
+
+[scheduler]
+# Enable or disable the scheduler
+enabled = false

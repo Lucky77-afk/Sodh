@@ -6,22 +6,50 @@ from sqlalchemy.sql import func
 import pandas as pd
 from datetime import datetime
 
+# Determine the environment
+IS_PRODUCTION = os.getenv('STREAMLIT_SERVER_RUNNING', '').lower() == 'true' or os.getenv('STREAMLIT_SERVER_ENV', '').lower() == 'production'
+
 # Get the database URL from environment variables or use a fallback in-memory database
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# For Streamlit Cloud, we'll use SQLite by default if no DATABASE_URL is provided
+if not DATABASE_URL and IS_PRODUCTION:
+    # Use a file-based SQLite database in production
+    DATABASE_URL = "sqlite:///sodh.db"
+    print("Using file-based SQLite database for production")
+
+engine = None
 try:
-    # Create engine with connection pooling and timeout settings
-    engine = create_engine(
-        DATABASE_URL,
-        pool_pre_ping=True,  # Test connections before using them
-        pool_recycle=3600,   # Recycle connections after 1 hour
-        connect_args={"connect_timeout": 15}  # Connection timeout in seconds
-    )
+    if DATABASE_URL and DATABASE_URL.startswith('postgres'):
+        # PostgreSQL connection
+        engine = create_engine(
+            DATABASE_URL,
+            pool_pre_ping=True,  # Test connections before using them
+            pool_recycle=3600,   # Recycle connections after 1 hour
+            connect_args={"connect_timeout": 15}  # Connection timeout in seconds
+        )
+        print("Connected to PostgreSQL database")
+    else:
+        # Fallback to SQLite
+        if IS_PRODUCTION:
+            # In production, use a file-based SQLite database
+            db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'sodh.db')
+            DATABASE_URL = f"sqlite:///{db_path}"
+            print(f"Using file-based SQLite database at {db_path}")
+        else:
+            # In development, use in-memory SQLite
+            DATABASE_URL = "sqlite:///:memory:"
+            print("Using in-memory SQLite database for development")
+        
+        engine = create_engine(
+            DATABASE_URL,
+            connect_args={"check_same_thread": False}  # Needed for SQLite
+        )
 except Exception as e:
     print(f"Error creating database engine: {str(e)}")
-    # Fallback to SQLite in-memory for development
-    print("Using fallback in-memory SQLite database")
-    engine = create_engine("sqlite:///:memory:")
+    # Fallback to SQLite in-memory
+    print("Falling back to in-memory SQLite database")
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
 
 # Create base class for declarative models
 Base = declarative_base()
