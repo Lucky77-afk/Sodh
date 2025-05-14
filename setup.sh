@@ -3,23 +3,35 @@ set -e  # Exit on error
 
 echo "Setting up the Solana Explorer application..."
 
+# Install system dependencies
+echo "Installing system dependencies..."
+sudo apt-get update
+sudo apt-get install -y $(cat packages.txt)
+
 # Create necessary directories
 echo "Creating necessary directories..."
 mkdir -p .streamlit
 
-# Install Python dependencies
+# Install Python dependencies with specific versions
 echo "Installing Python dependencies..."
-pip install --upgrade pip
-pip install -r requirements.txt --no-cache-dir
+python -m pip install --upgrade pip
 
-# Install Solana dependencies separately to ensure they're installed correctly
+# Install Solana dependencies in the correct order
 echo "Installing Solana dependencies..."
-pip install solana==0.36.6 solders==0.26.0 construct==2.10.68 construct-typing==0.5.6 base58==2.1.1
+pip install --no-cache-dir \
+    base58==2.1.1 \
+    construct==2.10.68 \
+    construct-typing==0.5.6 \
+    jsonalias==0.1.1 \
+    solders==0.26.0
 
-# Install Solana CLI tools (if needed)
-# echo "Installing Solana CLI tools..."
-# sh -c "$(curl -sSfL https://release.solana.com/v1.16.18/install)"
-# export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+# Install the rest of the requirements
+echo "Installing remaining dependencies..."
+pip install --no-cache-dir -r requirements.txt
+
+# Verify Solana installation
+echo "Verifying Solana installation..."
+python -c "from solana.publickey import PublicKey; print('Solana SDK imported successfully')" || echo "Solana SDK import failed"
 
 # Create a default config.toml if it doesn't exist
 if [ ! -f .streamlit/config.toml ]; then
@@ -51,7 +63,7 @@ if [ ! -f .streamlit/secrets.toml ]; then
 # DATABASE_URL = "postgresql://username:password@host:port/database"
 
 # Solana RPC endpoint (you can use a public one or your own)
-# SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com"
+SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com"
 
 # Other secrets can be added here
 # API_KEY = "your_api_key_here"
