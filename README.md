@@ -20,6 +20,56 @@ SODH is a comprehensive Solana blockchain explorer built with Streamlit. It offe
 - **Data Visualization**: Plotly
 - **Token Integration**: SOL and USDT (Tether on Solana)
 
+## Deployment
+
+### Local Development
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Lucky77-afk/Sodh.git
+   cd Sodh
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Run the application:
+   ```bash
+   streamlit run app.py
+   ```
+
+### Deploy to Streamlit Community Cloud
+
+1. Ensure your code is pushed to a GitHub repository
+2. Go to [Streamlit Community Cloud](https://share.streamlit.io/)
+3. Click on "New app"
+4. Select your repository, branch, and main file path (app.py)
+5. Click "Deploy!"
+
+### Environment Variables
+
+If your application requires environment variables (like API keys), you'll need to set them in the Streamlit Community Cloud:
+
+1. Go to your app in Streamlit Community Cloud
+2. Click on "Advanced settings"
+3. Add your environment variables in the "Secrets" section
+
+## Configuration
+
+The application uses a configuration file located at `.streamlit/config.toml`. You can modify this file to change the application's theme and behavior.
+
+## License
+
+This project is licensed under the terms of the MIT license.
+
 ## Environment Setup
 
 ### Prerequisites
