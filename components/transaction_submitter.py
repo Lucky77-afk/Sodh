@@ -2,9 +2,18 @@ import streamlit as st
 import time
 import json
 import base58
+
+# Handle Blockhash import compatibility
+try:
+    from solders.hash import Hash as Blockhash
+except ImportError:
+    try:
+        from solders.rpc.responses import Blockhash
+    except ImportError:
+        from solders.core.types.blockhash import Blockhash
+
 from solders.transaction import Transaction
 from solders.instruction import Instruction as TransactionInstruction, AccountMeta
-from solders.hash import Hash as Blockhash
 from solders.pubkey import Pubkey as PublicKey
 from solders.keypair import Keypair
 from utils.database import record_transaction
