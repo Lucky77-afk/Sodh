@@ -198,10 +198,12 @@ def render_whitepaper():
         
         # Timeline visualization
         st.markdown("""
-        <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; margin-top: 15px;">
+        <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; margin-top: 15px; position: relative; height: 100px;">
             <div style="color: #14F195; margin-bottom: 15px; font-weight: bold; text-align: center;">IMPLEMENTATION TIMELINE</div>
-            <div style="position: relative; height: 60px; margin-bottom: 30px;">
+            <div style="position: relative; height: 60px;">
                 <div style="position: absolute; top: 25px; left: 0; right: 0; height: 2px; background-color: #333;"></div>
+                
+                <!-- Timeline dots -->
                 <div style="position: absolute; top: 21px; left: 0%; width: 10px; height: 10px; background-color: #14F195; border-radius: 50%;"></div>
                 <div style="position: absolute; top: 21px; left: 20%; width: 10px; height: 10px; background-color: #14F195; border-radius: 50%;"></div>
                 <div style="position: absolute; top: 21px; left: 40%; width: 10px; height: 10px; background-color: #14F195; border-radius: 50%;"></div>
@@ -209,6 +211,7 @@ def render_whitepaper():
                 <div style="position: absolute; top: 21px; left: 80%; width: 10px; height: 10px; background-color: #9945FF; border-radius: 50%;"></div>
                 <div style="position: absolute; top: 21px; left: 100%; width: 10px; height: 10px; background-color: #9945FF; border-radius: 50%;"></div>
                 
+                <!-- Timeline dates -->
                 <div style="position: absolute; top: 0; left: 0%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Start</div>
                 <div style="position: absolute; top: 0; left: 20%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q2 2025</div>
                 <div style="position: absolute; top: 0; left: 40%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q4 2025</div>
@@ -216,6 +219,7 @@ def render_whitepaper():
                 <div style="position: absolute; top: 0; left: 80%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q4 2026</div>
                 <div style="position: absolute; top: 0; left: 100%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q2 2027</div>
                 
+                <!-- Phase labels -->
                 <div style="position: absolute; top: 35px; left: 0%; transform: translateX(-50%); color: #14F195; font-size: 0.8rem; text-align: center; width: 100px;">Requirements</div>
                 <div style="position: absolute; top: 35px; left: 20%; transform: translateX(-50%); color: #14F195; font-size: 0.8rem; text-align: center; width: 100px;">Prototype</div>
                 <div style="position: absolute; top: 35px; left: 40%; transform: translateX(-50%); color: #14F195; font-size: 0.8rem; text-align: center; width: 100px;">Pilot</div>
