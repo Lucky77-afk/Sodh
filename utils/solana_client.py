@@ -1,10 +1,11 @@
 import streamlit as st
 from solana.rpc.api import Client
-from solana.publickey import PublicKey
-from solana.transaction import Transaction, TransactionInstruction, AccountMeta
-from solana.blockhash import Blockhash
-from solana.keypair import Keypair
 from solana.rpc.types import TxOpts
+from solders.pubkey import Pubkey as PublicKey
+from solders.transaction import Transaction
+from solders.instruction import Instruction as TransactionInstruction, AccountMeta
+from solders.hash import Hash as Blockhash
+from solders.keypair import Keypair
 from datetime import datetime, timedelta
 import base64
 import json
@@ -13,9 +14,21 @@ import base58
 import struct
 
 # Define constants for Solana and USDT SPL token program
-SYSTEM_PROGRAM_ID = PublicKey("11111111111111111111111111111111")
-TOKEN_PROGRAM_ID = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-USDT_MINT = PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB")  # USDT on Solana
+def create_pubkey_from_string(address):
+    """Helper function to create a PublicKey from a base58-encoded string"""
+    try:
+        # First, try to decode the base58 string to bytes
+        decoded = base58.b58decode(address)
+        # Then create a PublicKey from the decoded bytes
+        return PublicKey(decoded)
+    except Exception as e:
+        st.error(f"Error creating PublicKey from address {address}: {str(e)}")
+        raise
+
+# Initialize constants with proper PublicKey objects
+SYSTEM_PROGRAM_ID = create_pubkey_from_string("11111111111111111111111111111111")
+TOKEN_PROGRAM_ID = create_pubkey_from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+USDT_MINT = create_pubkey_from_string("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB")  # USDT on Solana
 
 @st.cache_resource(ttl=60)
 def get_solana_client():
@@ -24,30 +37,42 @@ def get_solana_client():
     return Client("https://api.devnet.solana.com")
 
 @st.cache_data(ttl=60)
-def get_recent_blocks(client, limit=10):
+def get_recent_blocks(_client, limit=10):
     """Get recent blocks from the Solana blockchain"""
     try:
+        # Create a new client instance to avoid caching issues
+        client = Client("https://api.devnet.solana.com")
+        
         # Get recent confirmed blocks
         response = client.get_recent_blocks(limit=limit)
         
-        if 'result' not in response:
-            st.error("Failed to get recent blocks from Solana")
+        # Handle solders response
+        if hasattr(response, 'value') and isinstance(response.value, list):
+            blocks_data = response.value
+        elif isinstance(response, dict) and 'result' in response:
+            blocks_data = response['result']
+        else:
+            st.error("Unexpected response format from get_recent_blocks")
             return []
             
-        blocks_data = response['result']
         recent_blocks = []
         
         # Get block time information for each block
-        for block in blocks_data:
+        for slot in blocks_data:
             try:
                 # Try to get block time
-                slot = block
                 block_time_response = client.get_block_time(slot)
-                timestamp = block_time_response.get('result', int(time.time()))
+                if hasattr(block_time_response, 'value'):
+                    timestamp = block_time_response.value
+                else:
+                    timestamp = int(time.time())
                 
                 # Get block hash
                 block_info_response = client.get_block(slot)
-                blockhash = block_info_response.get('result', {}).get('blockhash', 'unknown')
+                if hasattr(block_info_response, 'value') and hasattr(block_info_response.value, 'blockhash'):
+                    blockhash = str(block_info_response.value.blockhash)
+                else:
+                    blockhash = 'unknown'
                 
                 block_info = {
                     'slot': slot,
@@ -64,47 +89,70 @@ def get_recent_blocks(client, limit=10):
         return []
 
 @st.cache_data(ttl=30)
-def get_latest_block_time(client):
+def get_latest_block_time(_client):
     """Get the latest block time"""
     try:
+        # Create a new client instance to avoid caching issues
+        client = Client("https://api.devnet.solana.com")
+        
         # Get the latest finalized slot
         slot_response = client.get_slot(commitment="finalized")
-        if 'result' not in slot_response:
+        
+        # Handle solders response
+        if hasattr(slot_response, 'value'):
+            slot = slot_response.value
+        elif isinstance(slot_response, dict) and 'result' in slot_response:
+            slot = slot_response['result']
+        else:
             return int(time.time())
-            
-        slot = slot_response['result']
         
         # Get the block time for this slot
         block_time_response = client.get_block_time(slot)
-        if 'result' not in block_time_response:
-            return int(time.time())
+        
+        # Handle solders response
+        if hasattr(block_time_response, 'value'):
+            return block_time_response.value
+        elif isinstance(block_time_response, dict) and 'result' in block_time_response:
+            return block_time_response['result']
             
-        return block_time_response['result']
+        return int(time.time())
     except Exception as e:
         st.error(f"Error fetching latest block time: {str(e)}")
         return int(time.time())
 
 @st.cache_data(ttl=30)
-def get_recent_transactions(client, limit=10):
+def get_recent_transactions(_client, limit=10):
     """Get recent transactions from the Solana blockchain"""
     try:
+        # Create a new client instance to avoid caching issues
+        client = Client("https://api.devnet.solana.com")
+        
         # Get recent confirmed signatures using client
         signatures_response = client.get_signatures_for_address(
             account=SYSTEM_PROGRAM_ID,  # System program gets many transactions
             limit=limit
         )
         
-        if 'result' not in signatures_response:
-            st.error("Failed to get recent transactions from Solana")
+        # Handle solders response
+        if hasattr(signatures_response, 'value'):
+            signatures_data = signatures_response.value
+        elif isinstance(signatures_response, dict) and 'result' in signatures_response:
+            signatures_data = signatures_response['result']
+        else:
+            st.error("Unexpected response format from get_signatures_for_address")
             return []
             
-        signatures_data = signatures_response['result']
         recent_txs = []
         
         for tx_info in signatures_data:
             try:
                 # Extract the transaction signature
-                signature = tx_info.get('signature', '')
+                if hasattr(tx_info, 'signature'):
+                    signature = str(tx_info.signature)
+                elif isinstance(tx_info, dict):
+                    signature = tx_info.get('signature', '')
+                else:
+                    continue
                 
                 # Get full transaction details
                 tx_data = get_transaction_details(client, signature)
@@ -163,11 +211,18 @@ def get_recent_transactions(client, limit=10):
         return []
 
 @st.cache_data(ttl=300)
-def get_transaction_details(client, signature):
+def get_transaction_details(_client, signature):
     """Get detailed information for a specific transaction"""
     try:
+        # Create a new client instance to avoid caching issues
+        client = Client("https://api.devnet.solana.com")
+        
         tx_response = client.get_transaction(signature)
-        if tx_response and 'result' in tx_response:
+        
+        # Handle solders response
+        if hasattr(tx_response, 'value'):
+            return tx_response.value
+        elif isinstance(tx_response, dict) and 'result' in tx_response:
             return tx_response['result']
         return None
     except Exception as e:
@@ -175,18 +230,21 @@ def get_transaction_details(client, signature):
         return None
 
 @st.cache_data(ttl=60)
-def get_account_info(client, address):
+def get_account_info(_client, address):
     """Get account information for a wallet address"""
     try:
+        # Create a new client instance to avoid caching issues
+        client = Client("https://api.devnet.solana.com")
+        
         # Check if the address is valid
         if not address or len(address) < 32:
             return None
             
         try:
-            # Convert address string to PublicKey object
-            pubkey = PublicKey(address)
-        except Exception:
-            st.error("Invalid Solana address format")
+            # Convert address string to PublicKey object using our helper function
+            pubkey = create_pubkey_from_string(address)
+        except Exception as e:
+            st.error(f"Invalid Solana address format: {str(e)}")
             return None
         
         # Get SOL balance
@@ -248,18 +306,21 @@ def get_account_info(client, address):
         return None
 
 @st.cache_data(ttl=60)
-def get_account_transactions(client, address, limit=5):
+def get_account_transactions(_client, address, limit=5):
     """Get recent transactions for an account"""
     try:
+        # Create a new client instance to avoid caching issues
+        client = Client("https://api.devnet.solana.com")
+        
         # Check if address is valid
         if not address or len(address) < 32:
             return []
             
         try:
-            # Convert address string to PublicKey object
-            pubkey = PublicKey(address)
-        except Exception:
-            st.error("Invalid Solana address format")
+            # Convert address string to PublicKey object using our helper function
+            pubkey = create_pubkey_from_string(address)
+        except Exception as e:
+            st.error(f"Invalid Solana address format: {str(e)}")
             return []
         
         # Get recent signatures for this account
@@ -268,18 +329,27 @@ def get_account_transactions(client, address, limit=5):
             limit=limit
         )
         
-        if 'result' not in signatures_response:
-            st.error("Failed to get transactions for this account")
+        # Handle solders response
+        if hasattr(signatures_response, 'value'):
+            signatures_data = signatures_response.value
+        elif isinstance(signatures_response, dict) and 'result' in signatures_response:
+            signatures_data = signatures_response['result']
+        else:
+            st.error("Unexpected response format from get_signatures_for_address")
             return []
             
-        signatures_data = signatures_response['result']
         account_txs = []
         
         # Process each transaction
         for sig_info in signatures_data:
             try:
                 # Get signature
-                signature = sig_info.get('signature', '')
+                if hasattr(sig_info, 'signature'):
+                    signature = str(sig_info.signature)
+                elif isinstance(sig_info, dict):
+                    signature = sig_info.get('signature', '')
+                else:
+                    continue
                 
                 # Get full transaction details
                 tx_data = get_transaction_details(client, signature)
@@ -288,11 +358,12 @@ def get_account_transactions(client, address, limit=5):
                     continue
                     
                 # Determine transaction status
-                status = True if tx_data.get('meta', {}).get('err') is None else False
+                meta = tx_data.get('meta', {}) if hasattr(tx_data, 'get') else {}
+                status = meta.get('err') is None if hasattr(meta, 'get') else False
                 
                 # Get block time and slot
-                block_time = tx_data.get('blockTime', 0)
-                slot = tx_data.get('slot', 0)
+                block_time = tx_data.get('blockTime', 0) if hasattr(tx_data, 'get') else 0
+                slot = tx_data.get('slot', 0) if hasattr(tx_data, 'get') else 0
                 
                 # Try to determine transaction amount and direction
                 amount = 0.0
@@ -300,15 +371,17 @@ def get_account_transactions(client, address, limit=5):
                 
                 try:
                     # Check transaction message for information about the transfer
-                    message = tx_data.get('transaction', {}).get('message', {})
-                    instructions = message.get('instructions', [])
+                    transaction = tx_data.get('transaction', {}) if hasattr(tx_data, 'get') else {}
+                    message = transaction.get('message', {}) if hasattr(transaction, 'get') else {}
+                    instructions = message.get('instructions', []) if hasattr(message, 'get') else []
                     
                     # Get account keys 
-                    account_keys = message.get('accountKeys', [])
+                    account_keys = message.get('accountKeys', []) if hasattr(message, 'get') else []
                     
                     # Check if this is a system program transfer
                     if instructions and len(instructions) > 0:
-                        program_id = instructions[0].get('programId', '')
+                        instruction = instructions[0] if isinstance(instructions, (list, tuple)) else {}
+                        program_id = instruction.get('programId', '') if hasattr(instruction, 'get') else ''
                         
                         # Handle different transaction types
                         if program_id == "11111111111111111111111111111111":  # System Program
@@ -317,16 +390,19 @@ def get_account_transactions(client, address, limit=5):
                             
                             # Try to determine if it's incoming or outgoing
                             if account_keys and len(account_keys) >= 2:
-                                if account_keys[0] == address:
+                                if hasattr(account_keys, '__getitem__') and account_keys[0] == address:
                                     tx_type = "Send"
                                 else:
                                     tx_type = "Receive"
                                     
                             # Get pre and post balances to determine amount
-                            pre_balances = tx_data.get('meta', {}).get('preBalances', [])
-                            post_balances = tx_data.get('meta', {}).get('postBalances', [])
+                            meta = tx_data.get('meta', {}) if hasattr(tx_data, 'get') else {}
+                            pre_balances = meta.get('preBalances', []) if hasattr(meta, 'get') else []
+                            post_balances = meta.get('postBalances', []) if hasattr(meta, 'get') else []
                             
-                            if pre_balances and post_balances and len(pre_balances) > 0 and len(post_balances) > 0:
+                            if (pre_balances and post_balances and 
+                                len(pre_balances) > 0 and len(post_balances) > 0 and
+                                hasattr(pre_balances, '__getitem__') and hasattr(post_balances, '__getitem__')):
                                 # Calculate difference in lamports
                                 balance_diff = abs(post_balances[0] - pre_balances[0])
                                 amount = balance_diff / 1_000_000_000  # Convert lamports to SOL

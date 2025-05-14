@@ -21,13 +21,22 @@ def render_dashboard():
         supply = 0
         try:
             supply_info = client.get_supply()
-            if isinstance(supply_info, dict) and 'result' in supply_info:
-                if isinstance(supply_info['result'], dict) and 'value' in supply_info['result']:
-                    if 'total' in supply_info['result']['value']:
-                        supply = supply_info['result']['value']['total'] / 1_000_000_000
-                    elif isinstance(supply_info['result']['value'], dict):
-                        # For backward compatibility
-                        supply = float(supply_info['result']['value'].get('total', 0)) / 1_000_000_000
+            
+            # Handle solders response
+            if hasattr(supply_info, 'value'):
+                supply_value = supply_info.value
+                if hasattr(supply_value, 'value'):
+                    supply_value = supply_value.value
+                if hasattr(supply_value, 'total'):
+                    supply = supply_value.total / 1_000_000_000
+            elif isinstance(supply_info, dict) and 'result' in supply_info:
+                result = supply_info['result']
+                if isinstance(result, dict) and 'value' in result:
+                    value = result['value']
+                    if isinstance(value, dict) and 'total' in value:
+                        supply = value['total'] / 1_000_000_000
+                    elif hasattr(value, 'total'):
+                        supply = value.total / 1_000_000_000
         except Exception as supply_error:
             st.warning(f"Could not retrieve SOL supply data: {str(supply_error)}")
             supply = 580.0  # Approximate known value
@@ -35,40 +44,79 @@ def render_dashboard():
         # Get epoch info
         try:
             epoch_info = client.get_epoch_info()
-            current_epoch = epoch_info['result']['epoch'] if 'result' in epoch_info and 'epoch' in epoch_info['result'] else 0
-            slots_in_epoch = epoch_info['result']['slotsInEpoch'] if 'result' in epoch_info and 'slotsInEpoch' in epoch_info['result'] else 1
-            slot_index = epoch_info['result']['slotIndex'] if 'result' in epoch_info and 'slotIndex' in epoch_info['result'] else 0
-            epoch_progress = (slot_index / slots_in_epoch) * 100 if slots_in_epoch > 0 else 0
+            current_epoch = 0
+            epoch_progress = 0
+            
+            # Handle solders response
+            if hasattr(epoch_info, 'value'):
+                epoch_value = epoch_info.value
+                current_epoch = getattr(epoch_value, 'epoch', 0)
+                epoch_progress = getattr(epoch_value, 'slot_index', 0) / max(1, getattr(epoch_value, 'slots_in_epoch', 1)) * 100
+            elif isinstance(epoch_info, dict) and 'result' in epoch_info:
+                result = epoch_info['result']
+                if isinstance(result, dict):
+                    current_epoch = result.get('epoch', 0)
+                    slot_index = result.get('slotIndex', 0)
+                    slots_in_epoch = result.get('slotsInEpoch', 1)
+                    epoch_progress = (slot_index / max(1, slots_in_epoch)) * 100
+                epoch_value = epoch_info.value
+                if hasattr(epoch_value, 'epoch'):
+                    current_epoch = epoch_value.epoch
+                if hasattr(epoch_value, 'slots_in_epoch') and hasattr(epoch_value, 'slot_index'):
+                    slots_in_epoch = epoch_value.slots_in_epoch or 1
+                    slot_index = epoch_value.slot_index or 0
+                    epoch_progress = (slot_index / slots_in_epoch) * 100 if slots_in_epoch > 0 else 0
+            elif isinstance(epoch_info, dict) and 'result' in epoch_info:
+                result = epoch_info['result']
+                if isinstance(result, dict):
+                    current_epoch = result.get('epoch', 0)
+                    slots_in_epoch = result.get('slots_in_epoch', 1)
+                    slot_index = result.get('slot_index', 0)
+                    epoch_progress = (slot_index / slots_in_epoch) * 100 if slots_in_epoch > 0 else 0
         except Exception as epoch_error:
             st.warning(f"Could not retrieve epoch data: {str(epoch_error)}")
             current_epoch = 0
             epoch_progress = 0
         
-        # Get health status
-        try:
-            health = client.get_health()
-            health_status = "✅ Operational" if 'result' in health and health['result'] == "ok" else "❌ Issues Detected"
-        except Exception as health_error:
-            st.warning(f"Could not retrieve health status: {str(health_error)}")
-            health_status = "⚠️ Unknown"
+        # Get health status - Note: get_health() is not available in the solders client
+        health_status = "⚠️ Unknown"
         
         # Get validator count
+        active_validators = 0
         try:
             validators_response = client.get_vote_accounts()
-            current_validators = validators_response['result']['current'] if 'result' in validators_response and 'current' in validators_response['result'] else []
-            delinquent_validators = validators_response['result']['delinquent'] if 'result' in validators_response and 'delinquent' in validators_response['result'] else []
-            validator_count = len(current_validators) + len(delinquent_validators)
-        except Exception as validator_error:
-            st.warning(f"Could not retrieve validator data: {str(validator_error)}")
-            validator_count = 1800  # Approximate known value
+            
+            # Handle solders response
+            if hasattr(validators_response, 'value'):
+                value = validators_response.value
+                current_validators = getattr(value, 'current', None) or []
+                delinquent_validators = getattr(value, 'delinquent', None) or []
+                active_validators = len(current_validators) + len(delinquent_validators)
+            elif isinstance(validators_response, dict) and 'result' in validators_response:
+                result = validators_response['result']
+                if isinstance(result, dict):
+                    current_validators = result.get('current', [])
+                    delinquent_validators = result.get('delinquent', [])
+                    active_validators = len(current_validators) + len(delinquent_validators)
+            else:
+                st.warning("Could not parse validator data")
+        except Exception as e:
+            st.warning(f"Could not retrieve validator data: {str(e)}")
+            active_validators = 0
         
         # Get transaction count
         try:
-            transaction_count = client.get_transaction_count()
-            tx_count = transaction_count['result'] if 'result' in transaction_count else 0
-        except Exception as tx_error:
-            st.warning(f"Could not retrieve transaction count: {str(tx_error)}")
+            tx_count_response = client.get_transaction_count()
+            if hasattr(tx_count_response, 'value'):
+                tx_count = tx_count_response.value
+            elif isinstance(tx_count_response, dict) and 'result' in tx_count_response:
+                tx_count = tx_count_response['result']
+            else:
+                tx_count = 0
+                st.warning("Failed to parse transaction count response")
+        except Exception as e:
             tx_count = 0
+            st.warning(f"Could not retrieve transaction count: {str(e)}")
         
         # Create dashboard metrics in three columns
         col1, col2, col3 = st.columns(3)
@@ -122,61 +170,33 @@ def render_dashboard():
                 <div class="metric-value" style="font-size: 1.8rem;">{}</div>
                 <div style="font-size: 0.8rem; color: #AAA;">Active nodes</div>
             </div>
-            """.format(validator_count), unsafe_allow_html=True)
+            """.format(active_validators), unsafe_allow_html=True)
         
-        # Get recent block times
-        latest_blocks = get_recent_blocks(client, 100)
-        
-        # Performance metrics
-        st.markdown("### Network Performance", unsafe_allow_html=True)
-        perf_col1, perf_col2 = st.columns(2)
-        
-        with perf_col1:
-            # Transaction per second chart
-            now = datetime.now()
-            times = [(now - timedelta(minutes=i)).strftime("%H:%M") for i in range(20, 0, -1)]
+        # Get recent blocks for performance metrics
+        try:
+            latest_blocks = get_recent_blocks(_client=client, limit=20)
+            latest_block_time = get_latest_block_time(_client=client) if latest_blocks else None
             
-            # Calculate realistic TPS values based on Solana's capabilities (typically 2,000-3,000 TPS average)
-            base_tps = 2500
-            variation = 500
-            tps_values = [max(0, base_tps + random.randint(-variation, variation)) for _ in range(20)]
+            # Performance metrics
+            st.markdown("### Network Performance", unsafe_allow_html=True)
+            perf_col1, perf_col2 = st.columns(2)
             
-            tps_df = pd.DataFrame({
-                'Time': times,
-                'TPS': tps_values
-            })
-            
-            fig = px.line(tps_df, x='Time', y='TPS', title='Transactions Per Second (TPS)')
-            fig.update_layout(
-                plot_bgcolor='#1E1E1E',
-                paper_bgcolor='#1E1E1E',
-                font=dict(color='#FFFFFF'),
-                xaxis=dict(showgrid=False),
-                yaxis=dict(showgrid=True, gridcolor='#333333'),
-                margin=dict(l=10, r=10, t=40, b=10),
-                height=300
-            )
-            fig.update_traces(line=dict(color='#14F195', width=3))
-            st.plotly_chart(fig, use_container_width=True)
-        
-        with perf_col2:
-            # Block time chart
-            if latest_blocks and len(latest_blocks) > 1:
-                block_times = []
-                for i in range(1, len(latest_blocks)):
-                    time_diff = latest_blocks[i-1]['timestamp'] - latest_blocks[i]['timestamp']
-                    block_times.append(time_diff)
+            with perf_col1:
+                # Transaction per second chart
+                now = datetime.now()
+                times = [(now - timedelta(minutes=i)).strftime("%H:%M") for i in range(20, 0, -1)]
                 
-                avg_block_time = sum(block_times) / len(block_times)
+                # Calculate realistic TPS values based on Solana's capabilities
+                base_tps = 2500
+                variation = 500
+                tps_values = [max(0, base_tps + random.randint(-variation, variation)) for _ in range(20)]
                 
-                # Create block time dataframe
-                slots = list(range(len(block_times)))
-                block_time_df = pd.DataFrame({
-                    'Slot': slots,
-                    'Block Time (ms)': block_times
+                tps_df = pd.DataFrame({
+                    'Time': times,
+                    'TPS': tps_values
                 })
                 
-                fig = px.bar(block_time_df, x='Slot', y='Block Time (ms)', title=f'Block Times (Avg: {avg_block_time:.2f}ms)')
+                fig = px.line(tps_df, x='Time', y='TPS', title='Transactions Per Second (TPS)')
                 fig.update_layout(
                     plot_bgcolor='#1E1E1E',
                     paper_bgcolor='#1E1E1E',
@@ -186,10 +206,50 @@ def render_dashboard():
                     margin=dict(l=10, r=10, t=40, b=10),
                     height=300
                 )
-                fig.update_traces(marker=dict(color='#9945FF'))
+                fig.update_traces(line=dict(color='#14F195', width=3))
                 st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.error("Could not retrieve block time data")
+            
+            with perf_col2:
+                # Block time chart
+                if latest_blocks and len(latest_blocks) > 1:
+                    block_times = []
+                    for i in range(1, min(20, len(latest_blocks))):
+                        if isinstance(latest_blocks[i-1], dict) and isinstance(latest_blocks[i], dict):
+                            if 'timestamp' in latest_blocks[i-1] and 'timestamp' in latest_blocks[i]:
+                                time_diff = latest_blocks[i-1]['timestamp'] - latest_blocks[i]['timestamp']
+                                block_times.append(time_diff)
+                    
+                    if block_times:  # Only proceed if we have valid block times
+                        avg_block_time = sum(block_times) / len(block_times)
+                        
+                        # Create block time dataframe
+                        slots = list(range(len(block_times)))
+                        block_time_df = pd.DataFrame({
+                            'Slot': slots,
+                            'Block Time (ms)': block_times
+                        })
+                        
+                        fig = px.bar(block_time_df, x='Slot', y='Block Time (ms)', 
+                                    title=f'Block Times (Avg: {avg_block_time:.2f}ms)')
+                        fig.update_layout(
+                            plot_bgcolor='#1E1E1E',
+                            paper_bgcolor='#1E1E1E',
+                            font=dict(color='#FFFFFF'),
+                            xaxis=dict(showgrid=False),
+                            yaxis=dict(showgrid=True, gridcolor='#333333'),
+                            margin=dict(l=10, r=10, t=40, b=10),
+                            height=300
+                        )
+                        fig.update_traces(marker=dict(color='#9945FF'))
+                        st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.warning("No valid block time data available")
+                else:
+                    st.warning("Not enough block data available")
+                    
+        except Exception as e:
+            st.error(f"Error loading performance data: {str(e)}")
+            st.error("Could not retrieve block time data")
         
         # Local database transactions
         st.markdown("### Local Database Transactions", unsafe_allow_html=True)

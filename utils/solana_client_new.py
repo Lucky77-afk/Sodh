@@ -20,34 +20,50 @@ def get_solana_client():
     return Client("https://api.devnet.solana.com")
 
 @st.cache_data(ttl=60)
-def get_recent_blocks(client, limit=10):
+def get_recent_blocks(_client, limit=10):
     """Get recent blocks from the Solana blockchain"""
     try:
         # Get recent confirmed blocks
-        response = client.get_recent_blocks(limit=limit)
+        response = _client.get_recent_blocks(limit=limit)
         
-        if 'result' not in response:
+        # Handle both solders response and legacy dict response
+        if hasattr(response, 'value'):
+            blocks_data = response.value
+        elif isinstance(response, dict) and 'result' in response:
+            blocks_data = response['result']
+        else:
             st.error("Failed to get recent blocks from Solana")
             return []
             
-        blocks_data = response['result']
         recent_blocks = []
         
         # Get block time information for each block
         for block in blocks_data:
             try:
                 # Try to get block time
-                slot = block
-                block_time_response = client.get_block_time(slot)
-                timestamp = block_time_response.get('result', int(time.time()))
+                slot = getattr(block, 'slot', None) or block  # Handle both object and direct slot number
+                block_time_response = _client.get_block_time(slot)
                 
-                # Get block hash
-                block_info_response = client.get_block(slot)
-                blockhash = block_info_response.get('result', {}).get('blockhash', 'unknown')
+                # Handle block time response
+                if hasattr(block_time_response, 'value'):
+                    timestamp = block_time_response.value
+                elif isinstance(block_time_response, dict) and 'result' in block_time_response:
+                    timestamp = block_time_response['result']
+                else:
+                    timestamp = int(time.time())
+                
+                # Get block info
+                block_info_response = _client.get_block(slot)
+                if hasattr(block_info_response, 'value'):
+                    blockhash = getattr(block_info_response.value, 'blockhash', 'unknown')
+                elif isinstance(block_info_response, dict) and 'result' in block_info_response:
+                    blockhash = block_info_response.get('result', {}).get('blockhash', 'unknown')
+                else:
+                    blockhash = 'unknown'
                 
                 block_info = {
                     'slot': slot,
-                    'blockhash': blockhash,
+                    'blockhash': str(blockhash),  # Convert to string to ensure serialization
                     'timestamp': timestamp
                 }
                 recent_blocks.append(block_info)
@@ -60,41 +76,50 @@ def get_recent_blocks(client, limit=10):
         return []
 
 @st.cache_data(ttl=30)
-def get_latest_block_time(client):
+def get_latest_block_time(_client):
     """Get the latest block time"""
     try:
         # Get the latest finalized slot
-        slot_response = client.get_slot(commitment="finalized")
-        if 'result' not in slot_response:
+        slot_response = _client.get_slot(commitment="finalized")
+        
+        # Handle solders response and legacy dict response
+        if hasattr(slot_response, 'value'):
+            slot = slot_response.value
+        elif isinstance(slot_response, dict) and 'result' in slot_response:
+            slot = slot_response['result']
+        else:
             return int(time.time())
-            
-        slot = slot_response['result']
         
         # Get the block time for this slot
-        block_time_response = client.get_block_time(slot)
-        if 'result' not in block_time_response:
-            return int(time.time())
+        block_time_response = _client.get_block_time(slot)
+        
+        # Handle block time response
+        if hasattr(block_time_response, 'value'):
+            return block_time_response.value
+        elif isinstance(block_time_response, dict) and 'result' in block_time_response:
+            return block_time_response['result']
             
-        return block_time_response['result']
+        return int(time.time())
     except Exception as e:
         st.error(f"Error fetching latest block time: {str(e)}")
         return int(time.time())
 
 @st.cache_data(ttl=30)
-def get_recent_transactions(client, limit=10):
+def get_recent_transactions(_client, limit=10):
     """Get recent transactions from the Solana blockchain"""
     try:
         # Get recent confirmed signatures using client
-        signatures_response = client.get_signatures_for_address(
+        signatures_response = _client.get_signatures_for_address(
             account=SYSTEM_PROGRAM_ID,  # System program gets many transactions
             limit=limit
         )
         
-        if 'result' not in signatures_response:
+        if not hasattr(signatures_response, 'value') and 'result' not in signatures_response:
             st.error("Failed to get recent transactions from Solana")
             return []
             
-        signatures_data = signatures_response['result']
+        # Handle both solders response and legacy dict response
+        signatures_data = signatures_response.value if hasattr(signatures_response, 'value') else signatures_response.get('result', [])
         recent_txs = []
         
         for tx_info in signatures_data:
@@ -366,7 +391,7 @@ def get_account_transactions(_client, address, limit=5):
 def create_keypair():
     """Creates a keypair for demo purposes"""
     # Import here to avoid module resolution issues
-    from solana.keypair import Keypair
+    from solders.keypair import Keypair
     return Keypair()
 
 def get_recent_blockhash(client):

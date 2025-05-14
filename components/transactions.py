@@ -142,7 +142,7 @@ def render_transactions():
             # Fallback to Solana blockchain transactions if no database transactions
             try:
                 client = get_solana_client()
-                recent_txs = get_recent_transactions(client)
+                recent_txs = get_recent_transactions(_client=client)
                 
                 if recent_txs:
                     for tx in recent_txs:

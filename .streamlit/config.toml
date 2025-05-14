@@ -6,7 +6,7 @@ headless = true
 enableCORS = false
 
 # Enable CSRF protection for the server. Set to false if you need to disable it
-enableXsrfProtection = true
+enableXsrfProtection = false
 
 # The address where the server will listen for client and/or websocket connections
 address = "0.0.0.0"
@@ -24,26 +24,9 @@ fileWatcherType = "none"
 # Set to true to enable websocket compression
 enableWebsocketCompression = true
 
-# Set to false to disable the run-on-save feature
-development = false
-
-[runner]
-# Enable or disable the run-on-save feature
-fastRerun = false
-
-# Enable or disable the run button in the UI
-showErrorDetails = false
-
 [browser]
 # Set to false to disable the "Get started" menu
 gatherUsageStats = false
-
-# Set to true to open the app in the browser on startup
-serverAddress = "localhost"
-
-[client]
-# Enable or disable the display of the hamburger menu in the top-right corner
-showSidebarNavigation = true
 
 [theme]
 # Theme settings
@@ -53,11 +36,3 @@ backgroundColor = "#131313"
 secondaryBackgroundColor = "#1E1E1E"
 textColor = "#FFFFFF"
 font = "sans serif"
-
-[logger]
-# Log level for the application
-level = "info"
-
-[scheduler]
-# Enable or disable the scheduler
-enabled = false

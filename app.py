@@ -423,9 +423,9 @@ st.toast("📱 For mobile access, use the 'Open in new tab' button in Replit's p
 with st.sidebar:
     # Add health check access
     if st.button("⚡ Check Server Status"):
-        # Use experimental_set_query_params for setting the query parameter
-        st.experimental_set_query_params(health_check="true")
-        st.experimental_rerun()
+        # Use query_params for setting the query parameter
+        st.query_params.health_check = "true"
+        st.rerun()
     st.markdown('<p class="gradient-text">NAVIGATION</p>', unsafe_allow_html=True)
     page = st.radio(
         "Select a page",
@@ -438,13 +438,13 @@ with st.sidebar:
     wallet_address = st.text_input("Wallet Address", placeholder="Enter Solana wallet address")
     if st.button("Connect"):
         st.session_state.wallet_address = wallet_address
-        st.experimental_rerun()
+        st.rerun()
     
     # Clear wallet
     if 'wallet_address' in st.session_state and st.session_state.wallet_address:
         if st.button("Disconnect Wallet"):
             del st.session_state.wallet_address
-            st.experimental_rerun()
+            st.rerun()
     
     # About section in sidebar
     st.markdown("---")
@@ -464,9 +464,8 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # Add health check/status page
-# Get query params in a way that works across Streamlit versions
-query_params = st.experimental_get_query_params()
-if 'health_check' in query_params:
+# Check for health check parameter
+if 'health_check' in st.query_params:
     st.success("Server is up and running! 🚀")
     st.write(f"Server Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     try:

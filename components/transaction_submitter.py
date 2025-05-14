@@ -2,10 +2,11 @@ import streamlit as st
 import time
 import json
 import base58
-from solana.transaction import Transaction, AccountMeta, TransactionInstruction
-from solana.blockhash import Blockhash
-from solana.publickey import PublicKey
-from solana.keypair import Keypair
+from solders.transaction import Transaction
+from solders.instruction import Instruction as TransactionInstruction, AccountMeta
+from solders.hash import Hash as Blockhash
+from solders.pubkey import Pubkey as PublicKey
+from solders.keypair import Keypair
 from utils.database import record_transaction
 from utils.solana_client import get_solana_client, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID, USDT_MINT
 
