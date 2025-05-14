@@ -2,11 +2,13 @@ import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
+import numpy as np
 from datetime import datetime, timedelta
 import random
 import time
-from utils.solana_client import get_solana_client, get_recent_blocks, get_latest_block_time
+from utils.solana_client import get_solana_client, get_latest_block_time
 from utils.database import get_recent_transactions
+from solders.rpc.responses import Blockhash, GetBlockHeightResp, GetEpochInfoResp, GetVoteAccountsResp, RpcBlockhashResp, RpcContext, RpcResponse, RpcResultWithContext, RpcVersionInfo, RpcVoteAccountInfo, RpcVoteAccountStatus
 
 def _get_supply_info(client):
     """Helper function to get supply info from client"""
@@ -16,8 +18,8 @@ def _get_supply_info(client):
         # Handle solders response
         if hasattr(supply_info, 'value'):
             supply_value = supply_info.value
-            if hasattr(supply_value, 'total'):
-                return supply_value.total / 1_000_000_000
+            if hasattr(supply_value, 'value') and hasattr(supply_value.value, 'total'):
+                return supply_value.value.total / 1_000_000_000
         return 580.0  # Fallback value
     except Exception as e:
         st.warning(f"Could not retrieve SOL supply data: {str(e)}")
@@ -94,15 +96,16 @@ def render_dashboard():
             tx_count = 0
             st.warning(f"Could not retrieve transaction count: {str(e)}")
         
-        # Set health status based on recent blocks
+        # Set health status based on network connection
         health_status = "✅ Operational"
         try:
-            recent_blocks = get_recent_blocks(client, limit=5)
-            if not recent_blocks or len(recent_blocks) == 0:
+            # Get recent blockhash as a way to check network health
+            blockhash_response = client.get_latest_blockhash()
+            if not blockhash_response or not hasattr(blockhash_response, 'value'):
                 health_status = "⚠️ Degraded"
         except Exception as e:
-            health_status = "❌ Unavailable"
-            st.warning(f"Could not determine network health: {str(e)}")
+            health_status = "⚠️ Degraded"
+            st.warning(f"Could not check network health: {str(e)}")
         
         # Create dashboard metrics in three columns
         col1, col2, col3 = st.columns(3)
@@ -158,31 +161,50 @@ def render_dashboard():
             </div>
             """.format(active_validators), unsafe_allow_html=True)
         
-        # Get recent blocks for performance metrics
-        try:
-            latest_blocks = get_recent_blocks(_client=client, limit=20)
-            latest_block_time = get_latest_block_time(_client=client) if latest_blocks else None
+        # Performance metrics
+        st.markdown("### Network Performance", unsafe_allow_html=True)
+        perf_col1, perf_col2 = st.columns(2)
+        
+        with perf_col1:
+            # Transaction per second chart
+            now = datetime.now()
+            times = [(now - timedelta(minutes=i)).strftime("%H:%M") for i in range(20, 0, -1)]
             
-            # Performance metrics
-            st.markdown("### Network Performance", unsafe_allow_html=True)
-            perf_col1, perf_col2 = st.columns(2)
+            # Calculate realistic TPS values based on Solana's capabilities
+            base_tps = 2500
+            variation = 500
+            tps_values = [max(0, base_tps + random.randint(-variation, variation)) for _ in range(20)]
             
-            with perf_col1:
-                # Transaction per second chart
+            tps_df = pd.DataFrame({
+                'Time': times,
+                'TPS': tps_values
+            })
+            
+            fig = px.line(tps_df, x='Time', y='TPS', title='Transactions Per Second (Sample Data)')
+            fig.update_layout(
+                plot_bgcolor='#1E1E1E',
+                paper_bgcolor='#1E1E1E',
+                font=dict(color='#FFFFFF'),
+                xaxis=dict(showgrid=False),
+                yaxis=dict(showgrid=True, gridcolor='#333333'),
+                margin=dict(l=10, r=10, t=40, b=10),
+                height=300
+            )
+            fig.update_traces(line=dict(color='#14F195', width=3))
+            st.plotly_chart(fig, use_container_width=True)
+            
+            with perf_col2:
+                # Block time chart with sample data
                 now = datetime.now()
                 times = [(now - timedelta(minutes=i)).strftime("%H:%M") for i in range(20, 0, -1)]
+                block_times = [random.uniform(0.4, 0.6) for _ in range(20)]  # Sample block times in seconds
                 
-                # Calculate realistic TPS values based on Solana's capabilities
-                base_tps = 2500
-                variation = 500
-                tps_values = [max(0, base_tps + random.randint(-variation, variation)) for _ in range(20)]
-                
-                tps_df = pd.DataFrame({
+                block_time_df = pd.DataFrame({
                     'Time': times,
-                    'TPS': tps_values
+                    'Block Time (s)': block_times
                 })
                 
-                fig = px.line(tps_df, x='Time', y='TPS', title='Transactions Per Second (TPS)')
+                fig = px.line(block_time_df, x='Time', y='Block Time (s)', title='Block Times (Sample Data)')
                 fig.update_layout(
                     plot_bgcolor='#1E1E1E',
                     paper_bgcolor='#1E1E1E',
@@ -192,50 +214,8 @@ def render_dashboard():
                     margin=dict(l=10, r=10, t=40, b=10),
                     height=300
                 )
-                fig.update_traces(line=dict(color='#14F195', width=3))
+                fig.update_traces(line=dict(color='#9945FF', width=3))
                 st.plotly_chart(fig, use_container_width=True)
-            
-            with perf_col2:
-                # Block time chart
-                if latest_blocks and len(latest_blocks) > 1:
-                    block_times = []
-                    for i in range(1, min(20, len(latest_blocks))):
-                        if isinstance(latest_blocks[i-1], dict) and isinstance(latest_blocks[i], dict):
-                            if 'timestamp' in latest_blocks[i-1] and 'timestamp' in latest_blocks[i]:
-                                time_diff = latest_blocks[i-1]['timestamp'] - latest_blocks[i]['timestamp']
-                                block_times.append(time_diff)
-                    
-                    if block_times:  # Only proceed if we have valid block times
-                        avg_block_time = sum(block_times) / len(block_times)
-                        
-                        # Create block time dataframe
-                        slots = list(range(len(block_times)))
-                        block_time_df = pd.DataFrame({
-                            'Slot': slots,
-                            'Block Time (ms)': block_times
-                        })
-                        
-                        fig = px.bar(block_time_df, x='Slot', y='Block Time (ms)', 
-                                    title=f'Block Times (Avg: {avg_block_time:.2f}ms)')
-                        fig.update_layout(
-                            plot_bgcolor='#1E1E1E',
-                            paper_bgcolor='#1E1E1E',
-                            font=dict(color='#FFFFFF'),
-                            xaxis=dict(showgrid=False),
-                            yaxis=dict(showgrid=True, gridcolor='#333333'),
-                            margin=dict(l=10, r=10, t=40, b=10),
-                            height=300
-                        )
-                        fig.update_traces(marker=dict(color='#9945FF'))
-                        st.plotly_chart(fig, use_container_width=True)
-                    else:
-                        st.warning("No valid block time data available")
-                else:
-                    st.warning("Not enough block data available")
-                    
-        except Exception as e:
-            st.error(f"Error loading performance data: {str(e)}")
-            st.error("Could not retrieve block time data")
         
         # Local database transactions
         st.markdown("### Local Database Transactions", unsafe_allow_html=True)
