@@ -1,18 +1,28 @@
+# Core dependencies
 streamlit==1.44.1
-solana==0.36.6
 pandas==2.2.3
 plotly==6.0.1
-psycopg2-binary==2.9.10
-base58==2.1.1
 numpy==1.24.3
+
+# Database
+psycopg2-binary==2.9.10
+sqlalchemy==2.0.40
+
+# Solana dependencies
+solana==0.36.6
+solders==0.26.0
+construct==2.10.68
+construct-typing==0.5.6
+base58==2.1.1
+
+# Web and networking
+requests==2.32.3
+urllib3==2.2.1
 python-dateutil==2.9.0
 pytz==2024.1
 six==1.16.0
-sqlalchemy==2.0.40
-protobuf==5.29.4
-python-dotenv==1.0.1
-requests==2.32.3
-urllib3==2.2.1
+
+# Development tools
 pytest==8.2.1
 pytest-cov==4.1.0
 black==24.4.2
@@ -20,3 +30,10 @@ flake8==7.1.1
 isort==5.13.2
 mypy==1.10.0
 typing-extensions==4.12.2
+python-dotenv==1.0.1
+
+# Protobuf
+protobuf==5.29.4
+
+# Force install solana with all extras
+solana[cli,cli-utils,cli-utils-token,cli-utils-vote,cli-utils-stake,cli-utils-token-cli,cli-utils-vote-cli,cli-utils-stake-cli]==0.36.6
