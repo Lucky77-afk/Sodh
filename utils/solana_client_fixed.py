@@ -5,14 +5,8 @@ from solders.pubkey import Pubkey as PublicKey
 from solders.transaction import Transaction
 from solders.instruction import Instruction as TransactionInstruction, AccountMeta
 
-# Handle Blockhash import compatibility
-try:
-    from solders.hash import Hash as Blockhash
-except ImportError:
-    try:
-        from solders.rpc.responses import Blockhash
-    except ImportError:
-        from solders.core.types.blockhash import Blockhash
+# Import Blockhash from the correct location
+from solders.hash import Hash as Blockhash
 
 from solders.keypair import Keypair
 from datetime import datetime, timedelta

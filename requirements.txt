@@ -13,8 +13,8 @@ base58>=2.1.1
 construct>=2.10.68
 construct-typing>=0.5.6
 jsonalias>=0.1.1
-solders==0.26.0
-solana==0.36.6
+solders>=0.30.0
+solana>=0.30.0
 
 # Web and networking
 requests>=2.32.3

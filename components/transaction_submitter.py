@@ -3,14 +3,8 @@ import time
 import json
 import base58
 
-# Handle Blockhash import compatibility
-try:
-    from solders.hash import Hash as Blockhash
-except ImportError:
-    try:
-        from solders.rpc.responses import Blockhash
-    except ImportError:
-        from solders.core.types.blockhash import Blockhash
+# Import Blockhash from the correct location
+from solders.hash import Hash as Blockhash
 
 from solders.transaction import Transaction
 from solders.instruction import Instruction as TransactionInstruction, AccountMeta
