@@ -201,10 +201,20 @@ def get_transaction_details(_client, signature):
 
 @st.cache_data(ttl=60)
 def get_account_info(_client, address):
-    """Get account information for a wallet address"""
+    """Get account information for a Solana wallet address"""
     try:
         # Check if the address is valid
         if not address or len(address) < 32:
+            st.error("Invalid Solana address: Address is too short")
+            return None
+            
+        # Additional validation for Solana address format
+        try:
+            # This will raise an exception for invalid Solana addresses
+            from solders.pubkey import Pubkey
+            pubkey = Pubkey.from_string(address)
+        except Exception as e:
+            st.error(f"Invalid Solana address format: {str(e)}")
             return None
         
         # Import client here to avoid streamlit hashing issues

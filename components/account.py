@@ -1,7 +1,17 @@
 import streamlit as st
 import pandas as pd
+import re
 from datetime import datetime
 from utils.solana_client_new import get_solana_client, get_account_info, get_account_transactions
+
+def is_valid_solana_address(address):
+    """Check if the address is a valid Solana wallet address"""
+    if not address:
+        return False
+    # Solana addresses are base58 encoded and typically 32-44 characters long
+    if not re.match(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$', address):
+        return False
+    return True
 
 def render_account():
     """Renders the account/wallet page with balance and transactions"""
@@ -15,6 +25,12 @@ def render_account():
 
     # If wallet address is provided
     if wallet_address:
+        # Validate Solana address format
+        if not is_valid_solana_address(wallet_address):
+            st.error("❌ Invalid Solana wallet address. Please enter a valid Solana address.")
+            st.info("Solana addresses are base58-encoded and typically 32-44 characters long (e.g., '9sQqDyg2mXX2cx3KVaqpCA1JmGhzi2LbfTfptEAjQ2zD')")
+            return
+            
         try:
             client = get_solana_client()
             account_info = get_account_info(client, wallet_address)
