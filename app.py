@@ -1,69 +1,64 @@
 import streamlit as st
-import socket
-import datetime
 import os
 import base64
 from datetime import datetime
-from components.header import render_header
-from components.dashboard import render_dashboard
-from components.transactions import render_transactions
-from components.account import render_account
-from components.smart_contract import render_smart_contract
-from components.whitepaper import render_whitepaper
-from components.tutorial import render_tutorial
-from utils.database import init_db
 
-# Replace the original solana_client with our fixed version
-import sys
-import importlib
+# Import components
 try:
-    # Try to import the fixed version first
-    from utils.solana_client_fixed import *
-    # If successful, update sys.modules to use this instead of the original
-    sys.modules['utils.solana_client'] = sys.modules['utils.solana_client_fixed']
-    print("Using fixed Solana client")
-except ImportError:
-    print("Could not load fixed Solana client, using original")
+    from components.header import render_header
+    from components.dashboard import render_dashboard
+    from components.transactions import render_transactions
+    from components.account import render_account
+    from components.smart_contract import render_smart_contract
+    from components.whitepaper import render_whitepaper
+    from components.tutorial import render_tutorial
+except ImportError as e:
+    st.error(f"Error importing components: {str(e)}")
+    st.stop()
 
-# Initialize database with error handling
-db_initialized = init_db()
-if not db_initialized:
-    print("Warning: Database initialization failed, using in-memory mode")
-
-# Print connection information for debugging
-hostname = socket.gethostname()
+# Initialize database
 try:
-    # Try to get the server's IP address
-    ip_address = socket.gethostbyname(hostname)
-    print(f"Server hostname: {hostname}")
-    print(f"Server IP address: {ip_address}")
-    print(f"Server running on http://0.0.0.0:5000")
+    from utils.database import init_db
+    db_initialized = init_db()
+    if not db_initialized:
+        st.warning("Database initialization failed, using in-memory mode")
 except Exception as e:
-    print(f"Error getting server info: {e}")
-    print(f"Server hostname: {hostname}")
-    print(f"Server running on http://0.0.0.0:5000")
+    st.error(f"Database initialization error: {str(e)}")
+    st.stop()
 
-# Check for logo to use as icon
-
-logo_path = os.path.join("assets", "logo.jpeg")
-if os.path.exists(logo_path):
-    with open(logo_path, "rb") as f:
-        logo_bytes = f.read()
-    encoded_logo = base64.b64encode(logo_bytes).decode()
-    page_icon = f"data:image/jpeg;base64,{encoded_logo}"
-else:
-    page_icon = "🔍"
+# Initialize Solana client
+try:
+    import sys
+    import importlib
+    try:
+        from utils.solana_client_fixed import *
+        sys.modules['utils.solana_client'] = sys.modules['utils.solana_client_fixed']
+    except ImportError:
+        from utils.solana_client import *
+except Exception as e:
+    st.error(f"Solana client initialization error: {str(e)}")
+    st.stop()
 
 # Set page configuration
+logo_path = os.path.join("assets", "logo.jpeg")
+page_icon = "🔍"
+if os.path.exists(logo_path):
+    try:
+        with open(logo_path, "rb") as f:
+            logo_bytes = f.read()
+        page_icon = f"data:image/jpeg;base64,{base64.b64encode(logo_bytes).decode()}"
+    except Exception as e:
+        st.error(f"Error loading logo: {str(e)}")
+
 st.set_page_config(
     page_title="Sodh - Solana Blockchain Explorer",
     page_icon=page_icon,
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'Get Help': 'https://www.solana.com/docs',
-        'Report a bug': None,
-        'About': "Sodh Explorer - A Solana Blockchain Explorer built with Streamlit"
+        'Get Help': 'https://github.com/Lucky77-afk/sodh',
+        'Report a bug': 'https://github.com/Lucky77-afk/sodh/issues',
+        'About': "# Sodh - Solana Blockchain Explorer\n\nA web-based blockchain explorer for the Solana network.\n\nSource code available at: https://github.com/Lucky77-afk/sodh"
     }
 )
 
