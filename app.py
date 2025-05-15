@@ -6,12 +6,14 @@ from datetime import datetime
 # Import components
 try:
     from components.header import render_header
-    from components.dashboard import render_dashboard
-    from components.transactions import render_transactions
-    from components.account import render_account
-    from components.smart_contract import render_smart_contract
-    from components.whitepaper import render_whitepaper
-    from components.tutorial import render_tutorial
+    from components import (
+        render_dashboard,
+        render_transactions,
+        render_account,
+        render_smart_contract,
+        render_whitepaper,
+        render_tutorial
+    )
 except ImportError as e:
     st.error(f"Error importing components: {str(e)}")
     st.stop()
