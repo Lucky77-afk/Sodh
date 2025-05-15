@@ -4,14 +4,17 @@ import json
 import base58
 
 # Import Blockhash from the correct location
-# Try different import paths for Blockhash
+# Import Blockhash from the correct location
 try:
+    # For newer versions of solders
     from solders.hash import Hash as Blockhash
 except ImportError:
     try:
-        from solders.core.types.blockhash import Blockhash
+        # For older versions of solders
+        from solders.blockhash import Blockhash
     except ImportError:
-        from solders.rpc.responses import Blockhash
+        # Fallback to direct import if available
+        from solders import Blockhash
 
 from utils.database import record_transaction
 from utils.solana_client_new import get_solana_client, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID, USDT_MINT, create_keypair, get_recent_blockhash

@@ -3,14 +3,17 @@ import time
 import json
 import base58
 
-# Try different import paths for Blockhash
+# Import Blockhash from the correct location
 try:
+    # For newer versions of solders
     from solders.hash import Hash as Blockhash
 except ImportError:
     try:
-        from solders.core.types.blockhash import Blockhash
+        # For older versions of solders
+        from solders.blockhash import Blockhash
     except ImportError:
-        from solders.rpc.responses import Blockhash
+        # Fallback to direct import if available
+        from solders import Blockhash
 
 from solders.transaction import Transaction
 from solders.instruction import Instruction as TransactionInstruction, AccountMeta
