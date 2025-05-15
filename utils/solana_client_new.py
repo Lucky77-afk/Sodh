@@ -396,10 +396,34 @@ def get_account_transactions(_client, address, limit=5):
         st.error(f"Error fetching account transactions: {str(e)}")
         return []
 
-# Helper functions to create and submit transactions
+def get_account_info(_client, address):
+    """Get account info for a Solana address"""
+    try:
+        # Get account info
+        response = _client.get_account_info(address)
+        
+        # Handle both solders response and legacy dict response
+        if hasattr(response, 'value'):
+            account_info = response.value
+            if account_info:
+                return {
+                    "value": {
+                        "lamports": account_info.lamports,
+                        "owner": str(account_info.owner),
+                        "executable": account_info.executable,
+                        "rentEpoch": account_info.rent_epoch
+                    }
+                }
+            return None
+        elif isinstance(response, dict) and 'result' in response:
+            return response['result']
+        return None
+    except Exception as e:
+        st.error(f"Error fetching account info: {str(e)}")
+        return None
+
 def create_keypair():
     """Creates a keypair for demo purposes"""
-    # Import here to avoid module resolution issues
     from solders.keypair import Keypair
     return Keypair()
 
