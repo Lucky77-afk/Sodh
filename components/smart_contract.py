@@ -134,24 +134,60 @@ def render_project_form():
     from components.transaction_submitter_simplified import render_project_submission_form
     from utils.database import create_project
     
+    # Render the project submission form and get the result
     success, result = render_project_submission_form()
     
-    if success:
-        # Store the project in the database
-        if 'data' in result and 'args' in result['data']:
+    # Check if we have a successful result
+    if success and result and 'signature' in result and 'data' in result and 'args' in result['data']:
+        try:
+            # Store the project in the database
             project = create_project(
                 name=result['data']['args']['name'],
                 description=result['data']['args']['description'],
-                ip_terms=result['data']['args']['ip_terms'] if 'ip_terms' in result['data']['args'] else None,
+                ip_terms=result['data']['args'].get('ip_terms'),
                 transaction_signature=result['signature']
             )
             
             # Store project ID in session state for other components to use
-            st.session_state.current_project_id = project.id if project else None
-            
-        st.success(f"Project created successfully with transaction signature: {result['signature'][:7]}...{result['signature'][-4:]}")
-        st.session_state.show_confirmation = True
-        st.session_state.latest_tx_signature = result['signature']
+            if project:
+                st.session_state.current_project_id = project.id
+                
+                # Show success message with transaction details
+                st.success("Project created successfully!")
+                st.markdown(f"""
+                <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #AAA;">Transaction Signature:</span>
+                        <span class="transaction-hash">{result['signature'][:10]}...{result['signature'][-8:]}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #AAA;">Project Name:</span>
+                        <span style="color: #FFFFFF;">{result['data']['args']['name']}</span>
+                    </div>
+                    <div style="color: #14F195; margin-top: 10px;">
+                        The project has been created and stored on the blockchain.
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Reset form state
+                if 'project_form_submitted' in st.session_state:
+                    del st.session_state.project_form_submitted
+                    
+                # Store transaction signature in session state
+                st.session_state.latest_tx_signature = result['signature']
+                
+                # Force a rerun to update the UI
+                st.rerun()
+                
+        except Exception as e:
+            st.error(f"Error creating project: {str(e)}")
+            # Log the full error for debugging
+            import traceback
+            st.error(traceback.format_exc())
+    elif result is not None and not success:
+        # Show error message if the form was submitted but there was an error
+        st.error("There was an error processing your request. Please try again.")
 
 def render_smart_contract():
     """Main function to render smart contract interface"""

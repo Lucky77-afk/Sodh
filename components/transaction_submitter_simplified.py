@@ -79,7 +79,10 @@ def render_transaction_submitter(tx_type, tx_data):
     with st.expander(f"Transaction Details ({tx_type})"):
         st.json(tx_data)
         
-        if st.button("Sign and Submit Transaction", type="primary"):
+        # Use a unique key for the button to avoid conflicts
+        if st.button("Sign and Submit Transaction", 
+                    type="primary",
+                    key=f"submit_{tx_type}_{hash(str(tx_data))}"):
             with st.spinner("Processing transaction..."):
                 # Create and submit transaction
                 result = create_and_submit_transaction(tx_type, tx_data)
@@ -123,70 +126,96 @@ def render_transaction_submitter(tx_type, tx_data):
 
 def render_project_submission_form():
     """Renders a form to create a new collaboration project with transaction simulation"""
-    with st.form("new_project_form"):
-        st.markdown("### Create New Project")
-        project_name = st.text_input("Project Name", placeholder="Enter a name for your research collaboration")
-        project_description = st.text_area("Project Description", placeholder="Describe the goals and scope of this project")
+    st.markdown("### Create New Project")
+    
+    # Use session state to track form submission
+    if 'project_form_submitted' not in st.session_state:
+        st.session_state.project_form_submitted = False
+    
+    # Use columns for better layout
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        project_name = st.text_input("Project Name", 
+                                   placeholder="Enter a name for your research collaboration",
+                                   key="project_name")
+    
+    # Project description takes full width
+    project_description = st.text_area("Project Description", 
+                                     placeholder="Describe the goals and scope of this project",
+                                     key="project_description")
+    
+    # Add currency preference for the project
+    st.markdown("#### Project Funding Options")
+    col1, col2 = st.columns(2)
+    with col1:
+        default_currency = st.selectbox("Default Currency", 
+                                      options=["SOL", "USDT"],
+                                      key="default_currency")
+    with col2:
+        accept_multiple = st.checkbox("Accept multiple currencies", 
+                                    value=True,
+                                    key="accept_multiple")
         
-        # Add currency preference for the project
-        st.markdown("#### Project Funding Options")
-        col1, col2 = st.columns(2)
-        with col1:
-            default_currency = st.selectbox("Default Currency", options=["SOL", "USDT"])
-        with col2:
-            accept_multiple = st.checkbox("Accept multiple currencies", value=True)
+    ip_terms = st.text_area("IP Terms", 
+                         value="All intellectual property developed through this collaboration will be jointly owned by participants proportional to their contribution percentage.",
+                         key="ip_terms")
+    
+    # Submit button outside of form
+    if st.button("Prepare Transaction", type="primary"):
+        if not st.session_state.project_name or not st.session_state.project_description:
+            st.error("Please fill in all required fields")
+            return None, None
             
-        ip_terms = st.text_area("IP Terms", 
-                               value="All intellectual property developed through this collaboration will be jointly owned by participants proportional to their contribution percentage.")
+        st.session_state.project_form_submitted = True
         
-        # Form submission
-        submit_button = st.form_submit_button("Prepare Transaction")
+    # Process form submission
+    if st.session_state.project_form_submitted:
+        # Create transaction data with appropriate token information based on selection
+        if st.session_state.default_currency == "SOL":
+            token_accounts = {
+                "admin": "connected_wallet_address",
+                "project": "derived_project_pda",
+                "system_program": "11111111111111111111111111111111",
+            }
+            # Add token program accounts if accepting multiple currencies
+            if st.session_state.accept_multiple:
+                token_accounts.update({
+                    "usdt_mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",  # USDT on Solana
+                    "token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                })
+        else:  # USDT is default
+            token_accounts = {
+                "admin": "connected_wallet_address",
+                "project": "derived_project_pda",
+                "usdt_mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",  # USDT on Solana
+                "escrow_account": "derived_escrow_pda",
+                "token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                "system_program": "11111111111111111111111111111111",
+            }
         
-        if submit_button:
-            if project_name and project_description:
-                # Create transaction data with appropriate token information based on selection
-                if default_currency == "SOL":
-                    token_accounts = {
-                        "admin": "connected_wallet_address",
-                        "project": "derived_project_pda",
-                        "system_program": "11111111111111111111111111111111",
-                    }
-                    # Add token program accounts if accepting multiple currencies
-                    if accept_multiple:
-                        token_accounts.update({
-                            "usdt_mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",  # USDT on Solana
-                            "token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-                        })
-                else:  # USDT is default
-                    token_accounts = {
-                        "admin": "connected_wallet_address",
-                        "project": "derived_project_pda",
-                        "usdt_mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",  # USDT on Solana
-                        "escrow_account": "derived_escrow_pda",
-                        "token_program": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-                        "system_program": "11111111111111111111111111111111",
-                    }
-                
-                # Create transaction data
-                tx_data = {
-                    "instruction": "initialize_project",
-                    "accounts": token_accounts,
-                    "args": {
-                        "name": project_name,
-                        "description": project_description,
-                        "ip_terms": ip_terms,
-                        "default_currency": default_currency,
-                        "accept_multiple_currencies": accept_multiple
-                    }
-                }
-                
-                # Render the transaction submitter
-                return render_transaction_submitter("create_project", tx_data)
-            else:
-                st.error("Please fill in all required fields")
-                return None, None
+        # Create transaction data
+        tx_data = {
+            "instruction": "initialize_project",
+            "accounts": token_accounts,
+            "args": {
+                "name": st.session_state.project_name,
+                "description": st.session_state.project_description,
+                "ip_terms": st.session_state.ip_terms,
+                "default_currency": st.session_state.default_currency,
+                "accept_multiple_currencies": st.session_state.accept_multiple
+            }
+        }
         
-        return None, None  # No submission attempted
+        # Render the transaction submitter
+        result = render_transaction_submitter("create_project", tx_data)
+        
+        # Reset form state if transaction was submitted
+        if result[0] is not None:
+            st.session_state.project_form_submitted = False
+            return result
+    
+    return None, None  # No submission attempted
 
 def render_milestone_submission_form(project_id="Proj1"):
     """Renders a form to create a new milestone with transaction simulation"""
