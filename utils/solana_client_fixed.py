@@ -7,15 +7,21 @@ from solders.instruction import Instruction as TransactionInstruction, AccountMe
 
 # Import Blockhash from the correct location
 try:
-    # For newer versions of solders
+    # Try the most common location first
     from solders.hash import Hash as Blockhash
 except ImportError:
     try:
-        # For older versions of solders
-        from solders.blockhash import Blockhash
-    except ImportError:
-        # Fallback to direct import if available
-        from solders import Blockhash
+        # Try direct import
+        import solders
+        Blockhash = solders.hash.Hash
+    except (ImportError, AttributeError):
+        # Last resort - create a simple Blockhash class
+        class Blockhash:
+            def __init__(self, blockhash_str):
+                self.blockhash = blockhash_str
+                
+            def __str__(self):
+                return self.blockhash
 
 from solders.keypair import Keypair
 from datetime import datetime, timedelta

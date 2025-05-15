@@ -6,15 +6,21 @@ import base58
 # Import Blockhash from the correct location
 # Import Blockhash from the correct location
 try:
-    # For newer versions of solders
+    # Try the most common location first
     from solders.hash import Hash as Blockhash
 except ImportError:
     try:
-        # For older versions of solders
-        from solders.blockhash import Blockhash
-    except ImportError:
-        # Fallback to direct import if available
-        from solders import Blockhash
+        # Try direct import
+        import solders
+        Blockhash = solders.hash.Hash
+    except (ImportError, AttributeError):
+        # Last resort - create a simple Blockhash class
+        class Blockhash:
+            def __init__(self, blockhash_str):
+                self.blockhash = blockhash_str
+                
+            def __str__(self):
+                return self.blockhash
 
 from utils.database import record_transaction
 from utils.solana_client_new import get_solana_client, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID, USDT_MINT, create_keypair, get_recent_blockhash
