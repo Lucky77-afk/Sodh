@@ -11,7 +11,14 @@ def is_valid_solana_address(address):
     # Solana addresses are base58 encoded and typically 32-44 characters long
     if not re.match(r'^[1-9A-HJ-NP-Za-km-z]{32,44}$', address):
         return False
-    return True
+    
+    # Try to convert to Pubkey to verify validity
+    try:
+        from solders.pubkey import Pubkey
+        Pubkey.from_string(address)
+        return True
+    except Exception:
+        return False
 
 def render_account():
     """Renders the account/wallet page with balance and transactions"""
@@ -139,7 +146,25 @@ def render_account():
                 st.caption("Note: Token data is a sample representation")
                 
             else:
-                st.warning("Account not found or empty")
+                # Show a more helpful message for empty accounts
+                st.info("This wallet address exists on the Solana network but has no balance or associated data.")
+                
+                # Add helpful information
+                st.markdown("""
+                <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                    <div style="color: #9945FF; margin-bottom: 10px;">How to use this wallet:</div>
+                    <div style="color: #AAA;">
+                        1. To receive SOL: Share this address with others to receive SOL transfers<br>
+                        2. To send SOL: Connect this wallet to a Solana wallet app (like Phantom) to send transactions<br>
+                        3. To check balance: Connect this wallet to a wallet app or use a Solana explorer
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <a href="https://solana.com/wallet" target="_blank" style="color: #9945FF; text-decoration: none;">
+                            Learn more about Solana wallets
+                        </a>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Error retrieving account data: {str(e)}")
     else:

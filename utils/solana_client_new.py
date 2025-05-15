@@ -16,8 +16,8 @@ def get_solana_client():
     """Returns a Solana client instance for the specified network"""
     # Import here to avoid module resolution issues
     from solana.rpc.api import Client
-    # Using Solana Devnet for development (switch to mainnet for production)
-    return Client("https://api.devnet.solana.com")
+    # Using Solana Mainnet-beta for production
+    return Client("https://api.mainnet-beta.solana.com")
 
 @st.cache_data(ttl=60)
 def get_recent_blocks(_client, limit=10):
@@ -399,8 +399,20 @@ def get_account_transactions(_client, address, limit=5):
 def get_account_info(_client, address):
     """Get account info for a Solana address"""
     try:
+        # Convert string address to Pubkey
+        from solders.pubkey import Pubkey
+        try:
+            pubkey = Pubkey.from_string(address)
+        except Exception as e:
+            st.error(f"Invalid Solana address format: {str(e)}")
+            return None
+        
         # Get account info
-        response = _client.get_account_info(address)
+        response = _client.get_account_info(pubkey)
+        
+        # Log the raw response for debugging
+        import json
+        st.write(f"Raw Response: {json.dumps(response, default=str)}")
         
         # Handle both solders response and legacy dict response
         if hasattr(response, 'value'):
@@ -414,12 +426,18 @@ def get_account_info(_client, address):
                         "rentEpoch": account_info.rent_epoch
                     }
                 }
+            # If account_info is None, it means the account doesn't exist
+            st.info("Account not found on Solana network")
             return None
         elif isinstance(response, dict) and 'result' in response:
             return response['result']
-        return None
+        else:
+            st.error("Unexpected response format from Solana API")
+            return None
     except Exception as e:
+        import traceback
         st.error(f"Error fetching account info: {str(e)}")
+        st.write(f"Full error: {traceback.format_exc()}")
         return None
 
 def create_keypair():
