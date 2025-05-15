@@ -3,24 +3,27 @@ import time
 import json
 import base58
 
-# Import Blockhash from the correct location
-# Import Blockhash from the correct location
+# Import Blockhash from the correct location for solders 0.26.0
 try:
     # Try the most common location first
     from solders.hash import Hash as Blockhash
 except ImportError:
     try:
-        # Try direct import
-        import solders
-        Blockhash = solders.hash.Hash
+        # Try direct import for solders 0.26.0
+        from solders import blockhash as solders_blockhash
+        Blockhash = solders_blockhash.Blockhash
     except (ImportError, AttributeError):
-        # Last resort - create a simple Blockhash class
-        class Blockhash:
-            def __init__(self, blockhash_str):
-                self.blockhash = blockhash_str
-                
-            def __str__(self):
-                return self.blockhash
+        try:
+            # Try another possible location
+            from solders.rpc.responses import Blockhash
+        except ImportError:
+            # Last resort - create a simple Blockhash class
+            class Blockhash:
+                def __init__(self, blockhash_str):
+                    self.blockhash = blockhash_str
+                    
+                def __str__(self):
+                    return self.blockhash
 
 from utils.database import record_transaction
 from utils.solana_client_new import get_solana_client, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID, USDT_MINT, create_keypair, get_recent_blockhash

@@ -5,23 +5,27 @@ from solders.pubkey import Pubkey as PublicKey
 from solders.transaction import Transaction
 from solders.instruction import Instruction as TransactionInstruction, AccountMeta
 
-# Import Blockhash from the correct location
+# Import Blockhash from the correct location for solders 0.26.0
 try:
     # Try the most common location first
     from solders.hash import Hash as Blockhash
 except ImportError:
     try:
-        # Try direct import
-        import solders
-        Blockhash = solders.hash.Hash
+        # Try direct import for solders 0.26.0
+        from solders import blockhash as solders_blockhash
+        Blockhash = solders_blockhash.Blockhash
     except (ImportError, AttributeError):
-        # Last resort - create a simple Blockhash class
-        class Blockhash:
-            def __init__(self, blockhash_str):
-                self.blockhash = blockhash_str
-                
-            def __str__(self):
-                return self.blockhash
+        try:
+            # Try another possible location
+            from solders.rpc.responses import Blockhash
+        except ImportError:
+            # Last resort - create a simple Blockhash class
+            class Blockhash:
+                def __init__(self, blockhash_str):
+                    self.blockhash = blockhash_str
+                    
+                def __str__(self):
+                    return self.blockhash
 
 from solders.keypair import Keypair
 from datetime import datetime, timedelta
