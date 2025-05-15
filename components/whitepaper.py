@@ -197,38 +197,72 @@ def render_whitepaper():
         """)
         
         # Timeline visualization
-        st.markdown("""
-        <div style="background-color: #1E1E1E; padding: 20px; border-radius: 10px; margin-top: 15px; position: relative; height: 100px;">
-            <div style="color: #14F195; margin-bottom: 15px; font-weight: bold; text-align: center;">IMPLEMENTATION TIMELINE</div>
-            <div style="position: relative; height: 60px;">
-                <div style="position: absolute; top: 25px; left: 0; right: 0; height: 2px; background-color: #333;"></div>
-                
-                <!-- Timeline dots -->
-                <div style="position: absolute; top: 21px; left: 0%; width: 10px; height: 10px; background-color: #14F195; border-radius: 50%;"></div>
-                <div style="position: absolute; top: 21px; left: 20%; width: 10px; height: 10px; background-color: #14F195; border-radius: 50%;"></div>
-                <div style="position: absolute; top: 21px; left: 40%; width: 10px; height: 10px; background-color: #14F195; border-radius: 50%;"></div>
-                <div style="position: absolute; top: 21px; left: 60%; width: 10px; height: 10px; background-color: #9945FF; border-radius: 50%;"></div>
-                <div style="position: absolute; top: 21px; left: 80%; width: 10px; height: 10px; background-color: #9945FF; border-radius: 50%;"></div>
-                <div style="position: absolute; top: 21px; left: 100%; width: 10px; height: 10px; background-color: #9945FF; border-radius: 50%;"></div>
-                
-                <!-- Timeline dates -->
-                <div style="position: absolute; top: 0; left: 0%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Start</div>
-                <div style="position: absolute; top: 0; left: 20%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q2 2025</div>
-                <div style="position: absolute; top: 0; left: 40%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q4 2025</div>
-                <div style="position: absolute; top: 0; left: 60%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q2 2026</div>
-                <div style="position: absolute; top: 0; left: 80%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q4 2026</div>
-                <div style="position: absolute; top: 0; left: 100%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q2 2027</div>
-                
-                <!-- Phase labels -->
-                <div style="position: absolute; top: 35px; left: 0%; transform: translateX(-50%); color: #14F195; font-size: 0.8rem; text-align: center; width: 100px;">Requirements</div>
-                <div style="position: absolute; top: 35px; left: 20%; transform: translateX(-50%); color: #14F195; font-size: 0.8rem; text-align: center; width: 100px;">Prototype</div>
-                <div style="position: absolute; top: 35px; left: 40%; transform: translateX(-50%); color: #14F195; font-size: 0.8rem; text-align: center; width: 100px;">Pilot</div>
-                <div style="position: absolute; top: 35px; left: 60%; transform: translateX(-50%); color: #9945FF; font-size: 0.8rem; text-align: center; width: 100px;">Beta</div>
-                <div style="position: absolute; top: 35px; left: 80%; transform: translateX(-50%); color: #9945FF; font-size: 0.8rem; text-align: center; width: 100px;">Deployment</div>
-                <div style="position: absolute; top: 35px; left: 100%; transform: translateX(-50%); color: #9945FF; font-size: 0.8rem; text-align: center; width: 100px;">Continuous</div>
+        st.markdown("### Implementation Timeline")
+        
+        # Create a container for the timeline
+        with st.container():
+            # Timeline header
+            st.markdown("""
+            <div style="margin-bottom: 10px; font-weight: bold; color: #14F195; text-align: center;">
+                PROJECT ROADMAP
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+            
+            # Create columns for the timeline
+            cols = st.columns(6)
+            
+            # Timeline points
+            timeline_points = [
+                {"title": "Start", "date": "Q1 2025", "completed": True, "color": "#14F195"},
+                {"title": "Prototype", "date": "Q2 2025", "completed": True, "color": "#14F195"},
+                {"title": "Pilot", "date": "Q4 2025", "completed": True, "color": "#14F195"},
+                {"title": "Beta", "date": "Q2 2026", "completed": False, "color": "#9945FF"},
+                {"title": "Deploy", "date": "Q4 2026", "completed": False, "color": "#9945FF"},
+                {"title": "Grow", "date": "Q2 2027", "completed": False, "color": "#9945FF"}
+            ]
+            
+            # Display timeline points
+            for i, point in enumerate(timeline_points):
+                with cols[i]:
+                    # Status indicator
+                    status_icon = "✓" if point["completed"] else ""
+                    st.markdown(f"""
+                    <div style="text-align: center; margin-bottom: 5px;">
+                        <div style="
+                            width: 30px; 
+                            height: 30px; 
+                            background-color: {point['color']};
+                            border-radius: 50%;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: #000;
+                            font-weight: bold;
+                            margin: 0 auto 5px;
+                        ">
+                            {status_icon}
+                        </div>
+                        <div style="font-size: 0.8rem; color: #AAA;">{point['date']}</div>
+                        <div style="font-weight: 500; color: {point['color']};">{point['title']}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            # Timeline connector lines
+            st.markdown("""
+            <style>
+                .timeline-connector {
+                    position: relative;
+                    height: 2px;
+                    background: linear-gradient(90deg, #14F195, #9945FF);
+                    margin: -15px 5% 20px 5%;
+                    z-index: 0;
+                }
+                @media (max-width: 768px) {
+                    .timeline-connector { display: none; }
+                }
+            </style>
+            <div class="timeline-connector"></div>
+            """, unsafe_allow_html=True)
     
     # Conclusion
     st.markdown("### Conclusion")

@@ -402,7 +402,7 @@ describe('collaboration_agreement', () => {
   });
 
   it('Updates IP terms', async () => {
-    const newIpTerms = "Updated IP terms: All intellectual property will be licensed under MIT license, with royalties distributed based on contribution percentages.";
+    const newIpTerms = "Updated IP terms: All intellectual property will be licensed under GNU Affero General Public License v3.0, with royalties distributed based on contribution percentages.";
     
     await program.methods.updateIpTerms(newIpTerms)
       .accounts({

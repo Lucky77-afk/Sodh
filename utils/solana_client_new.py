@@ -216,13 +216,12 @@ def get_account_info(_client, address):
         except Exception as e:
             st.error(f"Invalid Solana address format: {str(e)}")
             return None
+            
+        # Use the provided client instead of creating a new one
+        client = _client
         
-        # Import client here to avoid streamlit hashing issues
-        from solana.rpc.api import Client
-        client = Client("https://api.devnet.solana.com")
-        
-        # Get SOL balance
-        balance_response = client.get_balance(address)
+        # Get SOL balance using Pubkey object
+        balance_response = client.get_balance(pubkey)
         if 'result' not in balance_response:
             return None
             
@@ -230,8 +229,8 @@ def get_account_info(_client, address):
         balance_lamports = balance_response['result']['value']
         balance_sol = balance_lamports / 1_000_000_000  # 1 SOL = 10^9 lamports
         
-        # Get transaction count
-        tx_signatures = client.get_signatures_for_address(address, limit=100)
+        # Get transaction count using Pubkey object
+        tx_signatures = client.get_signatures_for_address(pubkey, limit=100)
         tx_count = len(tx_signatures.get('result', []))
         
         # Try to get USDT token balance if address has associated token account
@@ -239,7 +238,7 @@ def get_account_info(_client, address):
         try:
             # Find USDT associated token account for this wallet
             associated_token_response = client.get_token_accounts_by_owner(
-                address, 
+                pubkey, 
                 {'mint': USDT_MINT}
             )
             

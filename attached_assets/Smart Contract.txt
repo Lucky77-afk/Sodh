@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: AGPL-3.0-only
 //
 // Collaboration Agreement Smart Contract
 // Built for Solana using Anchor framework (2025-compatible)
