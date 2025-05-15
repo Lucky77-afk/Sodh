@@ -199,70 +199,80 @@ def render_whitepaper():
         # Timeline visualization
         st.markdown("### Implementation Timeline")
         
+        # Timeline points
+        timeline_points = [
+            {"title": "Start", "date": "Q1 2025", "completed": True, "color": "#14F195"},
+            {"title": "Prototype", "date": "Q2 2025", "completed": True, "color": "#14F195"},
+            {"title": "Pilot", "date": "Q4 2025", "completed": True, "color": "#14F195"},
+            {"title": "Beta", "date": "Q2 2026", "completed": False, "color": "#9945FF"},
+            {"title": "Deploy", "date": "Q4 2026", "completed": False, "color": "#9945FF"},
+            {"title": "Grow", "date": "Q2 2027", "completed": False, "color": "#9945FF"}
+        ]
+        
         # Create a container for the timeline
         with st.container():
             # Timeline header
-            st.markdown("""
-            <div style="margin-bottom: 10px; font-weight: bold; color: #14F195; text-align: center;">
-                PROJECT ROADMAP
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown("<div style='margin-bottom: 10px; font-weight: bold; color: #14F195; text-align: center;'>PROJECT ROADMAP</div>", unsafe_allow_html=True)
             
             # Create columns for the timeline
-            cols = st.columns(6)
-            
-            # Timeline points
-            timeline_points = [
-                {"title": "Start", "date": "Q1 2025", "completed": True, "color": "#14F195"},
-                {"title": "Prototype", "date": "Q2 2025", "completed": True, "color": "#14F195"},
-                {"title": "Pilot", "date": "Q4 2025", "completed": True, "color": "#14F195"},
-                {"title": "Beta", "date": "Q2 2026", "completed": False, "color": "#9945FF"},
-                {"title": "Deploy", "date": "Q4 2026", "completed": False, "color": "#9945FF"},
-                {"title": "Grow", "date": "Q2 2027", "completed": False, "color": "#9945FF"}
-            ]
+            cols = st.columns(len(timeline_points))
             
             # Display timeline points
             for i, point in enumerate(timeline_points):
                 with cols[i]:
-                    # Status indicator
-                    status_icon = "✓" if point["completed"] else ""
-                    st.markdown(f"""
-                    <div style="text-align: center; margin-bottom: 5px;">
-                        <div style="
-                            width: 30px; 
-                            height: 30px; 
-                            background-color: {point['color']};
-                            border-radius: 50%;
-                            display: inline-flex;
-                            align-items: center;
-                            justify-content: center;
-                            color: #000;
-                            font-weight: bold;
-                            margin: 0 auto 5px;
-                        ">
-                            {status_icon}
-                        </div>
-                        <div style="font-size: 0.8rem; color: #AAA;">{point['date']}</div>
-                        <div style="font-weight: 500; color: {point['color']};">{point['title']}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    col1, col2, col3 = st.columns([1,1,1])
+                    with col2:
+                        # Status indicator
+                        status_icon = "✓" if point["completed"] else ""
+                        st.markdown(
+                            f"""
+                            <div style="
+                                width: 30px;
+                                height: 30px;
+                                background-color: {point['color']};
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: #000;
+                                font-weight: bold;
+                                margin: 0 auto 5px;
+                            ">
+                                {status_icon}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                        st.markdown(f"<div style='font-size: 0.8rem; color: #AAA; text-align: center;'>{point['date']}</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='font-weight: 500; color: {point['color']}; text-align: center;'>{point['title']}</div>", unsafe_allow_html=True)
             
-            # Timeline connector lines
-            st.markdown("""
-            <style>
-                .timeline-connector {
-                    position: relative;
-                    height: 2px;
-                    background: linear-gradient(90deg, #14F195, #9945FF);
-                    margin: -15px 5% 20px 5%;
-                    z-index: 0;
-                }
-                @media (max-width: 768px) {
-                    .timeline-connector { display: none; }
-                }
-            </style>
-            <div class="timeline-connector"></div>
-            """, unsafe_allow_html=True)
+            # Add connector line using HTML/CSS
+            st.markdown(
+                """
+                <style>
+                    .timeline-container {
+                        position: relative;
+                        margin: 20px 0;
+                    }
+                    .timeline-line {
+                        position: absolute;
+                        top: 15px;
+                        left: 5%;
+                        right: 5%;
+                        height: 2px;
+                        background: linear-gradient(90deg, #14F195, #9945FF);
+                        z-index: 0;
+                    }
+                    @media (max-width: 768px) {
+                        .timeline-line { display: none; }
+                    }
+                </style>
+                <div class='timeline-container'>
+                    <div class='timeline-line'></div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
     
     # Conclusion
     st.markdown("### Conclusion")
