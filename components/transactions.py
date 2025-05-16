@@ -90,54 +90,53 @@ def render_transactions():
             client = get_solana_client()
             tx_details = get_transaction_details(client, tx_search)
             
-            if tx_details:
-                # Status indicator - handle both dict and object access
-                meta = tx_details.get('meta', {}) if hasattr(tx_details, 'get') else {}
-                status = "Success" if (hasattr(meta, 'err') and meta.err is None) or (hasattr(meta, 'get') and meta.get('err') is None) else "Failed"
-                status_color = "#14F195" if status == "Success" else "#FF5C5C"
+            if tx_details and 'error' in tx_details:
+                st.error(f"Error: {tx_details['error']} (Occurred at {tx_details['timestamp']})")
+                return
+            
+            if not tx_details:
+                st.error("Transaction not found")
+                return
                 
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.markdown(f"""
-                    <div class="stCard">
-                        <div style="font-size: 0.9rem; color: #AAA;">STATUS</div>
-                        <div style="font-size: 1.2rem; color: {status_color};">{status}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                with col2:
-                    block_time = getattr(tx_details, 'blockTime', 0) if hasattr(tx_details, 'blockTime') else tx_details.get('blockTime', 0)
-                    formatted_time = format_timestamp(block_time)
-                    st.markdown(f"""
-                    <div class="stCard">
-                        <div style="font-size: 0.9rem; color: #AAA;">TIMESTAMP</div>
-                        <div style="font-size: 1.2rem; color: #FFFFFF;">{formatted_time}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                with col3:
-                    slot = getattr(tx_details, 'slot', 'Unknown') if hasattr(tx_details, 'slot') else tx_details.get('slot', 'Unknown')
-                    st.markdown(f"""
-                    <div class="stCard">
-                        <div style="font-size: 0.9rem; color: #AAA;">SLOT</div>
-                        <div style="font-size: 1.2rem; color: #FFFFFF;">{slot}</div>
-                    </div>
-                    """, unsafe_include_html=True)
-                
-                # Transaction signature
-                st.markdown("#### Signature")
-                st.code(tx_search, language="text")
-                
-                # Fee - handle both dict and object access
-                try:
-                    meta = tx_details.get('meta', {}) if hasattr(tx_details, 'get') else {}
-                    fee_lamports = getattr(meta, 'fee', 0) if hasattr(meta, 'fee') else meta.get('fee', 0)
-                    fee = float(fee_lamports) / 1_000_000_000  # Convert lamports to SOL
-                    st.markdown(f"#### Fee: {fee:.9f} SOL")
-                except (TypeError, AttributeError) as e:
-                    st.warning(f"Could not determine transaction fee: {str(e)}")
-                
+            # Status indicator
+            meta = tx_details.get('meta', {})
+            status = "Success" if meta.get('err') is None else "Failed"
+            status_color = "#14F195" if status == "Success" else "#FF5C5C"
+            
+            # Transaction summary
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.markdown(f"<div style='font-size: 1.2rem; color: {status_color};'>Status: {status}</div>", unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"<div style='font-size: 1.2rem;'>Slot: {tx_details.get('slot', 'Unknown')}</div>", unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"<div style='font-size: 1.2rem;'>Fee: {meta.get('fee', 0):.9f} SOL</div>", unsafe_allow_html=True)
+            
+            # Transaction details
+            st.markdown("### Details")
+            
+            # Instructions
+            instructions = tx_details.get('transaction', {}).get('message', {}).get('instructions', [])
+            if instructions:
+                st.markdown("<h3>Instructions</h3>", unsafe_allow_html=True)
+                for idx, instr in enumerate(instructions):
+                    st.markdown(f"<h4>Instruction {idx + 1}</h4>", unsafe_allow_html=True)
+                    st.json(instr)
+            
+            # Accounts
+            accounts = tx_details.get('transaction', {}).get('message', {}).get('account_keys', [])
+            if accounts:
+                st.markdown("<h3>Accounts</h3>", unsafe_allow_html=True)
+                for idx, account in enumerate(accounts):
+                    st.markdown(f"<div>Account {idx + 1}: {account}</div>", unsafe_allow_html=True)
+            
+            # Signatures
+            signatures = tx_details.get('transaction', {}).get('signatures', [])
+            if signatures:
+                st.markdown("<h3>Signatures</h3>", unsafe_allow_html=True)
+                for idx, sig in enumerate(signatures):
+                    st.markdown(f"<div>Signature {idx + 1}: {sig}</div>", unsafe_allow_html=True)
                 # Instructions
                 st.markdown("#### Instructions")
                 try:

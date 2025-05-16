@@ -169,7 +169,8 @@ def get_recent_transactions(_client, limit=10):
         # Get recent confirmed signatures using client
         signatures_response = client.get_signatures_for_address(
             account=SYSTEM_PROGRAM_ID,  # System program gets many transactions
-            limit=limit
+            limit=limit,
+            commitment="confirmed"
         )
         
         # Handle solders response
@@ -203,7 +204,7 @@ def get_recent_transactions(_client, limit=10):
                 status = "Success" if tx_data.get('meta', {}).get('err') is None else "Failed"
                 
                 # Get block time
-                block_time = tx_data.get('blockTime', 0)
+                block_time = tx_data.get('block_time', 0)
                 formatted_time = datetime.fromtimestamp(block_time).strftime("%Y-%m-%d %H:%M:%S") if block_time else "Unknown"
                 
                 # Get slot
@@ -253,17 +254,66 @@ def get_transaction_details(_client, signature_str):
         # Convert string signature to Signature object
         signature = create_signature_from_string(signature_str)
         
-        tx_response = client.get_transaction(signature)
+        # Get transaction with specific configuration
+        tx_response = client.get_transaction(
+            signature,
+            commitment="confirmed",
+            encoding="jsonParsed"
+        )
         
-        # Handle solders response
+        # Handle response
         if hasattr(tx_response, 'value'):
-            return tx_response.value
-        elif isinstance(tx_response, dict) and 'result' in tx_response:
-            return tx_response['result']
+            # Convert to dictionary for serialization
+            tx_data = {
+                'meta': {
+                    'err': tx_response.value.meta.err,
+                    'fee': tx_response.value.meta.fee,
+                    'status': str(tx_response.value.meta.status)
+                },
+                'slot': tx_response.value.slot,
+                'block_time': tx_response.value.block_time,
+                'transaction': {
+                    'message': {
+                        'account_keys': [str(key) for key in tx_response.value.transaction.message.account_keys],
+                        'instructions': [
+                            {
+                                'program_id_index': instr.program_id_index,
+                                'accounts': instr.accounts,
+                                'data': base64.b64encode(instr.data).decode('utf-8')
+                            } for instr in tx_response.value.transaction.message.instructions
+                        ],
+                        'recent_blockhash': str(tx_response.value.transaction.message.recent_blockhash)
+                    },
+                    'signatures': [str(sig) for sig in tx_response.value.transaction.signatures]
+                }
+            }
+            return tx_data
+        elif isinstance(tx_response, dict):
+            # Handle standard dictionary response
+            tx_data = {
+                'meta': {
+                    'err': tx_response.get('meta', {}).get('err'),
+                    'fee': tx_response.get('meta', {}).get('fee'),
+                    'status': tx_response.get('meta', {}).get('status', {}).get('Ok')
+                },
+                'slot': tx_response.get('slot'),
+                'block_time': tx_response.get('blockTime'),
+                'transaction': {
+                    'message': {
+                        'account_keys': tx_response.get('transaction', {}).get('message', {}).get('accountKeys', []),
+                        'instructions': tx_response.get('transaction', {}).get('message', {}).get('instructions', []),
+                        'recent_blockhash': tx_response.get('transaction', {}).get('message', {}).get('recentBlockhash')
+                    },
+                    'signatures': tx_response.get('transaction', {}).get('signatures', [])
+                }
+            }
+            return tx_data
         return None
     except Exception as e:
-        st.error(f"Error fetching transaction details: {str(e)}")
-        return None
+        return {
+            'error': str(e),
+            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
 
 @st.cache_data(ttl=60)
 def get_account_info(_client, address):
