@@ -6,67 +6,119 @@ from utils.solana_client_new import get_solana_client
 
 def create_and_submit_transaction(tx_type, tx_data):
     """
-    Creates and simulates a Solana transaction based on transaction type and data
+    Creates and submits a real Solana transaction based on transaction type and data
     """
-    # Initialize UI elements for progress tracking
-    progress_bar = st.progress(0)
-    status_text = st.empty()
-    
-    # Get Solana client
-    client = get_solana_client()
-    
-    # Convert input data to JSON for database storage
-    tx_json = json.dumps(tx_data, indent=2)
-    
-    # Update status
-    status_text.text("Preparing transaction...")
-    progress_bar.progress(20)
-    
-    # Simulate transaction, for demo purposes
-    time.sleep(1.0)
-    status_text.text("Building transaction...")
-    progress_bar.progress(40)
-    
-    time.sleep(0.5)
-    status_text.text("Signing transaction...")
-    progress_bar.progress(60)
-    
-    time.sleep(0.5)
-    status_text.text("Sending transaction to Solana network...")
-    progress_bar.progress(80)
-    
-    time.sleep(1.0)
-    status_text.text("Transaction confirmed!")
-    progress_bar.progress(100)
-    
-    # Generate a fake transaction signature for demo purposes
-    tx_signature = f"5KpM{''.join([str(i % 10) for i in range(10)])}QVhVFN{''.join([str(i % 10) for i in range(20)])}"
-    current_time = int(time.time())
-    slot = 150000000 + (current_time % 10000)  # Example slot number
-    
-    # Record transaction in database
     try:
-        record_transaction(
-            signature=tx_signature,
-            tx_type=tx_type,
-            status="Confirmed",
-            blocktime=current_time,
-            slot=slot,
-            data=tx_json
-        )
-        print(f"Successfully recorded transaction: {tx_signature}")
-    except Exception as e:
-        print(f"Error recording transaction: {str(e)}")
+        # Initialize UI elements for progress tracking
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        # Get Solana client
+        client = get_solana_client()
+        
+        # Convert input data to JSON for database storage
+        tx_json = json.dumps(tx_data, indent=2)
+        
+        # Update status
+        status_text.text("Preparing transaction...")
+        progress_bar.progress(20)
+        
+        # Create transaction based on type
+        if tx_type == "initialize_project":
+            # Create project initialization transaction
+            from solders.instruction import Instruction
+            from solders.keypair import Keypair
+            from solders.pubkey import Pubkey
+            from solders.system_program import CreateAccountParams, create_account
+            from solders.transaction import Transaction
+            
+            # Generate project PDA
+            project_pda = Pubkey.find_program_address(
+                [b"project", bytes(tx_data["args"]["name"], "utf-8")],
+                Pubkey.from_string("YourProgramAddressHere")
+            )[0]
+            
+            # Create account instruction
+            create_acc_ix = create_account(
+                CreateAccountParams(
+                    from_pubkey=st.session_state.connected_wallet,
+                    to_pubkey=project_pda,
+                    lamports=1000000000,  # 1 SOL
+                    space=8 + 256 + 256 + 1024,  # Account data size
+                    owner=Pubkey.from_string("YourProgramAddressHere")
+                )
+            )
+            
+            # Initialize project instruction
+            init_ix = Instruction(
+                program_id=Pubkey.from_string("YourProgramAddressHere"),
+                data=bytes([0]),  # Instruction discriminator
+                accounts=[
+                    {"pubkey": st.session_state.connected_wallet, "is_signer": True, "is_writable": False},
+                    {"pubkey": project_pda, "is_signer": False, "is_writable": True},
+                    {"pubkey": Pubkey.from_string("11111111111111111111111111111111"), "is_signer": False, "is_writable": False},
+                ]
+            )
+            
+            # Create and send transaction
+            tx = Transaction().add(create_acc_ix).add(init_ix)
+            response = client.send_transaction(tx)
+            
+            # Extract signature
+            tx_signature = response.value
+            
+            # Record transaction in database
+            record_transaction(
+                signature=tx_signature,
+                tx_type=tx_type,
+                status="Confirmed",
+                blocktime=int(time.time()),
+                slot=response.context.slot,
+                data=tx_json
+            )
+            
+            return {
+                "success": True,
+                "signature": tx_signature,
+                "blocktime": int(time.time()),
+                "slot": response.context.slot,
+                "tx_type": tx_type,
+                "data": tx_data
+            }
+        
+        # Add other transaction types here
+        elif tx_type == "add_participant":
+            # Implement participant addition
+            pass
+        elif tx_type == "add_milestone":
+            # Implement milestone addition
+            pass
+        elif tx_type == "fund_milestone_sol":
+            # Implement SOL funding
+            pass
+        elif tx_type == "fund_milestone_usdt":
+            # Implement USDT funding
+            pass
+        elif tx_type == "complete_milestone":
+            # Implement milestone completion
+            pass
+        elif tx_type == "approve_milestone":
+            # Implement milestone approval
+            pass
+        elif tx_type == "distribute_milestone_payment":
+            # Implement payment distribution
+            pass
+            
+        return {
+            "success": False,
+            "error": f"Unsupported transaction type: {tx_type}"
+        }
     
-    # Return successful transaction data
-    return {
-        "success": True,
-        "signature": tx_signature,
-        "blocktime": current_time,
-        "slot": slot,
-        "tx_type": tx_type,
-        "data": tx_data
-    }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
 def render_transaction_submitter(tx_type, tx_data):
     """

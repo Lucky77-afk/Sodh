@@ -129,7 +129,7 @@ def render_account():
                         st.info("No recent transactions found for this account")
                 
                 except Exception as e:
-                    st.warning(f"Could not fetch transactions: {str(e)}")
+                    st.error(f"Failed to fetch transactions: {str(e)}")
                 
                 # Token holdings
                 st.markdown("### Token Holdings")
@@ -152,6 +152,24 @@ def render_account():
                 # Add helpful information
                 st.markdown("""
                 <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                    <div style="color: #9945FF; margin-bottom: 10px;">Wallet Status:</div>
+                    <div style="color: #AAA;">
+                        <div style="margin-bottom: 8px;">
+                            <span style="color: #14F195; font-weight: bold;">✅ Valid Address</span>
+                            <span style="color: #AAA;"> - This is a valid Solana wallet address</span>
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <span style="color: #FF5C5C; font-weight: bold;">❌ No Balance</span>
+                            <span style="color: #AAA;"> - This wallet has no SOL balance</span>
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <span style="color: #FF5C5C; font-weight: bold;">❌ No Transactions</span>
+                            <span style="color: #AAA;"> - This wallet has not made any transactions</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin: 15px 0;">
                     <div style="color: #9945FF; margin-bottom: 10px;">How to use this wallet:</div>
                     <div style="color: #AAA;">
                         1. To receive SOL: Share this address with others to receive SOL transfers<br>
@@ -162,6 +180,18 @@ def render_account():
                         <a href="https://solana.com/wallet" target="_blank" style="color: #9945FF; text-decoration: none;">
                             Learn more about Solana wallets
                         </a>
+                    </div>
+                </div>
+                
+                <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                    <div style="color: #9945FF; margin-bottom: 10px;">Next Steps:</div>
+                    <div style="color: #AAA;">
+                        1. Get some SOL by:<br>
+                        &nbsp;&nbsp;• Participating in airdrops<br>
+                        &nbsp;&nbsp;• Trading on a DEX<br>
+                        &nbsp;&nbsp;• Receiving transfers from others<br>
+                        2. Connect to a wallet app to start sending transactions<br>
+                        3. Use this address to receive payments and participate in projects
                     </div>
                 </div>
                 """, unsafe_allow_html=True)

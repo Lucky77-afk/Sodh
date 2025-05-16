@@ -193,38 +193,252 @@ def render_smart_contract():
     """Main function to render smart contract interface"""
     st.markdown('<h2>DAPPR Smart Contract</h2>', unsafe_allow_html=True)
     
+    # Get current wallet address from session state
+    wallet_address = st.session_state.get('connected_wallet')
+    if not wallet_address:
+        st.warning("Please connect your wallet to use smart contract functions")
+        return
+    
     tabs = st.tabs(["Projects", "Contract Explorer", "Milestones", "Participants"])
     
     with tabs[0]:
         render_contract_header()
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            render_project_form()
+        
+        # Project Operations
+        st.markdown("### Project Operations")
+        
+        # Create Project
+        if st.button("Create New Project", type="primary"):
+            with st.expander("Create Project Details"):
+                project_name = st.text_input("Project Name")
+                description = st.text_area("Description")
+                
+                if st.button("Submit Project", type="primary"):
+                    if project_name and description:
+                        tx_data = {
+                            "args": {
+                                "name": project_name,
+                                "description": description,
+                                "admin": wallet_address
+                            }
+                        }
+                        success, result = render_transaction_submitter("initialize_project", tx_data)
+                        if success:
+                            st.success(f"Project created successfully: {result['signature']}")
+                            st.rerun()
+                    else:
+                        st.error("Please fill in all required fields")
+        
+        # Add Participant
+        if st.button("Add Participant", type="secondary"):
+            with st.expander("Add Participant Details"):
+                participant_name = st.text_input("Participant Name")
+                wallet_address = st.text_input("Participant Wallet Address")
+                role = st.text_input("Role")
+                
+                if st.button("Add Participant", type="primary"):
+                    if participant_name and wallet_address and role:
+                        tx_data = {
+                            "args": {
+                                "name": participant_name,
+                                "wallet_address": wallet_address,
+                                "role": role,
+                                "project_id": st.session_state.get('current_project_id')
+                            }
+                        }
+                        success, result = render_transaction_submitter("add_participant", tx_data)
+                        if success:
+                            st.success(f"Participant added successfully: {result['signature']}")
+                            st.rerun()
+                    else:
+                        st.error("Please fill in all required fields")
+        
+        # Add Milestone
+        if st.button("Add Milestone", type="secondary"):
+            with st.expander("Add Milestone Details"):
+                title = st.text_input("Milestone Title")
+                description = st.text_area("Description")
+                deadline = st.date_input("Deadline")
+                payment_amount = st.number_input("Payment Amount", min_value=0.0, step=0.001)
+                token_type = st.selectbox("Token Type", ["SOL", "USDT"])
+                
+                if st.button("Add Milestone", type="primary"):
+                    if title and description and deadline and payment_amount > 0:
+                        tx_data = {
+                            "args": {
+                                "title": title,
+                                "description": description,
+                                "deadline": int(deadline.timestamp()),
+                                "payment_amount": payment_amount,
+                                "token_type": token_type,
+                                "project_id": st.session_state.get('current_project_id')
+                            }
+                        }
+                        success, result = render_transaction_submitter("add_milestone", tx_data)
+                        if success:
+                            st.success(f"Milestone added successfully: {result['signature']}")
+                            st.rerun()
+                    else:
+                        st.error("Please fill in all required fields")
+        
+        # Fund Milestone
+        if st.button("Fund Milestone", type="secondary"):
+            with st.expander("Fund Milestone Details"):
+                milestone_id = st.text_input("Milestone ID")
+                amount = st.number_input("Amount", min_value=0.0, step=0.001)
+                token_type = st.selectbox("Token Type", ["SOL", "USDT"])
+                
+                if st.button("Fund Milestone", type="primary"):
+                    if milestone_id and amount > 0:
+                        tx_data = {
+                            "args": {
+                                "milestone_id": milestone_id,
+                                "amount": amount,
+                                "token_type": token_type
+                            }
+                        }
+                        tx_type = "fund_milestone_sol" if token_type == "SOL" else "fund_milestone_usdt"
+                        success, result = render_transaction_submitter(tx_type, tx_data)
+                        if success:
+                            st.success(f"Milestone funded successfully: {result['signature']}")
+                            st.rerun()
+                    else:
+                        st.error("Please fill in all required fields")
+        
+        # Complete Milestone
+        if st.button("Complete Milestone", type="secondary"):
+            with st.expander("Complete Milestone Details"):
+                milestone_id = st.text_input("Milestone ID")
+                
+                if st.button("Complete Milestone", type="primary"):
+                    if milestone_id:
+                        tx_data = {
+                            "args": {
+                                "milestone_id": milestone_id
+                            }
+                        }
+                        success, result = render_transaction_submitter("complete_milestone", tx_data)
+                        if success:
+                            st.success(f"Milestone completed successfully: {result['signature']}")
+                            st.rerun()
+                    else:
+                        st.error("Please enter milestone ID")
+        
+        # Approve Milestone
+        if st.button("Approve Milestone", type="secondary"):
+            with st.expander("Approve Milestone Details"):
+                milestone_id = st.text_input("Milestone ID")
+                
+                if st.button("Approve Milestone", type="primary"):
+                    if milestone_id:
+                        tx_data = {
+                            "args": {
+                                "milestone_id": milestone_id
+                            }
+                        }
+                        success, result = render_transaction_submitter("approve_milestone", tx_data)
+                        if success:
+                            st.success(f"Milestone approved successfully: {result['signature']}")
+                            st.rerun()
+                    else:
+                        st.error("Please enter milestone ID")
+        
+        # Distribute Payment
+        if st.button("Distribute Payment", type="secondary"):
+            with st.expander("Distribute Payment Details"):
+                milestone_id = st.text_input("Milestone ID")
+                
+                if st.button("Distribute Payment", type="primary"):
+                    if milestone_id:
+                        tx_data = {
+                            "args": {
+                                "milestone_id": milestone_id
+                            }
+                        }
+                        success, result = render_transaction_submitter("distribute_milestone_payment", tx_data)
+                        if success:
+                            st.success(f"Payment distributed successfully: {result['signature']}")
+                            st.rerun()
+                    else:
+                        st.error("Please enter milestone ID")
+        
+        # Display existing projects
+        st.markdown("### Existing Projects")
+        render_contract_projects()
+        render_project_form()
         render_contract_projects()
         
     with tabs[1]:
         st.markdown("### Smart Contract Functions")
+        
+        # Create grid layout for functions
+        col1, col2 = st.columns(2)
+        
+        # Project Management Functions
+        with col1:
+            st.markdown("#### Project Management")
+            functions = [
+                {"name": "initialize_project", "description": "Creates a new collaboration project", "icon": "📁"},
+                {"name": "add_participant", "description": "Adds a participant to a project", "icon": "👥"},
+                {"name": "add_milestone", "description": "Creates a milestone for the project", "icon": "🎯"}
+            ]
+            
+            for function in functions:
+                st.markdown(f"""
+                <div style="background-color: #1E1E1E; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #14F195; font-size: 1.2rem;">{function["icon"]}</span>
+                        <div>
+                            <div style="font-family: 'Roboto Mono', monospace; color: #14F195;">{function["name"]}</div>
+                            <div style="font-size: 0.9rem; color: #AAAAAA; margin-top: 4px;">{function["description"]}</div>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # Payment Functions
+        with col2:
+            st.markdown("#### Payment Functions")
+            functions = [
+                {"name": "fund_milestone_sol", "description": "Funds a milestone with SOL", "icon": "💰"},
+                {"name": "fund_milestone_usdt", "description": "Funds a milestone with USDT stablecoin", "icon": "💳"},
+                {"name": "distribute_milestone_payment", "description": "Distributes payment to participants", "icon": "🔄"}
+            ]
+            
+            for function in functions:
+                st.markdown(f"""
+                <div style="background-color: #1E1E1E; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #14F195; font-size: 1.2rem;">{function["icon"]}</span>
+                        <div>
+                            <div style="font-family: 'Roboto Mono', monospace; color: #14F195;">{function["name"]}</div>
+                            <div style="font-size: 0.9rem; color: #AAAAAA; margin-top: 4px;">{function["description"]}</div>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # Milestone Functions
+        st.markdown("### Milestone Functions")
         functions = [
-            {"name": "initialize_project", "description": "Creates a new collaboration project"},
-            {"name": "add_participant", "description": "Adds a participant to a project"},
-            {"name": "add_milestone", "description": "Creates a milestone for the project"},
-            {"name": "fund_milestone_sol", "description": "Funds a milestone with SOL"},
-            {"name": "fund_milestone_usdt", "description": "Funds a milestone with USDT stablecoin"},
-            {"name": "complete_milestone", "description": "Marks a milestone as completed"},
-            {"name": "approve_milestone", "description": "Approves a completed milestone"},
-            {"name": "distribute_milestone_payment", "description": "Distributes payment to participants"}
+            {"name": "complete_milestone", "description": "Marks a milestone as completed", "icon": "✅"},
+            {"name": "approve_milestone", "description": "Approves a completed milestone", "icon": "👍"}
         ]
         
         for function in functions:
             st.markdown(f"""
-            <div style="background-color: #1E1E1E; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;"
-                 onclick="window.open('https://explorer.solana.com/address/Coll1ABbXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX/instructions', '_blank')">
-                <div style="font-family: 'Roboto Mono', monospace; color: #14F195;">{function["name"]}</div>
-                <div style="font-size: 0.9rem; color: #AAAAAA; margin-top: 4px;">{function["description"]}</div>
-                <div style="font-size: 0.8rem; color: #9945FF; margin-top: 6px;">View on Solana Explorer ↗</div>
+            <div style="background-color: #1E1E1E; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #14F195; font-size: 1.2rem;">{function["icon"]}</span>
+                    <div>
+                        <div style="font-family: 'Roboto Mono', monospace; color: #14F195;">{function["name"]}</div>
+                        <div style="font-size: 0.9rem; color: #AAAAAA; margin-top: 4px;">{function["description"]}</div>
+                    </div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
-            
+        
+        # Contract Events
         st.markdown("### Contract Events")
         events = [
             {"name": "ProjectCreatedEvent", "time": "2025-04-15 14:32:11", "transaction": "4ztK...xPq9"},
