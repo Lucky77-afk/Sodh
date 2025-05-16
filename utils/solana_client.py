@@ -27,6 +27,7 @@ except ImportError:
                     return self.blockhash_str
 
 from solders.keypair import Keypair
+from solders.signature import Signature
 from datetime import datetime, timedelta
 import base64
 import json
@@ -51,11 +52,28 @@ SYSTEM_PROGRAM_ID = create_pubkey_from_string("11111111111111111111111111111111"
 TOKEN_PROGRAM_ID = create_pubkey_from_string("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 USDT_MINT = create_pubkey_from_string("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB")  # USDT on Solana
 
+def create_signature_from_string(signature_str):
+    """Helper function to create a Signature from a base58-encoded string"""
+    try:
+        # First, try to decode the base58 string to bytes
+        decoded = base58.b58decode(signature_str)
+        # Then create a Signature from the decoded bytes
+        return Signature(decoded)
+    except Exception as e:
+        st.error(f"Error creating Signature from signature {signature_str}: {str(e)}")
+        raise
+
 @st.cache_resource(ttl=60)
 def get_solana_client():
     """Returns a Solana client instance for the specified network"""
     # Using Solana Devnet for development (switch to mainnet for production)
-    return Client("https://api.devnet.solana.com")
+    client = Client("https://api.devnet.solana.com")
+    
+    # Set max supported transaction version to 0
+    client._commitment = "confirmed"
+    client._max_supported_transaction_version = 0
+    
+    return client
 
 @st.cache_data(ttl=60)
 def get_recent_blocks(_client, limit=10):
@@ -199,44 +217,41 @@ def get_recent_transactions(_client, limit=10):
                     
                     # Map program IDs to transaction types
                     program_map = {
-                        "11111111111111111111111111111111": "Transfer",
-                        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": "Token",
-                        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL": "Associated Token",
-                        "Stake11111111111111111111111111111111111111": "Stake",
-                        "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin": "Serum DEX",
+                        str(SYSTEM_PROGRAM_ID): "System Program",
+                        str(TOKEN_PROGRAM_ID): "Token Program",
+                        str(USDT_MINT): "USDT Transfer"
                     }
                     
-                    tx_type = program_map.get(program_id, "Other")
+                    tx_type = program_map.get(program_id, "Unknown")
                 except Exception:
                     pass
                 
-                # Calculate fee in SOL
-                fee = tx_data.get('meta', {}).get('fee', 0) / 1_000_000_000  # Convert lamports to SOL
-                
-                # Construct transaction info
-                tx_info = {
+                recent_txs.append({
                     'signature': signature,
                     'status': status,
-                    'block_time': formatted_time,
+                    'block_time': block_time,
+                    'formatted_time': formatted_time,
                     'slot': slot,
-                    'fee': fee,
                     'type': tx_type
-                }
-                recent_txs.append(tx_info)
+                })
             except Exception as tx_error:
                 st.error(f"Error processing transaction: {str(tx_error)}")
-                
+                continue
+        
         return recent_txs
     except Exception as e:
         st.error(f"Error fetching recent transactions: {str(e)}")
         return []
 
 @st.cache_data(ttl=300)
-def get_transaction_details(_client, signature):
+def get_transaction_details(_client, signature_str):
     """Get detailed information for a specific transaction"""
     try:
         # Create a new client instance to avoid caching issues
         client = Client("https://api.devnet.solana.com")
+        
+        # Convert string signature to Signature object
+        signature = create_signature_from_string(signature_str)
         
         tx_response = client.get_transaction(signature)
         

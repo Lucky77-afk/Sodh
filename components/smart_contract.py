@@ -98,36 +98,44 @@ def render_contract_projects():
     for project in projects:
         status_color = "#14F195" if project["status"] == "Active" else "#9945FF"
         
-        st.markdown(f"""
-        <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0; color: #FFFFFF;">{project["name"]}</h3>
-                <div style="color: {status_color}; font-size: 0.9rem; font-weight: bold;">
-                    {project["status"]}
-                </div>
-            </div>
-            <p style="color: #AAAAAA; margin-top: 8px; margin-bottom: 12px;">
-                {project["description"]}
-            </p>
-            <div style="display: flex; gap: 15px; font-size: 0.8rem;">
-                <div style="color: #AAAAAA;">
-                    <span style="color: #14F195; font-weight: bold;">{project["participants"]}</span> Participants
-                </div>
-                <div style="color: #AAAAAA;">
-                    <span style="color: #14F195; font-weight: bold;">{project["milestones"]}</span> Milestones
-                </div>
-                <div style="color: #AAAAAA;">
-                    Created: {project["created_at"]}
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        # Generate a unique key for this project's button
+        button_key = f"select_project_{project['id']}_{project['name'].replace(' ', '_')}"
         
-        # Add button to select this project for future operations
-        if st.button(f"Select: {project['name']}", key=f"select_project_{project['id']}"):
-            st.session_state.current_project_id = project['id']
-            st.success(f"Selected project: {project['name']}")
-            st.rerun()
+        # Create the project card
+        with st.container():
+            col1, col2 = st.columns([3, 1])
+            
+            with col1:
+                st.markdown(f"""
+                <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; color: #FFFFFF;">{project["name"]}</h3>
+                        <div style="color: {status_color}; font-size: 0.9rem; font-weight: bold;">
+                            {project["status"]}
+                        </div>
+                    </div>
+                    <p style="color: #AAAAAA; margin-top: 8px; margin-bottom: 12px;">
+                        {project["description"]}
+                    </p>
+                    <div style="display: flex; gap: 15px; font-size: 0.8rem;">
+                        <div style="color: #AAAAAA;">
+                            <span style="color: #14F195; font-weight: bold;">{project["participants"]}</span> Participants
+                        </div>
+                        <div style="color: #AAAAAA;">
+                            <span style="color: #14F195; font-weight: bold;">{project["milestones"]}</span> Milestones
+                        </div>
+                        <div style="color: #AAAAAA;">
+                            Created: {project["created_at"]}
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                if st.button(f"Select", key=button_key):
+                    st.session_state.current_project_id = project['id']
+                    st.success(f"Selected project: {project['name']}")
+                    st.rerun()
 
 def render_project_form():
     """Renders a form to create a new collaboration project"""
@@ -195,9 +203,38 @@ def render_smart_contract():
     
     # Get current wallet address from session state
     wallet_address = st.session_state.get('connected_wallet')
+    
+    # Show wallet connection status
     if not wallet_address:
-        st.warning("Please connect your wallet to use smart contract functions")
-        return
+        st.markdown("""
+        <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin: 15px 0;">
+            <div style="color: #9945FF; margin-bottom: 10px;">Wallet Status:</div>
+            <div style="color: #AAA;">
+                <span style="color: #FF5C5C; font-weight: bold;">❌ Not Connected</span>
+                <span style="color: #AAA;"> - Connect your wallet to execute smart contract functions</span>
+            </div>
+            <div style="margin-top: 10px;">
+                <a href="https://solana.com/wallet" target="_blank" style="color: #9945FF; text-decoration: none;">
+                    Learn more about Solana wallets
+                </a>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style="background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin: 15px 0;">
+            <div style="color: #9945FF; margin-bottom: 10px;">Wallet Status:</div>
+            <div style="color: #AAA;">
+                <span style="color: #14F195; font-weight: bold;">✅ Connected</span>
+                <span style="color: #AAA;"> - Ready to execute smart contract functions</span>
+            </div>
+            <div style="margin-top: 10px;">
+                <a href="https://solana.com/wallet" target="_blank" style="color: #9945FF; text-decoration: none;">
+                    Learn more about Solana wallets
+                </a>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     tabs = st.tabs(["Projects", "Contract Explorer", "Milestones", "Participants"])
     
@@ -365,8 +402,10 @@ def render_smart_contract():
         # Display existing projects
         st.markdown("### Existing Projects")
         render_contract_projects()
+        
+        # Project creation form
+        st.markdown("### Create New Project")
         render_project_form()
-        render_contract_projects()
         
     with tabs[1]:
         st.markdown("### Smart Contract Functions")
