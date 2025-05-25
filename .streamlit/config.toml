@@ -9,6 +9,7 @@ maxUploadSize = 200
 enableWebsocketCompression = true
 fileWatcherType = "none"
 runOnSave = false
+enableStaticServing = true
 
 [browser]
 gatherUsageStats = false
@@ -26,3 +27,6 @@ fastReruns = true
 
 [logger]
 level = "info"
+
+[client]
+showErrorDetails = true
