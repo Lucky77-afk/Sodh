@@ -1,3 +1,3 @@
 web: python run.py
 
-health: HEALTH_CHECK=true python -c "import os; print('Health check passed')"
+health: curl -f http://localhost:$PORT/health || exit 1
