@@ -1,24 +1,25 @@
 """
-FastAPI application to serve Streamlit app with health checks.
+Streamlit application for Sodh - Solana Blockchain Explorer
 """
 import os
 import sys
-import subprocess
-import threading
-import uvicorn
-from fastapi import FastAPI, Response
-from fastapi.responses import RedirectResponse
 from pathlib import Path
 
-app = FastAPI()
-STREAMLIT_PORT = 8501
-
-# Start Streamlit in a subprocess
-def start_streamlit():
+def main():
+    # Set environment variables for Streamlit
+    os.environ["STREAMLIT_SERVER_ENABLE_STATIC_SERVING"] = "false"
+    os.environ["STREAMLIT_SERVER_ENABLE_CORS"] = "false"
+    os.environ["STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION"] = "false"
+    os.environ["STREAMLIT_SERVER_HEADLESS"] = "true"
+    
+    # Get the path to the app
+    app_path = str(Path(__file__).parent / "sodh" / "app.py")
+    port = os.getenv("PORT", "8501")
+    
+    # Run Streamlit
     cmd = [
         sys.executable, "-m", "streamlit", "run",
-        "sodh/app.py",
-        "--server.port", str(STREAMLIT_PORT),
+        "--server.port", port,
         "--server.address", "0.0.0.0",
         "--server.headless", "true",
         "--server.enableCORS", "false",
@@ -27,25 +28,17 @@ def start_streamlit():
         "--server.fileWatcherType", "none",
         "--server.runOnSave", "false",
         "--browser.serverAddress", "0.0.0.0",
-        "--browser.serverPort", str(STREAMLIT_PORT)
+        "--browser.serverPort", port,
+        "--theme.base", "dark",
+        "--theme.primaryColor", "#14F195",
+        "--theme.backgroundColor", "#131313",
+        "--theme.secondaryBackgroundColor", "#1E1E1E",
+        "--server.enableWebsocketCompression", "true",
+        app_path
     ]
-    subprocess.Popen(cmd, env=os.environ)
-
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
-
-# Root endpoint redirects to Streamlit
-@app.get("/")
-async def root():
-    return RedirectResponse(url=f"http://localhost:{STREAMLIT_PORT}")
+    
+    print(f"Starting Streamlit on port {port}")
+    os.execvp(cmd[0], cmd)
 
 if __name__ == "__main__":
-    # Start Streamlit in a separate thread
-    streamlit_thread = threading.Thread(target=start_streamlit, daemon=True)
-    streamlit_thread.start()
-    
-    # Start FastAPI server
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    main()
