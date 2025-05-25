@@ -31,9 +31,9 @@ package_data = find_package_data()
 setup(
     name="sodh",
     version="0.1.0",
-    packages=find_packages(include=['sodh', 'sodh.*']),
-    package_dir={"": "."},
-    package_data=package_data,
+    packages=['sodh'],
+    package_dir={'sodh': 'sodh'},
+    package_data={'sodh': ['*.py', 'components/*.py', 'utils/*.py']},
     include_package_data=True,
     install_requires=requirements,
     python_requires='>=3.8',
