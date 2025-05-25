@@ -7,7 +7,7 @@ from datetime import datetime
 from components.header import render_header
 from components.dashboard import render_dashboard
 from components.transactions import render_transactions
-from components.account import render_account
+from components.account_fixed import render_account
 from components.smart_contract import render_smart_contract
 from components.whitepaper import render_whitepaper
 from components.tutorial import render_tutorial

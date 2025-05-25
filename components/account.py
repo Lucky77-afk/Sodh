@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from utils.solana_client_fixed import get_solana_client, get_account_info, get_account_transactions
+from utils.solana_client_robust import get_solana_client, get_account_info_robust, get_recent_transactions_robust
 
 def render_account():
     """Renders the account/wallet page with balance and transactions"""
@@ -41,7 +41,7 @@ def render_account():
     if wallet_address:
         try:
             client = get_solana_client()
-            account_info = get_account_info(client, wallet_address)
+            account_info = get_account_info_robust(wallet_address)
             
             # Account overview section
             st.markdown("### Account Overview")
@@ -123,7 +123,7 @@ def render_account():
                 st.markdown("### Recent Transactions")
                 
                 try:
-                    account_txs = get_account_transactions(client, wallet_address)
+                    account_txs = get_recent_transactions_robust(wallet_address)
                     
                     if account_txs:
                         for tx in account_txs:
