@@ -367,6 +367,322 @@ def render_whitepaper():
         </div>
         """, unsafe_allow_html=True)
     
+    # Why We Started Building DAPPR section
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, rgba(153, 69, 255, 0.05) 0%, rgba(20, 241, 149, 0.05) 100%);
+        border: 1px solid rgba(153, 69, 255, 0.2);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 30px 0;
+        position: relative;
+    ">
+        <h3 style="
+            color: #9945FF; 
+            font-size: 1.8rem; 
+            font-weight: 600; 
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        ">
+            <span style="
+                background: linear-gradient(135deg, #9945FF 0%, #14F195 100%);
+                border-radius: 10px;
+                padding: 8px;
+                font-size: 1.2rem;
+            ">🔬</span>
+            Why We Started Building DAPPR
+        </h3>
+        <p style="
+            color: #FFFFFF; 
+            font-size: 1.1rem; 
+            line-height: 1.7; 
+            margin-bottom: 20px;
+            text-align: justify;
+        ">
+            We created DAPPR in response to a critical observation: despite tremendous advances in both academic research and industry innovation, the bridge between these worlds remains fundamentally broken. Through extensive experience straddling both environments, we identified several systemic problems that effectively trap valuable knowledge in silos.
+        </p>
+        
+        <div style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        ">
+            <div style="
+                background: rgba(20, 241, 149, 0.05);
+                border: 1px solid rgba(20, 241, 149, 0.2);
+                border-radius: 15px;
+                padding: 20px;
+            ">
+                <h4 style="color: #14F195; margin-bottom: 12px; font-size: 1.1rem;">🎯 Incentive Misalignment</h4>
+                <p style="color: #CCCCCC; font-size: 0.95rem; line-height: 1.5; margin: 0;">
+                    Academic rewards publication metrics while industry prioritizes commercial applications, creating structural disconnects that prevent transformative research from reaching real-world applications.
+                </p>
+            </div>
+            
+            <div style="
+                background: rgba(255, 107, 107, 0.05);
+                border: 1px solid rgba(255, 107, 107, 0.2);
+                border-radius: 15px;
+                padding: 20px;
+            ">
+                <h4 style="color: #FF6B6B; margin-bottom: 12px; font-size: 1.1rem;">📋 IP Framework Issues</h4>
+                <p style="color: #CCCCCC; font-size: 0.95rem; line-height: 1.5; margin: 0;">
+                    Traditional collaboration requires navigating byzantine legal agreements that often take longer to negotiate than the actual research, creating risk-averse environments.
+                </p>
+            </div>
+            
+            <div style="
+                background: rgba(255, 215, 0, 0.05);
+                border: 1px solid rgba(255, 215, 0, 0.2);
+                border-radius: 15px;
+                padding: 20px;
+            ">
+                <h4 style="color: #FFD700; margin-bottom: 12px; font-size: 1.1rem;">🤝 Attribution & Trust Deficits</h4>
+                <p style="color: #CCCCCC; font-size: 0.95rem; line-height: 1.5; margin: 0;">
+                    Researchers fear inadequate recognition while industry struggles with accountability, lacking verifiable systems for permanent attribution and trust building.
+                </p>
+            </div>
+            
+            <div style="
+                background: rgba(0, 255, 163, 0.05);
+                border: 1px solid rgba(0, 255, 163, 0.2);
+                border-radius: 15px;
+                padding: 20px;
+            ">
+                <h4 style="color: #00FFA3; margin-bottom: 12px; font-size: 1.1rem;">🔍 Systemic Opacity</h4>
+                <p style="color: #CCCCCC; font-size: 0.95rem; line-height: 1.5; margin: 0;">
+                    Limited visibility across institutional boundaries leads to redundant work, missed synergies, and inefficient resource allocation, particularly disadvantaging emerging fields.
+                </p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Market Opportunity section
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(255, 107, 107, 0.05) 100%);
+        border: 1px solid rgba(255, 215, 0, 0.2);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 30px 0;
+        position: relative;
+    ">
+        <h3 style="
+            color: #FFD700; 
+            font-size: 1.8rem; 
+            font-weight: 600; 
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        ">
+            <span style="
+                background: linear-gradient(135deg, #FFD700 0%, #FF6B6B 100%);
+                border-radius: 10px;
+                padding: 8px;
+                font-size: 1.2rem;
+            ">💰</span>
+            Market Opportunity
+        </h3>
+        
+        <div style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        ">
+            <div style="
+                background: rgba(20, 241, 149, 0.05);
+                border: 1px solid rgba(20, 241, 149, 0.2);
+                border-radius: 15px;
+                padding: 20px;
+                text-align: center;
+            ">
+                <div style="color: #14F195; font-size: 2.2rem; font-weight: 700; margin-bottom: 8px;">$2.4T</div>
+                <div style="color: #FFFFFF; font-size: 1rem; font-weight: 600; margin-bottom: 8px;">Global R&D Investment</div>
+                <div style="color: #AAAAAA; font-size: 0.9rem; line-height: 1.4;">
+                    Annual worldwide research spending, with 60-80% never translating to practical applications
+                </div>
+            </div>
+            
+            <div style="
+                background: rgba(153, 69, 255, 0.05);
+                border: 1px solid rgba(153, 69, 255, 0.2);
+                border-radius: 15px;
+                padding: 20px;
+                text-align: center;
+            ">
+                <div style="color: #9945FF; font-size: 2.2rem; font-weight: 700; margin-bottom: 8px;">$1.5T</div>
+                <div style="color: #FFFFFF; font-size: 1rem; font-weight: 600; margin-bottom: 8px;">Stranded Innovation Value</div>
+                <div style="color: #AAAAAA; font-size: 0.9rem; line-height: 1.4;">
+                    Potentially stranded innovation value annually due to collaboration barriers
+                </div>
+            </div>
+            
+            <div style="
+                background: rgba(255, 215, 0, 0.05);
+                border: 1px solid rgba(255, 215, 0, 0.2);
+                border-radius: 15px;
+                padding: 20px;
+                text-align: center;
+            ">
+                <div style="color: #FFD700; font-size: 2.2rem; font-weight: 700; margin-bottom: 8px;">$250B</div>
+                <div style="color: #FFFFFF; font-size: 1rem; font-weight: 600; margin-bottom: 8px;">University Research Budgets</div>
+                <div style="color: #AAAAAA; font-size: 0.9rem; line-height: 1.4;">
+                    Collective annual budgets capturing less than 5% of commercial value generated
+                </div>
+            </div>
+            
+            <div style="
+                background: rgba(0, 255, 163, 0.05);
+                border: 1px solid rgba(0, 255, 163, 0.2);
+                border-radius: 15px;
+                padding: 20px;
+                text-align: center;
+            ">
+                <div style="color: #00FFA3; font-size: 2.2rem; font-weight: 700; margin-bottom: 8px;">14mo</div>
+                <div style="color: #FFFFFF; font-size: 1rem; font-weight: 600; margin-bottom: 8px;">Legal Process Duration</div>
+                <div style="color: #AAAAAA; font-size: 0.9rem; line-height: 1.4;">
+                    Average time for industry partners to navigate legal processes before collaboration
+                </div>
+            </div>
+        </div>
+        
+        <div style="
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 25px;
+            text-align: center;
+        ">
+            <p style="
+                color: #FFFFFF; 
+                font-size: 1.1rem; 
+                line-height: 1.6; 
+                margin: 0;
+                font-style: italic;
+            ">
+                We're targeting <strong style="color: #14F195;">"near-commercial research"</strong> – the estimated $1.2 trillion in annual academic output that could create immediate industry impact if collaboration barriers were removed.
+            </p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Long-Term Vision section
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, rgba(0, 255, 163, 0.05) 0%, rgba(153, 69, 255, 0.05) 100%);
+        border: 1px solid rgba(0, 255, 163, 0.2);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 30px 0;
+        position: relative;
+    ">
+        <h3 style="
+            color: #00FFA3; 
+            font-size: 1.8rem; 
+            font-weight: 600; 
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        ">
+            <span style="
+                background: linear-gradient(135deg, #00FFA3 0%, #9945FF 100%);
+                border-radius: 10px;
+                padding: 8px;
+                font-size: 1.2rem;
+            ">🔮</span>
+            Long-Term Vision
+        </h3>
+        <p style="
+            color: #FFFFFF; 
+            font-size: 1.1rem; 
+            line-height: 1.7; 
+            margin-bottom: 25px;
+            text-align: justify;
+        ">
+            Our vision for DAPPR transcends creating just another research platform; we're building the foundation for a new innovation economy where knowledge creation and application function seamlessly across traditional boundaries.
+        </p>
+        
+        <div style="margin: 25px 0;">
+            <div style="
+                background: rgba(20, 241, 149, 0.03);
+                border-left: 4px solid #14F195;
+                padding: 20px;
+                margin: 15px 0;
+                border-radius: 0 15px 15px 0;
+            ">
+                <h4 style="color: #14F195; margin-bottom: 12px; font-size: 1.1rem;">🆔 Self-Sovereign Research Identity</h4>
+                <p style="color: #CCCCCC; font-size: 0.95rem; line-height: 1.5; margin: 0;">
+                    Blockchain-verified identity system where researchers' contributions, impact, and reputation become portable assets that transcend institutional boundaries, creating career mobility and shifting power dynamics toward individual contributors.
+                </p>
+            </div>
+            
+            <div style="
+                background: rgba(153, 69, 255, 0.03);
+                border-left: 4px solid #9945FF;
+                padding: 20px;
+                margin: 15px 0;
+                border-radius: 0 15px 15px 0;
+            ">
+                <h4 style="color: #9945FF; margin-bottom: 12px; font-size: 1.1rem;">⚡ Frictionless Knowledge Markets</h4>
+                <p style="color: #CCCCCC; font-size: 0.95rem; line-height: 1.5; margin: 0;">
+                    Automated attribution, IP management, and value distribution through smart contracts enable instantaneous research collaborations that would be logistically impossible under current frameworks.
+                </p>
+            </div>
+            
+            <div style="
+                background: rgba(255, 215, 0, 0.03);
+                border-left: 4px solid #FFD700;
+                padding: 20px;
+                margin: 15px 0;
+                border-radius: 0 15px 15px 0;
+            ">
+                <h4 style="color: #FFD700; margin-bottom: 12px; font-size: 1.1rem;">🌍 Democratized Access to Innovation</h4>
+                <p style="color: #CCCCCC; font-size: 0.95rem; line-height: 1.5; margin: 0;">
+                    Progressive removal of institutional gatekeepers, allowing individual researchers worldwide to connect directly with industry partners and enabling smaller companies to access cutting-edge research.
+                </p>
+            </div>
+            
+            <div style="
+                background: rgba(0, 255, 163, 0.03);
+                border-left: 4px solid #00FFA3;
+                padding: 20px;
+                margin: 15px 0;
+                border-radius: 0 15px 15px 0;
+            ">
+                <h4 style="color: #00FFA3; margin-bottom: 12px; font-size: 1.1rem;">🕸️ Cross-boundary Knowledge Graph</h4>
+                <p style="color: #CCCCCC; font-size: 0.95rem; line-height: 1.5; margin: 0;">
+                    As the platform scales, it generates an unprecedented map of research connections and complementary innovations, creating visibility across traditional silos and enabling AI-suggested collaborations.
+                </p>
+            </div>
+        </div>
+        
+        <div style="
+            background: linear-gradient(135deg, rgba(20, 241, 149, 0.1) 0%, rgba(0, 255, 163, 0.1) 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 25px;
+            text-align: center;
+        ">
+            <p style="
+                color: #FFFFFF; 
+                font-size: 1.2rem; 
+                line-height: 1.6; 
+                margin: 0;
+                font-weight: 500;
+            ">
+                In its fullest expression, DAPPR will function as <strong style="color: #14F195;">essential infrastructure for human innovation</strong> – as fundamental to knowledge creation as the internet has become to information sharing.
+            </p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     # Enhanced Conclusion section
     st.markdown("""
     <div style="
