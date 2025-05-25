@@ -1,0 +1,6 @@
+include README.md
+include requirements.txt
+include runtime.txt
+recursive-include sodh/components *.py
+recursive-include sodh/utils *.py
+recursive-include .streamlit *.toml

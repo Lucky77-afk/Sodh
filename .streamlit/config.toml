@@ -1,0 +1,38 @@
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+
+[theme]
+base = "dark"
+primaryColor = "#14F195"
+backgroundColor = "#131313"
+secondaryBackgroundColor = "#1E1E1E"
+textColor = "#FFFFFF"
+font = "sans serif"
+
+[runner]
+fastRerun = true
+
+[client]
+showErrorDetails = true
+
+[scheduler]
+retryTimeout = 300
+
+[ui]
+hideTopBar = false
+
+[mapbox]
+token = ""  # Add your Mapbox token here if needed
+
+[server]
+maxUploadSize = 200  # Max file upload size in MB
+
+[logger]
+level = "info"
