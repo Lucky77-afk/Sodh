@@ -1,9 +1,10 @@
 [server]
 headless = true
 port = 8501
-enableCORS = false
-enableXsrfProtection = false
+enableCORS = true
+enableXsrfProtection = true
 maxUploadSize = 200  # Max file upload size in MB
+enableStaticServing = false  # Disable static file serving
 
 [browser]
 gatherUsageStats = false
@@ -16,9 +17,6 @@ backgroundColor = "#131313"
 secondaryBackgroundColor = "#1E1E1E"
 textColor = "#FFFFFF"
 font = "sans serif"
-
-[runner]
-fastRerun = true
 
 [client]
 showErrorDetails = true

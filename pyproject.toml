@@ -105,7 +105,7 @@ python_files = "test_*.py"
 addopts = "-v --cov=sodh --cov-report=term-missing"
 
 [metadata]
-license_files = LICENSE
+license_files = "LICENSE"
 
 [check-manifest]
 ignore = [
