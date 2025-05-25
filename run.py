@@ -26,11 +26,11 @@ def main():
     
     # Prepare command line arguments
     streamlit_args = [
-        f"--server.port={os.getenv('PORT', '8501')}",
-        "--server.address=0.0.0.0",
-        "--server.enableCORS=true",
-        "--server.enableXsrfProtection=true",
-        "--browser.gatherUsageStats=false"
+        "--server.port", os.getenv("PORT", "8501"),
+        "--server.address", "0.0.0.0",
+        "--server.enableCORS", "true",
+        "--server.enableXsrfProtection", "true",
+        "--browser.gatherUsageStats", "false"
     ]
     
     try:
@@ -38,8 +38,7 @@ def main():
         sys.exit(
             streamlit.web.bootstrap.run(
                 app_path,
-                command_line=streamlit_args,
-                args=[],
+                args=streamlit_args,
                 flag_options={},
                 _is_hello=False
             )
