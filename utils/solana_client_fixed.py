@@ -29,8 +29,20 @@ USDT_MINT = PublicKey.from_string("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
 @st.cache_resource(ttl=60)
 def get_solana_client():
     """Returns a Solana client instance for the specified network"""
-    # Using Solana Devnet for development (switch to mainnet for production)
-    return Client("https://api.devnet.solana.com")
+    import os
+    
+    # Check if we have a Helius API key for better RPC access
+    helius_api_key = os.environ.get('HELIUS_API_KEY')
+    
+    if helius_api_key:
+        # Use Helius mainnet endpoint for authentic data
+        rpc_url = f"https://mainnet.helius-rpc.com/?api-key={helius_api_key}"
+        st.write("DEBUG - Using Helius RPC endpoint for authentic blockchain data")
+        return Client(rpc_url)
+    else:
+        # Fallback to public devnet endpoint
+        st.write("DEBUG - Using public devnet endpoint (limited functionality)")
+        return Client("https://api.devnet.solana.com")
 
 @st.cache_data(ttl=60)
 def get_recent_blocks(_client, limit=10):
@@ -197,8 +209,8 @@ def get_transaction_details(_client, signature):
 def get_account_info(_client, address):
     """Get account information for a wallet address"""
     try:
-        # Create a fresh client instance to avoid hashing errors
-        client = Client("https://api.devnet.solana.com")
+        # Create a fresh client instance with proper RPC endpoint
+        client = get_solana_client()
         
         # Import our wallet validator
         from utils.wallet_validator import get_valid_pubkey
@@ -464,8 +476,8 @@ def get_recent_blockhash(client):
 def get_account_transactions(_client, address, limit=5):
     """Get recent transactions for an account"""
     try:
-        # Create a fresh client instance to avoid hashing errors
-        client = Client("https://api.devnet.solana.com")
+        # Create a fresh client instance with proper RPC endpoint
+        client = get_solana_client()
         
         # Import our wallet validator
         from utils.wallet_validator import get_valid_pubkey
