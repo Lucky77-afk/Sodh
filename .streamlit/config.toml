@@ -8,6 +8,7 @@ enableXsrfProtection = false
 maxUploadSize = 200
 enableWebsocketCompression = true
 fileWatcherType = "none"
+runOnSave = false
 
 [browser]
 gatherUsageStats = false
@@ -20,8 +21,8 @@ primaryColor = "#14F195"
 backgroundColor = "#131313"
 secondaryBackgroundColor = "#1E1E1E"
 
-[global]
-disableTelemetry = true
-
 [runner]
 fastReruns = true
+
+[logger]
+level = "info"

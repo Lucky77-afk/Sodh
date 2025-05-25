@@ -5,43 +5,28 @@ Entry point for Sodh - Solana Blockchain Explorer
 import os
 import sys
 import time
-import http.server
-import socketserver
-import threading
+import signal
+import subprocess
 from pathlib import Path
 
-# Configuration
-PORT = int(os.getenv("PORT", 8501))
-HEALTH_CHECK_PORT = int(os.getenv("HEALTH_CHECK_PORT", 8080))
-
-class HealthCheckHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == "/healthz":
-            self.send_response(200)
-            self.send_header("Content-type", "text/plain")
-            self.end_headers()
-            self.wfile.write(b"OK")
-        else:
-            self.send_response(404)
-            self.end_headers()
-
-def run_health_check():
-    """Run a simple HTTP server for health checks"""
-    with socketserver.TCPServer(("0.0.0.0", HEALTH_CHECK_PORT), HealthCheckHandler) as httpd:
-        print(f"Health check server running on port {HEALTH_CHECK_PORT}")
-        httpd.serve_forever()
-
 def main():
-    # Start health check server in a separate thread
-    health_thread = threading.Thread(target=run_health_check, daemon=True)
-    health_thread.start()
-
-    # Run Streamlit
+    # Get the path to the app
     app_path = str(Path(__file__).parent / "sodh" / "app.py")
+    port = os.getenv("PORT", "8501")
     
+    # Set environment variables for Streamlit
+    env = os.environ.copy()
+    
+    # Configure Streamlit to use the health check endpoint
+    env["STREAMLIT_SERVER_ENABLE_STATIC_FILE_HANDLING"] = "true"
+    env["STREAMLIT_SERVER_ENABLE_CORS"] = "false"
+    env["STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION"] = "false"
+    env["STREAMLIT_SERVER_HEADLESS"] = "true"
+    
+    # Run Streamlit in a subprocess
     cmd = [
         sys.executable, "-m", "streamlit", "run",
-        "--server.port", str(PORT),
+        "--server.port", port,
         "--server.address", "0.0.0.0",
         "--server.headless", "true",
         "--server.enableCORS", "false",
@@ -50,15 +35,17 @@ def main():
         "--server.fileWatcherType", "none",
         "--server.runOnSave", "false",
         "--browser.serverAddress", "0.0.0.0",
-        "--browser.serverPort", str(PORT),
+        "--browser.serverPort", port,
         "--theme.base", "dark",
         "--theme.primaryColor", "#14F195",
         "--theme.backgroundColor", "#131313",
         "--theme.secondaryBackgroundColor", "#1E1E1E",
+        "--server.enableWebsocketCompression", "true",
+        "--server.enableStaticServing", "true",
         app_path
     ]
     
-    print(f"Starting Streamlit on port {PORT}")
+    print(f"Starting Streamlit on port {port}")
     os.execvp(cmd[0], cmd)
 
 if __name__ == "__main__":
