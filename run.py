@@ -21,32 +21,39 @@ def main():
     os.environ["STREAMLIT_SERVER_HEADLESS"] = "true"
     os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
     
-    # Import streamlit here to ensure environment is set first
-    from streamlit import config as _config
-    import streamlit.web.bootstrap
+    # Clean up any existing runtime instance
+    try:
+        # Send SIGTERM to any existing Streamlit process
+        os.system("pkill -f 'streamlit run'")
+    except Exception as e:
+        print(f"Warning: Could not clean up existing Streamlit instances: {e}")
     
-    # Clear any existing runtime
-    if hasattr(streamlit, '_is_running_with_streamlit'):
-        streamlit._is_running_with_streamlit = False
-    
-    # Configure Streamlit
-    _config.set_option("server.port", int(os.getenv("PORT", "8501")))
+    # Set Streamlit configuration
+    _config.set_option("server.headless", True)
+    _config.set_option("server.port", 8501)
     _config.set_option("server.address", "0.0.0.0")
     _config.set_option("server.enableCORS", True)
     _config.set_option("server.enableXsrfProtection", True)
     _config.set_option("browser.gatherUsageStats", False)
     
-    # Run the app directly
-    streamlit.web.bootstrap.run(
-        app_path,
-        args=[],
-        flag_options={
-            "server.port": int(os.getenv("PORT", "8501")),
-            "server.address": "0.0.0.0",
-            "server.enableCORS": True,
-            "server.enableXsrfProtection": True,
-            "browser.gatherUsageStats": False,
-        }
+    # Prepare command line arguments
+    streamlit_args = [
+        "--server.port=8501",
+        "--server.address=0.0.0.0",
+        "--server.enableCORS=true",
+        "--server.enableXsrfProtection=true",
+        "--browser.gatherUsageStats=false"
+    ]
+    
+    # Run the app using the bootstrap module
+    sys.exit(
+        streamlit.web.bootstrap.run(
+            app_path,
+            command_line=streamlit_args,
+            args=[],
+            flag_options={},
+            _is_hello=False
+        )
     )
 
 if __name__ == "__main__":
