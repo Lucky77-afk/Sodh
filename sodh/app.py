@@ -1,3 +1,6 @@
+"""
+Main Streamlit application for Sodh - Solana Blockchain Explorer
+"""
 import streamlit as st
 import socket
 import os
@@ -7,18 +10,19 @@ from datetime import datetime
 from pathlib import Path
 import importlib
 
-# Set page configuration (must be the first Streamlit command)
-st.set_page_config(
-    page_title="Sodh - Solana Blockchain Explorer",
-    page_icon="🔍",  # Default icon
-    layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        'Get Help': 'https://www.solana.com/docs',
-        'Report a bug': None,
-        'About': "Sodh Explorer - A Solana Blockchain Explorer built with Streamlit"
-    }
-)
+def main():
+    # Set page configuration (must be the first Streamlit command)
+    st.set_page_config(
+        page_title="Sodh - Solana Blockchain Explorer",
+        page_icon="🔍",  # Default icon
+        layout="wide",
+        initial_sidebar_state="expanded",
+        menu_items={
+            'Get Help': 'https://www.solana.com/docs',
+            'Report a bug': None,
+            'About': "Sodh Explorer - A Solana Blockchain Explorer built with Streamlit"
+        }
+    )
 
 # Get the absolute path to the assets directory
 assets_dir = os.path.join(os.path.dirname(__file__), "..", "assets")
@@ -90,7 +94,7 @@ except Exception as e:
     print(f"Server running on http://0.0.0.0:5000")
 
 # Add custom styling with improved UI
-st.markdown("""
+    st.markdown("""
     <style>
     /* Base Styles */
     .main {
@@ -440,8 +444,11 @@ st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 """, unsafe_allow_html=True)
 
-# Render the header with logo (without set_page_config)
-render_header()
+    # Render the header with logo (without set_page_config)
+    render_header()
+
+if __name__ == "__main__":
+    main()
 
 # Add access information notification
 st.toast("📱 For mobile access, use the 'Open in new tab' button in Replit's preview window", icon="🔔")

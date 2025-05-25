@@ -1,13 +1,33 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
-# This is a minimal setup.py that's only needed for editable installs with pip
-# The actual package configuration is in pyproject.toml
+# Read requirements from requirements.txt
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
 
-if __name__ == "__main__":
-    setup(
-        # These will be overridden by pyproject.toml
-        name="sodh",
-        version="0.1.0",
-        packages=["sodh"],
-        python_requires=">=3.8",
-    )
+setup(
+    name="sodh",
+    version="0.1.0",
+    packages=find_packages(),
+    python_requires=">=3.8",
+    install_requires=requirements,
+    include_package_data=True,
+    package_data={
+        '': ['*.svg', '*.css', '*.html'],  # Include all static files
+    },
+    entry_points={
+        'console_scripts': [
+            'sodh=sodh.app:main',
+        ],
+    },
+    author="Your Name",
+    author_email="your.email@example.com",
+    description="Sodh - Solana Blockchain Explorer",
+    long_description=open('README.md').read(),
+    long_description_content_type="text/markdown",
+    url="https://github.com/yourusername/sodh",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+)
