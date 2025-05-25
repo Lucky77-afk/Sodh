@@ -1,106 +1,138 @@
 import streamlit as st
 import os
 from pathlib import Path
-import base64
 
 def render_header():
     """Render the application header with logo and navigation."""
-    import os
-    from pathlib import Path
+    # Directly embed the SVG content
+    logo_svg = '''
+    <svg width="200" height="50" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .logo-text { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #14F195; }
+        .logo-subtext { font-family: Arial, sans-serif; font-size: 14px; fill: #FFFFFF; }
+      </style>
+      <rect width="200" height="50" fill="#131313" rx="5"/>
+      <text x="10" y="32" class="logo-text">Sodh</text>
+      <text x="80" y="32" class="logo-subtext">Solana Explorer</text>
+      <line x1="10" y1="35" x2="190" y2="35" stroke="#14F195" stroke-width="2"/>
+    </svg>
+    '''
     
-    # Ensure assets directory exists
-    assets_dir = os.path.join(Path(__file__).parent.parent, "assets")
-    os.makedirs(assets_dir, exist_ok=True)
+    # Encode the SVG for URL embedding
+    import urllib.parse
+    encoded_svg = urllib.parse.quote(logo_svg.strip())
+    data_url = f"data:image/svg+xml,{encoded_svg}"
     
     # Custom CSS for the header
-    st.markdown("""
+    st.markdown(f"""
     <style>
-    .header {
-        display: flex;
-        align-items: center;
+    /* Header Container */
+    .sodh-header {{
+        width: 100%;
         padding: 1rem 0;
         margin-bottom: 1rem;
-    }
-    .logo-container {
+        background: transparent;
+    }}
+    
+    /* Header Content */
+    .sodh-header-content {{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }}
+    
+    /* Logo Container */
+    .sodh-logo-container {{
         display: flex;
         align-items: center;
-        margin-right: 2rem;
-    }
-    .logo {
+        text-decoration: none;
+    }}
+    
+    /* Logo Image */
+    .sodh-logo {{
         height: 40px;
-        margin-right: 1rem;
-    }
-    .nav-buttons {
+        width: auto;
+    }}
+    
+    /* Navigation */
+    .sodh-nav {{
         display: flex;
-        gap: 0.5rem;
-        flex-grow: 1;
-    }
-    .nav-button {
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }}
+    
+    /* Navigation Buttons */
+    .sodh-nav-button {{
         padding: 0.5rem 1rem;
         border: 1px solid #14F195;
-        border-radius: 4px;
+        border-radius: 6px;
         background: transparent;
         color: #14F195;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    .nav-button:hover {
+        font-family: 'Arial', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }}
+    
+    .sodh-nav-button:hover {{
         background: rgba(20, 241, 149, 0.1);
-    }
-    .divider {
-        border-top: 1px solid #2D2D2D;
+        transform: translateY(-1px);
+    }}
+    
+    /* Divider */
+    .sodh-divider {{
+        width: 100%;
+        height: 1px;
+        background: #2D2D2D;
         margin: 1rem 0;
-    }
+    }}
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {{
+        .sodh-header-content {{
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }}
+        
+        .sodh-nav {{
+            flex-direction: column;
+            width: 100%;
+        }}
+        
+        .sodh-nav-button {{
+            text-align: center;
+            width: 100%;
+        }}
+    }}
     </style>
     """, unsafe_allow_html=True)
     
-    # Create a simple logo using HTML/CSS
-    st.markdown("""
-    <div class="header">
-        <div class="logo-container">
-            <div class="logo">
-                <span class="logo-text">Sodh</span>
-                <span class="logo-subtext">Solana Explorer</span>
+    # Header HTML with embedded SVG
+    header_html = f"""
+    <header class="sodh-header">
+        <div class="sodh-header-content">
+            <div class="sodh-logo-container">
+                {logo_svg.strip()}
             </div>
+            <nav class="sodh-nav">
+                <a href="app.py" class="sodh-nav-button">📊 Dashboard</a>
+                <a href="pages/transactions.py" class="sodh-nav-button">🔄 Transactions</a>
+                <a href="pages/account.py" class="sodh-nav-button">👤 Account</a>
+                <a href="pages/smart_contract.py" class="sodh-nav-button">📝 Smart Contract</a>
+                <a href="pages/whitepaper.py" class="sodh-nav-button">📄 Whitepaper</a>
+            </nav>
         </div>
-    """, unsafe_allow_html=True)
+        <div class="sodh-divider"></div>
+    </header>
+    """
     
-    # Add logo styles
-    st.markdown("""
-    <style>
-    .logo {
-        display: flex;
-        flex-direction: column;
-        padding: 5px 10px;
-        background: #131313;
-        border-radius: 5px;
-        border-left: 4px solid #14F195;
-    }
-    .logo-text {
-        color: #14F195;
-        font-family: Arial, sans-serif;
-        font-size: 24px;
-        font-weight: bold;
-        line-height: 1;
-    }
-    .logo-subtext {
-        color: #FFFFFF;
-        font-family: Arial, sans-serif;
-        font-size: 12px;
-        margin-top: 2px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Navigation buttons
-    st.markdown("""
-    <div class="nav-buttons">
-        <button class="nav-button" onclick="window.location.href='app.py'">📊 Dashboard</button>
-        <button class="nav-button" onclick="window.location.href='pages/transactions.py'">🔄 Transactions</button>
-        <button class="nav-button" onclick="window.location.href='pages/account.py'">👤 Account</button>
-        <button class="nav-button" onclick="window.location.href='pages/smart_contract.py'">📝 Smart Contract</button>
-        <button class="nav-button" onclick="window.location.href='pages/whitepaper.py'">📄 Whitepaper</button>
-    </div>
-    </div>
-    <div class="divider"></div>
-    """, unsafe_allow_html=True)
+    # Render the header
+    st.markdown(header_html, unsafe_allow_html=True)

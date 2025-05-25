@@ -7,9 +7,18 @@ from datetime import datetime
 from pathlib import Path
 import importlib
 
-# Set page config must be the first Streamlit command
-# Set default page icon
-page_icon = "🔍"  # Default icon
+# Set page configuration (must be the first Streamlit command)
+st.set_page_config(
+    page_title="Sodh - Solana Blockchain Explorer",
+    page_icon="🔍",  # Default icon
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://www.solana.com/docs',
+        'Report a bug': None,
+        'About': "Sodh Explorer - A Solana Blockchain Explorer built with Streamlit"
+    }
+)
 
 # Get the absolute path to the assets directory
 assets_dir = os.path.join(os.path.dirname(__file__), "..", "assets")
@@ -33,21 +42,13 @@ if not os.path.exists(logo_path):
   <line x1="10" y1="35" x2="190" y2="35" stroke="#14F195" stroke-width="2"/>
 </svg>''')
 
-# Set the page icon to the logo
-page_icon = logo_path
-
-# Set page configuration (must be the first Streamlit command)
-st.set_page_config(
-    page_title="Sodh - Solana Blockchain Explorer",
-    page_icon=page_icon,
-    layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        'Get Help': 'https://www.solana.com/docs',
-        'Report a bug': None,
-        'About': "Sodh Explorer - A Solana Blockchain Explorer built with Streamlit"
-    }
-)
+# Make sure the logo is readable
+if os.path.exists(logo_path):
+    try:
+        with open(logo_path, 'rb') as f:
+            _ = f.read()
+    except Exception as e:
+        st.error(f"Error reading logo file: {e}")
 
 # Add the project root to the Python path
 sys.path.append(str(Path(__file__).parent.parent))
