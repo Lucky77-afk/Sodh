@@ -1,3 +1,3 @@
 web: python run.py
 
-health: curl -f http://localhost:$PORT/health || exit 1
+health: HEALTH_CHECK=true python run.py
