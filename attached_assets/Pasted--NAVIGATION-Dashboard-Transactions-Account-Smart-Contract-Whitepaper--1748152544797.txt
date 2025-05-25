@@ -1,0 +1,99 @@
+
+NAVIGATION
+
+
+Dashboard
+
+
+Transactions
+
+
+Account
+
+
+Smart Contract
+
+
+Whitepaper
+
+
+Tutorial
+
+CONNECT WALLET
+
+Wallet Address
+
+Enter Solana wallet address
+
+
+ABOUT DAPPR
+
+Decentralized Autonomous Platform for Propagation of Research (DAPPR) leverages Solana blockchain to revolutionize academia-industry collaboration.
+Sodh Explorer v1.0
+Powered by Solana
+
+SODH Solana Blockchain Explorer
+Powered by DAPPR - Decentralized Autonomous Platform for Propagation of Research
+DAPPR Whitepaper
+Decentralized Autonomous Platform for Propagation of Research
+
+Executive Summary
+The Decentralized Autonomous Platform for Propagation of Research (DAPPR) leverages Solana's high-performance blockchain and artificial intelligence to revolutionize collaboration between academia and industry. By addressing challenges such as misaligned incentives, restrictive intellectual property frameworks, and inefficient value distribution, DAPPR fosters transparent, trustless, and scalable partnerships.
+
+Why Solana?
+
+Solana is the blockchain of choice for DAPPR due to its unparalleled performance, scalability, and developer-friendly ecosystem, making it a leading platform for decentralized applications in 2025.
+
+Key Features:
+High Throughput: Thousands of TPS for frequent micropayments
+Low Transaction Fees: Below $0.0025 per transaction
+Fast Finality: PoH consensus for rapid confirmations
+Energy Efficiency: Minimal energy consumption per transaction
+Developer-Friendly: Comprehensive tools and support
+SOLANA METRICS (2025)
+Transactions Per Second:
+65,000+
+Average Fee:
+$0.00025
+Block Time:
+400ms
+Uptime Since Feb 2023:
+100%
+Technical Architecture
+
+Economic Model
+
+Implementation Framework
+
+DAPPR's development follows a structured six-phase roadmap to ensure scalability, reliability, and stakeholder engagement.
+
+Development Roadmap
+Requirements Analysis (3-6 months): Define functional and technical requirements
+Prototype Development (6-9 months): Build Solana-based prototype with smart contracts
+Pilot Testing (3-6 months): Controlled testing with select institutions
+Beta Launch (6 months): Limited public release with core functionality
+Full Deployment (3 months): Complete platform release with all features
+Continuous Improvement: Ongoing development and feature enhancement
+IMPLEMENTATION TIMELINE
+<div style="position: absolute; top: 0; left: 0%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Start</div>
+    <div style="position: absolute; top: 0; left: 20%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q2 2025</div>
+    <div style="position: absolute; top: 0; left: 40%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q4 2025</div>
+    <div style="position: absolute; top: 0; left: 60%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q2 2026</div>
+    <div style="position: absolute; top: 0; left: 80%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q4 2026</div>
+    <div style="position: absolute; top: 0; left: 100%; transform: translateX(-50%); color: #AAA; font-size: 0.8rem;">Q2 2027</div>
+
+    <div style="position: absolute; top: 35px; left: 0%; transform: translateX(-50%); color: #14F195; font-size: 0.8rem; text-align: center; width: 100px;">Requirements</div>
+    <div style="position: absolute; top: 35px; left: 20%; transform: translateX(-50%); color: #14F195; font-size: 0.8rem; text-align: center; width: 100px;">Prototype</div>
+    <div style="position: absolute; top: 35px; left: 40%; transform: translateX(-50%); color: #14F195; font-size: 0.8rem; text-align: center; width: 100px;">Pilot</div>
+    <div style="position: absolute; top: 35px; left: 60%; transform: translateX(-50%); color: #9945FF; font-size: 0.8rem; text-align: center; width: 100px;">Beta</div>
+    <div style="position: absolute; top: 35px; left: 80%; transform: translateX(-50%); color: #9945FF; font-size: 0.8rem; text-align: center; width: 100px;">Deployment</div>
+    <div style="position: absolute; top: 35px; left: 100%; transform: translateX(-50%); color: #9945FF; font-size: 0.8rem; text-align: center; width: 100px;">Continuous</div>
+</div>
+
+Conclusion
+DAPPR represents a paradigm shift in academia-industry collaboration, leveraging Solana's blockchain capabilities to create a transparent, efficient, and equitable system. By addressing long-standing challenges in research collaboration, DAPPR has the potential to accelerate innovation and knowledge transfer on a global scale, creating significant value for all stakeholders involved.
+
+Join the DAPPR Ecosystem
+Be part of the revolution in academia-industry collaboration. Connect your wallet to explore the platform.
+
+Made with Streamlit

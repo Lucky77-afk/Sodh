@@ -2,19 +2,93 @@ import streamlit as st
 import pandas as pd
 
 def render_whitepaper():
-    """Renders the DAPPR whitepaper content in an accessible format"""
-    st.markdown('<h2>DAPPR Whitepaper</h2>', unsafe_allow_html=True)
-    st.markdown('<p class="gradient-text">Decentralized Autonomous Platform for Propagation of Research</p>', unsafe_allow_html=True)
-    
-    # Executive Summary
-    st.markdown("### Executive Summary")
+    """Renders the DAPPR whitepaper content with enhanced visual design"""
+    # Hero section with gradient background
     st.markdown("""
-    The Decentralized Autonomous Platform for Propagation of Research (DAPPR) leverages Solana's 
-    high-performance blockchain and artificial intelligence to revolutionize collaboration between 
-    academia and industry. By addressing challenges such as misaligned incentives, restrictive 
-    intellectual property frameworks, and inefficient value distribution, DAPPR fosters transparent, 
-    trustless, and scalable partnerships.
-    """)
+    <div style="
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%, #0a0a0a 100%);
+        border: 1px solid rgba(20, 241, 149, 0.3);
+        border-radius: 25px;
+        padding: 40px;
+        margin: 20px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    ">
+        <div style="position: relative; z-index: 1;">
+            <h1 style="
+                color: #FFFFFF; 
+                font-size: 2.5rem; 
+                font-weight: 700; 
+                margin-bottom: 16px;
+                background: linear-gradient(135deg, #14F195 0%, #00FFA3 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            ">DAPPR Whitepaper</h1>
+            <h2 style="
+                color: #AAAAAA; 
+                font-size: 1.4rem; 
+                font-weight: 400; 
+                margin-bottom: 20px;
+                line-height: 1.4;
+            ">Decentralized Autonomous Platform for Propagation of Research</h2>
+            <div style="
+                width: 100px;
+                height: 4px;
+                background: linear-gradient(90deg, #14F195 0%, #9945FF 100%);
+                margin: 0 auto;
+                border-radius: 2px;
+            "></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Executive Summary with enhanced styling
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, rgba(20, 241, 149, 0.05) 0%, rgba(153, 69, 255, 0.05) 100%);
+        border: 1px solid rgba(20, 241, 149, 0.2);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 30px 0;
+        position: relative;
+    ">
+        <h3 style="
+            color: #14F195; 
+            font-size: 1.8rem; 
+            font-weight: 600; 
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        ">
+            <span style="
+                background: linear-gradient(135deg, #14F195 0%, #00FFA3 100%);
+                border-radius: 10px;
+                padding: 8px;
+                font-size: 1.2rem;
+            ">📋</span>
+            Executive Summary
+        </h3>
+        <p style="
+            color: #FFFFFF; 
+            font-size: 1.1rem; 
+            line-height: 1.7; 
+            margin: 0;
+            text-align: justify;
+        ">
+            The Decentralized Autonomous Platform for Propagation of Research (DAPPR) leverages Solana's 
+            high-performance blockchain and artificial intelligence to revolutionize collaboration between 
+            academia and industry. By addressing challenges such as misaligned incentives, restrictive 
+            intellectual property frameworks, and inefficient value distribution, DAPPR fosters transparent, 
+            trustless, and scalable partnerships.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Why Solana section
     with st.expander("Why Solana?", expanded=True):
@@ -36,26 +110,93 @@ def render_whitepaper():
             """)
             
         with col2:
-            # Display Solana metrics in a card
+            # Enhanced Solana metrics card
             st.markdown("""
-            <div class="stCard">
-                <div style="font-size: 0.9rem; color: #AAA;">SOLANA METRICS (2025)</div>
-                <div style="margin-top: 10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="color: #FFFFFF;">Transactions Per Second:</span>
-                        <span class="metric-value">65,000+</span>
+            <div style="
+                background: linear-gradient(135deg, rgba(153, 69, 255, 0.1) 0%, rgba(20, 241, 149, 0.1) 100%);
+                border: 1px solid rgba(153, 69, 255, 0.3);
+                border-radius: 20px;
+                padding: 24px;
+                margin: 10px 0;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            ">
+                <div style="
+                    color: #9945FF; 
+                    font-size: 1.1rem; 
+                    font-weight: 600; 
+                    margin-bottom: 20px;
+                    text-align: center;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                ">
+                    <span style="font-size: 1.2rem;">⚡</span>
+                    SOLANA METRICS (2025)
+                </div>
+                
+                <div style="margin-top: 16px;">
+                    <div style="
+                        display: flex; 
+                        justify-content: space-between; 
+                        align-items: center;
+                        margin-bottom: 12px;
+                        padding: 8px 0;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    ">
+                        <span style="color: #CCCCCC; font-size: 0.9rem;">Transactions Per Second:</span>
+                        <span style="
+                            color: #14F195; 
+                            font-weight: 700; 
+                            font-family: monospace;
+                            font-size: 1rem;
+                        ">65,000+</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="color: #FFFFFF;">Average Fee:</span>
-                        <span class="metric-value">$0.00025</span>
+                    <div style="
+                        display: flex; 
+                        justify-content: space-between; 
+                        align-items: center;
+                        margin-bottom: 12px;
+                        padding: 8px 0;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    ">
+                        <span style="color: #CCCCCC; font-size: 0.9rem;">Average Fee:</span>
+                        <span style="
+                            color: #14F195; 
+                            font-weight: 700; 
+                            font-family: monospace;
+                            font-size: 1rem;
+                        ">$0.00025</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="color: #FFFFFF;">Block Time:</span>
-                        <span class="metric-value">400ms</span>
+                    <div style="
+                        display: flex; 
+                        justify-content: space-between; 
+                        align-items: center;
+                        margin-bottom: 12px;
+                        padding: 8px 0;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    ">
+                        <span style="color: #CCCCCC; font-size: 0.9rem;">Block Time:</span>
+                        <span style="
+                            color: #14F195; 
+                            font-weight: 700; 
+                            font-family: monospace;
+                            font-size: 1rem;
+                        ">400ms</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="color: #FFFFFF;">Uptime Since Feb 2023:</span>
-                        <span class="metric-value">100%</span>
+                    <div style="
+                        display: flex; 
+                        justify-content: space-between; 
+                        align-items: center;
+                        padding: 8px 0;
+                    ">
+                        <span style="color: #CCCCCC; font-size: 0.9rem;">Uptime Since Feb 2023:</span>
+                        <span style="
+                            color: #14F195; 
+                            font-weight: 700; 
+                            font-family: monospace;
+                            font-size: 1rem;
+                        ">100%</span>
                     </div>
                 </div>
             </div>
@@ -226,24 +367,138 @@ def render_whitepaper():
         </div>
         """, unsafe_allow_html=True)
     
-    # Conclusion
-    st.markdown("### Conclusion")
+    # Enhanced Conclusion section
     st.markdown("""
-    DAPPR represents a paradigm shift in academia-industry collaboration, leveraging Solana's 
-    blockchain capabilities to create a transparent, efficient, and equitable system. By 
-    addressing long-standing challenges in research collaboration, DAPPR has the potential to 
-    accelerate innovation and knowledge transfer on a global scale, creating significant value 
-    for all stakeholders involved.
-    """)
-    
-    # Call-to-action section
-    st.markdown("""
-    <div style="background: linear-gradient(90deg, rgba(20,241,149,0.2) 0%, rgba(153,69,255,0.2) 100%); 
-                padding: 20px; border-radius: 10px; margin-top: 30px; text-align: center;">
-        <h3 style="margin-top: 0; margin-bottom: 15px;">Join the DAPPR Ecosystem</h3>
-        <p style="margin-bottom: 20px;">
-            Be part of the revolution in academia-industry collaboration. 
-            Connect your wallet to explore the platform.
+    <div style="
+        background: linear-gradient(135deg, rgba(0, 255, 163, 0.05) 0%, rgba(20, 241, 149, 0.05) 100%);
+        border: 1px solid rgba(0, 255, 163, 0.2);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 30px 0;
+        position: relative;
+    ">
+        <h3 style="
+            color: #00FFA3; 
+            font-size: 1.8rem; 
+            font-weight: 600; 
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        ">
+            <span style="
+                background: linear-gradient(135deg, #00FFA3 0%, #14F195 100%);
+                border-radius: 10px;
+                padding: 8px;
+                font-size: 1.2rem;
+            ">🚀</span>
+            Conclusion
+        </h3>
+        <p style="
+            color: #FFFFFF; 
+            font-size: 1.1rem; 
+            line-height: 1.7; 
+            margin: 0;
+            text-align: justify;
+        ">
+            DAPPR represents a paradigm shift in academia-industry collaboration, leveraging Solana's 
+            blockchain capabilities to create a transparent, efficient, and equitable system. By 
+            addressing long-standing challenges in research collaboration, DAPPR has the potential to 
+            accelerate innovation and knowledge transfer on a global scale, creating significant value 
+            for all stakeholders involved.
         </p>
     </div>
+    """, unsafe_allow_html=True)
+    
+    # Enhanced Call-to-action section
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+        border: 2px solid transparent;
+        background-clip: padding-box;
+        border-radius: 25px;
+        padding: 40px;
+        margin: 40px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    ">
+        <!-- Animated gradient border -->
+        <div style="
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #14F195, #9945FF, #00FFA3, #14F195);
+            border-radius: 25px;
+            z-index: -1;
+            background-size: 300% 300%;
+            animation: gradientShift 3s ease infinite;
+        "></div>
+        
+        <h3 style="
+            color: #FFFFFF; 
+            font-size: 2rem; 
+            font-weight: 700; 
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #14F195 0%, #9945FF 50%, #00FFA3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        ">Join the DAPPR Ecosystem</h3>
+        
+        <p style="
+            color: #CCCCCC; 
+            font-size: 1.2rem; 
+            line-height: 1.6; 
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        ">
+            Be part of the revolution in academia-industry collaboration. 
+            Connect your wallet to explore the platform and start building the future of research.
+        </p>
+        
+        <div style="
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        ">
+            <div style="
+                background: rgba(20, 241, 149, 0.1);
+                border: 1px solid #14F195;
+                border-radius: 15px;
+                padding: 15px 25px;
+                color: #14F195;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">🔗 Connect Wallet</div>
+            
+            <div style="
+                background: rgba(153, 69, 255, 0.1);
+                border: 1px solid #9945FF;
+                border-radius: 15px;
+                padding: 15px 25px;
+                color: #9945FF;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">📚 Explore Platform</div>
+        </div>
+    </div>
+    
+    <style>
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
     """, unsafe_allow_html=True)

@@ -107,7 +107,7 @@ def get_transaction_details_safe(signature):
         return None
 
 def render_transaction_card(tx):
-    """Renders a transaction card with details"""
+    """Renders an enhanced transaction card with modern design"""
     if not tx:
         return
     
@@ -116,65 +116,162 @@ def render_transaction_card(tx):
     status = tx.get('status', 'Unknown')
     fee = tx.get('fee', 0)
     block_time = tx.get('block_time')
+    compute_units = tx.get('compute_units', 0)
     
     # Format timestamp
     if block_time:
-        tx_time = datetime.fromtimestamp(block_time).strftime('%Y-%m-%d %H:%M:%S UTC')
+        tx_time = datetime.fromtimestamp(block_time).strftime('%H:%M:%S UTC')
+        tx_date = datetime.fromtimestamp(block_time).strftime('%Y-%m-%d')
     else:
         tx_time = 'Unknown'
+        tx_date = 'Unknown'
     
-    # Status color
-    status_color = "#14F195" if status == "Success" else "#FF6B6B"
+    # Status color and icon
+    if status == "Success":
+        status_color = "#14F195"
+        status_bg = "rgba(20, 241, 149, 0.1)"
+        status_icon = "✓"
+    else:
+        status_color = "#FF6B6B"
+        status_bg = "rgba(255, 107, 107, 0.1)"
+        status_icon = "✗"
+    
+    # Truncate signature for display
+    sig_display = f"{signature[:8]}...{signature[-8:]}" if len(signature) > 16 else signature
     
     st.markdown(f"""
     <div style="
-        background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
-        border: 1px solid #333;
-        border-radius: 15px;
-        padding: 20px;
-        margin: 15px 0;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+        border: 1px solid rgba(20, 241, 149, 0.2);
+        border-radius: 20px;
+        padding: 24px;
+        margin: 20px 0;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
     ">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h4 style="color: #14F195; margin: 0;">Transaction</h4>
-            <span style="
-                background: {status_color}; 
-                color: #000; 
-                padding: 6px 12px; 
-                border-radius: 15px; 
-                font-size: 12px; 
-                font-weight: bold;
-            ">{status}</span>
-        </div>
+        <!-- Gradient overlay -->
+        <div style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #14F195 0%, #9945FF 50%, #14F195 100%);
+        "></div>
         
-        <div style="margin: 10px 0;">
-            <p style="color: #CCCCCC; margin: 5px 0; font-size: 13px;">
-                <strong>Signature:</strong><br>
-                <span style="
-                    font-family: monospace; 
-                    word-break: break-all; 
-                    background: #0a0a0a; 
-                    padding: 8px; 
-                    border-radius: 5px; 
-                    display: block; 
-                    margin-top: 5px;
-                ">{signature}</span>
-            </p>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-            <div>
-                <p style="color: #AAAAAA; margin: 0; font-size: 12px;">
-                    <strong>Slot:</strong> {slot:,}
-                </p>
-                <p style="color: #AAAAAA; margin: 5px 0 0 0; font-size: 12px;">
-                    <strong>Fee:</strong> {fee/1_000_000_000:.9f} SOL
-                </p>
+        <!-- Header with status -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="
+                    width: 40px;
+                    height: 40px;
+                    background: linear-gradient(135deg, #14F195 0%, #00FFA3 100%);
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #000;
+                ">📊</div>
+                <div>
+                    <h4 style="color: #FFFFFF; margin: 0; font-size: 18px; font-weight: 600;">Transaction</h4>
+                    <p style="color: #AAAAAA; margin: 0; font-size: 12px;">{tx_date}</p>
+                </div>
             </div>
-            <div>
-                <p style="color: #AAAAAA; margin: 0; font-size: 12px;">
-                    <strong>Time:</strong> {tx_time}
-                </p>
+            <div style="
+                background: {status_bg};
+                border: 1px solid {status_color};
+                color: {status_color};
+                padding: 8px 16px;
+                border-radius: 25px;
+                font-size: 12px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            ">
+                <span style="font-size: 14px;">{status_icon}</span>
+                {status}
+            </div>
+        </div>
+        
+        <!-- Signature with copy functionality -->
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="color: #14F195; font-size: 14px; font-weight: 600;">Transaction Signature</span>
+                <span style="color: #AAAAAA; font-size: 11px;">Click to view full</span>
+            </div>
+            <div style="
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(20, 241, 149, 0.3);
+                border-radius: 12px;
+                padding: 12px 16px;
+                font-family: 'Courier New', monospace;
+                font-size: 13px;
+                color: #FFFFFF;
+                word-break: break-all;
+                position: relative;
+                overflow: hidden;
+            ">
+                <div style="display: none;" id="full-{signature[:8]}">{signature}</div>
+                <div id="short-{signature[:8]}">{sig_display}</div>
+            </div>
+        </div>
+        
+        <!-- Transaction details grid -->
+        <div style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        ">
+            <div style="
+                background: rgba(20, 241, 149, 0.05);
+                border: 1px solid rgba(20, 241, 149, 0.2);
+                border-radius: 12px;
+                padding: 12px;
+                text-align: center;
+            ">
+                <div style="color: #14F195; font-size: 11px; font-weight: 600; margin-bottom: 4px;">SLOT</div>
+                <div style="color: #FFFFFF; font-size: 16px; font-weight: 700; font-family: monospace;">{slot:,}</div>
+            </div>
+            
+            <div style="
+                background: rgba(153, 69, 255, 0.05);
+                border: 1px solid rgba(153, 69, 255, 0.2);
+                border-radius: 12px;
+                padding: 12px;
+                text-align: center;
+            ">
+                <div style="color: #9945FF; font-size: 11px; font-weight: 600; margin-bottom: 4px;">FEE</div>
+                <div style="color: #FFFFFF; font-size: 16px; font-weight: 700; font-family: monospace;">{fee/1_000_000_000:.6f} SOL</div>
+            </div>
+            
+            <div style="
+                background: rgba(0, 255, 163, 0.05);
+                border: 1px solid rgba(0, 255, 163, 0.2);
+                border-radius: 12px;
+                padding: 12px;
+                text-align: center;
+            ">
+                <div style="color: #00FFA3; font-size: 11px; font-weight: 600; margin-bottom: 4px;">TIME</div>
+                <div style="color: #FFFFFF; font-size: 16px; font-weight: 700; font-family: monospace;">{tx_time}</div>
+            </div>
+            
+            <div style="
+                background: rgba(255, 215, 0, 0.05);
+                border: 1px solid rgba(255, 215, 0, 0.2);
+                border-radius: 12px;
+                padding: 12px;
+                text-align: center;
+            ">
+                <div style="color: #FFD700; font-size: 11px; font-weight: 600; margin-bottom: 4px;">COMPUTE</div>
+                <div style="color: #FFFFFF; font-size: 16px; font-weight: 700; font-family: monospace;">{compute_units:,}</div>
             </div>
         </div>
     </div>
