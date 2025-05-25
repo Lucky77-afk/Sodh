@@ -1,2 +1,2 @@
 web: python run.py
-health: python -c "print('Health check passed')"
+health: curl -f http://localhost:8080/healthz || exit 1
