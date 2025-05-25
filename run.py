@@ -3,10 +3,10 @@
 """
 Entry point for running the Streamlit application on Streamlit Cloud.
 """
+#!/usr/bin/env python3
 import os
 import sys
 from pathlib import Path
-import streamlit.web.bootstrap
 
 def main():
     # Add the project root to the Python path
@@ -24,8 +24,13 @@ def main():
     os.environ["STREAMLIT_SERVER_ENABLE_XSRF"] = "true"
     os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
     
+    # Import streamlit here after setting environment variables
+    from streamlit.web import cli as st_cli
+    
     # Prepare command line arguments
     streamlit_args = [
+        "run",
+        app_path,
         "--server.port", os.getenv("PORT", "8501"),
         "--server.address", "0.0.0.0",
         "--server.enableCORS", "true",
@@ -34,15 +39,8 @@ def main():
     ]
     
     try:
-        # Run the app using the bootstrap module
-        sys.exit(
-            streamlit.web.bootstrap.run(
-                app_path,
-                args=streamlit_args,
-                flag_options={},
-                _is_hello=False
-            )
-        )
+        # Run the app using the CLI
+        sys.exit(st_cli.main(streamlit_args))
     except Exception as e:
         print(f"Error running Streamlit app: {e}", file=sys.stderr)
         sys.exit(1)
