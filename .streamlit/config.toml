@@ -18,6 +18,10 @@ secondaryBackgroundColor = "#1E1E1E"
 textColor = "#FFFFFF"
 font = "sans serif"
 
+# Remove deprecated scheduler settings
+[scheduler]
+# Retry timeout is no longer configurable in this version
+
 [client]
 showErrorDetails = true
 
