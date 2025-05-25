@@ -1,16 +1,18 @@
 [server]
-headless = true
 port = 8501
+address = "0.0.0.0"
+headless = true
 baseUrlPath = "/"
-enableCORS = true
-enableXsrfProtection = true
-maxUploadSize = 200  # Max file upload size in MB
-enableStaticServing = false  # Disable static file serving
+enableCORS = false
+enableXsrfProtection = false
+maxUploadSize = 200
 enableWebsocketCompression = true
+fileWatcherType = "none"
 
 [browser]
 gatherUsageStats = false
 serverAddress = "0.0.0.0"
+serverPort = 8501
 
 [theme]
 base = "dark"

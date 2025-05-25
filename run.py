@@ -22,50 +22,49 @@ def configure_environment():
     
     # Add project root to Python path
     if str(project_root) not in sys.path:
-        sys.path.append(str(project_root))
+        sys.path.insert(0, str(project_root))
     
     # Set Streamlit configuration via environment variables
-    os.environ.setdefault("STREAMLIT_SERVER_HEADLESS", "true")
-    os.environ.setdefault("STREAMLIT_SERVER_PORT", os.getenv("PORT", "8501"))
-    os.environ.setdefault("STREAMLIT_SERVER_ADDRESS", "0.0.0.0")
-    os.environ.setdefault("STREAMLIT_SERVER_ENABLE_CORS", "true")
-    os.environ.setdefault("STREAMLIT_SERVER_ENABLE_XSRF", "true")
-    os.environ.setdefault("STREAMLIT_SERVER_MAX_UPLOAD_SIZE", "200")
-    os.environ.setdefault("STREAMLIT_BROWSER_GATHER_USAGE_STATS", "false")
+    os.environ.update({
+        "STREAMLIT_SERVER_HEADLESS": "true",
+        "STREAMLIT_SERVER_PORT": os.getenv("PORT", "8501"),
+        "STREAMLIT_SERVER_ADDRESS": "0.0.0.0",
+        "STREAMLIT_SERVER_ENABLE_CORS": "false",
+        "STREAMLIT_SERVER_ENABLE_XSRF": "false",
+        "STREAMLIT_SERVER_MAX_UPLOAD_SIZE": "200",
+        "STREAMLIT_BROWSER_GATHER_USAGE_STATS": "false",
+        "STREAMLIT_SERVER_FILE_WATCHER_TYPE": "none"
+    })
 
 def run_streamlit():
     """Run the Streamlit application."""
     try:
-        project_root = Path(__file__).parent
-        app_path = str(project_root / "sodh" / "app.py")
-        
         # Import streamlit components
         import streamlit.web.cli as st_cli
         from streamlit.runtime.runtime import Runtime
         
-        # Check if a runtime instance already exists
-        if not hasattr(Runtime, '_instance') or not Runtime._instance:
-            logger.info("Starting Streamlit application...")
-            
-            # Configure and run Streamlit
-            sys.argv = [
-                "streamlit", "run", app_path,
-                "--server.port", os.getenv("PORT", "8501"),
-                "--server.address", "0.0.0.0",
-                "--server.enableCORS", "true",
-                "--server.enableXsrfProtection", "true",
-                "--server.maxUploadSize", "200"
-            ]
-            
-            # Ensure we have a clean environment
-            if '_streamlit_' in sys.modules:
-                import importlib
-                importlib.reload(sys.modules['_streamlit_'])
-                
-            st_cli.main()
-        else:
-            logger.warning("Streamlit runtime already exists. Skipping new instance creation.")
-            
+        # Get the app path
+        app_path = str(Path(__file__).parent / "sodh" / "app.py")
+        
+        # Configure and run Streamlit
+        sys.argv = [
+            "streamlit", "run", app_path,
+            "--server.port", os.getenv("PORT", "8501"),
+            "--server.address", "0.0.0.0",
+            "--server.enableCORS", "false",
+            "--server.enableXsrfProtection", "false",
+            "--server.maxUploadSize", "200",
+            "--server.fileWatcherType", "none"
+        ]
+        
+        # Clear any existing Streamlit modules
+        for module in list(sys.modules.keys()):
+            if module.startswith('streamlit'):
+                del sys.modules[module]
+        
+        # Run Streamlit
+        st_cli.main()
+        
     except Exception as e:
         logger.error(f"Failed to start Streamlit application: {str(e)}", exc_info=True)
         sys.exit(1)
@@ -79,11 +78,11 @@ def health_check():
 def main():
     """Main entry point."""
     try:
-        # Configure environment
-        configure_environment()
-        
         # Handle health check
         health_check()
+        
+        # Configure environment
+        configure_environment()
         
         # Run the Streamlit app
         run_streamlit()
