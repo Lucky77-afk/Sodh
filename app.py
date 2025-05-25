@@ -9,7 +9,7 @@ from components.dashboard_fixed import render_dashboard
 from components.transactions_fixed import render_transactions
 from components.account_fixed import render_account
 from components.smart_contract import render_smart_contract
-from components.whitepaper import render_whitepaper
+from components.whitepaper_fixed import render_whitepaper
 from components.tutorial_fixed import render_tutorial
 from utils.database import init_db
 

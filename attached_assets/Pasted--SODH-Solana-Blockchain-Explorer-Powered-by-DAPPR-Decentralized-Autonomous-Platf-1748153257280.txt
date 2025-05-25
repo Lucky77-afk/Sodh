@@ -1,0 +1,87 @@
+
+
+
+
+
+
+
+
+
+SODH Solana Blockchain Explorer
+Powered by DAPPR - Decentralized Autonomous Platform for Propagation of Research
+DAPPR Platform Tutorial
+Master Decentralized Research Collaboration on Solana
+Welcome to the comprehensive DAPPR platform tutorial. This guide will empower you to leverage blockchain technology for revolutionary research collaboration, smart contract interactions, and decentralized innovation on the Solana network.
+
+
+🚀 Getting Started
+
+
+📋 Smart Contracts
+
+
+🔬 Creating Projects
+
+
+🤝 Collaborations
+
+
+💰 Funding
+
+🚀 Getting Started with DAPPR
+STEP 1
+<h4 style="color: #14F195; margin: 20px 0 15px 0; font-size: 1.2rem;">💼 Connect Your Wallet</h4>
+    <p style="color: #CCCCCC; margin-bottom: 15px; line-height: 1.5;">
+        Choose from supported Solana wallets:
+    </p>
+    <div style="margin: 15px 0;">
+        <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+            <span style="color: #14F195;">•</span> Phantom Wallet (Recommended)
+        </div>
+        <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+            <span style="color: #14F195;">•</span> Solflare
+        </div>
+        <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+            <span style="color: #14F195;">•</span> Binance Wallet
+        </div>
+    </div>
+</div>
+
+<div style="
+    background: linear-gradient(135deg, rgba(153, 69, 255, 0.05) 0%, rgba(20, 241, 149, 0.05) 100%);
+    border: 1px solid rgba(153, 69, 255, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+    position: relative;
+">
+    <div style="
+        position: absolute;
+        top: -10px;
+        left: 20px;
+        background: #9945FF;
+        color: #FFF;
+        padding: 5px 15px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    ">STEP 2</div>
+
+    <h4 style="color: #9945FF; margin: 20px 0 15px 0; font-size: 1.2rem;">🔍 Explore Platform</h4>
+    <p style="color: #CCCCCC; margin-bottom: 15px; line-height: 1.5;">
+        Navigate through sections:
+    </p>
+    <div style="margin: 15px 0;">
+        <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+            <span style="color: #9945FF;">•</span> Dashboard - Blockchain metrics
+        </div>
+        <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+            <span style="color: #9945FF;">•</span> Smart Contract - Collaborations
+        </div>
+    </div>
+</div>
+
+Ready to Start?
+Create your first project on DAPPR and transform how you collaborate on research.
+
+🚀 Get Started Now
+Made with Streamlit
