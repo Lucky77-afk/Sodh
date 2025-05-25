@@ -6,7 +6,7 @@ import base64
 from datetime import datetime
 from components.header import render_header
 from components.dashboard_fixed import render_dashboard
-from components.transactions_fixed import render_transactions
+from components.transactions_simple import render_transactions
 from components.account_fixed import render_account
 from components.smart_contract import render_smart_contract
 from components.whitepaper_fixed import render_whitepaper
