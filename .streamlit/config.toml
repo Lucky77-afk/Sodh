@@ -9,7 +9,7 @@ maxUploadSize = 200
 enableWebsocketCompression = true
 fileWatcherType = "none"
 runOnSave = false
-enableStaticServing = true
+enableStaticServing = false  # Disabled since we don't have static files
 
 [browser]
 gatherUsageStats = false
