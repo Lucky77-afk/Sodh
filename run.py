@@ -14,7 +14,7 @@ def main():
     os.environ["STREAMLIT_SERVER_HEADLESS"] = "true"
     
     # Get the path to the app
-    app_path = str(Path(__file__).parent / "sodh" / "app.py")
+    app_path = str(Path(__file__).parent / "app.py")
     port = os.getenv("PORT", "8501")
     
     # Run Streamlit
