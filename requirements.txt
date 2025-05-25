@@ -13,6 +13,11 @@ pytz>=2025.2
 plotly>=6.1.1
 sqlalchemy>=2.0.41
 
+# For FastAPI and ASGI server
+fastapi>=0.115.0
+uvicorn>=0.34.0
+python-multipart>=0.0.6
+
 # For Streamlit Cloud deployment
 protobuf>=3.20.0
 packaging>=21.0
