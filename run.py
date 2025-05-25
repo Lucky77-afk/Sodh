@@ -15,15 +15,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def configure_environment():
-    """Set up environment variables and paths."""
-    # Set up paths
+def ensure_package_importable():
+    """Ensure the sodh package is importable."""
     project_root = Path(__file__).parent
-    
-    # Add project root to Python path
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
     
+    try:
+        import sodh
+        logger.info(f"Successfully imported sodh from: {sodh.__file__}")
+        return True
+    except ImportError as e:
+        logger.error(f"Failed to import sodh package: {e}")
+        return False
+
+def configure_environment():
+    """Set up environment variables and paths."""
     # Set Streamlit configuration via environment variables
     os.environ.update({
         "STREAMLIT_SERVER_HEADLESS": "true",
@@ -41,10 +48,15 @@ def run_streamlit():
     try:
         # Import streamlit components
         import streamlit.web.cli as st_cli
-        from streamlit.runtime.runtime import Runtime
         
         # Get the app path
         app_path = str(Path(__file__).parent / "sodh" / "app.py")
+        
+        if not os.path.exists(app_path):
+            logger.error(f"App not found at: {app_path}")
+            sys.exit(1)
+            
+        logger.info(f"Starting Streamlit with app at: {app_path}")
         
         # Configure and run Streamlit
         sys.argv = [
@@ -54,13 +66,9 @@ def run_streamlit():
             "--server.enableCORS", "false",
             "--server.enableXsrfProtection", "false",
             "--server.maxUploadSize", "200",
-            "--server.fileWatcherType", "none"
+            "--server.fileWatcherType", "none",
+            "--logger.level", "info"
         ]
-        
-        # Clear any existing Streamlit modules
-        for module in list(sys.modules.keys()):
-            if module.startswith('streamlit'):
-                del sys.modules[module]
         
         # Run Streamlit
         st_cli.main()
@@ -71,7 +79,7 @@ def run_streamlit():
 
 def health_check():
     """Simple health check endpoint."""
-    if os.environ.get('HEALTH_CHECK'):
+    if os.environ.get('HEALTH_CHECK') == 'true':
         print("Health check passed")
         sys.exit(0)
 
@@ -80,6 +88,11 @@ def main():
     try:
         # Handle health check
         health_check()
+        
+        # Ensure package is importable
+        if not ensure_package_importable():
+            logger.error("Failed to import sodh package. Check your installation.")
+            sys.exit(1)
         
         # Configure environment
         configure_environment()
