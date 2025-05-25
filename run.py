@@ -22,8 +22,12 @@ def main():
     os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
     
     # Import streamlit here to ensure environment is set first
-    from streamlit.web.cli import main as st_main
     from streamlit import config as _config
+    import streamlit.web.bootstrap
+    
+    # Clear any existing runtime
+    if hasattr(streamlit, '_is_running_with_streamlit'):
+        streamlit._is_running_with_streamlit = False
     
     # Configure Streamlit
     _config.set_option("server.port", int(os.getenv("PORT", "8501")))
@@ -32,20 +36,18 @@ def main():
     _config.set_option("server.enableXsrfProtection", True)
     _config.set_option("browser.gatherUsageStats", False)
     
-    # Set the command line arguments for Streamlit
-    sys.argv = [
-        "streamlit",
-        "run",
+    # Run the app directly
+    streamlit.web.bootstrap.run(
         app_path,
-        "--server.port", os.getenv("PORT", "8501"),
-        "--server.address=0.0.0.0",
-        "--server.enableCORS=true",
-        "--server.enableXsrfProtection=true",
-        "--browser.gatherUsageStats=false"
-    ]
-    
-    # Run the app
-    sys.exit(st_main())
+        args=[],
+        flag_options={
+            "server.port": int(os.getenv("PORT", "8501")),
+            "server.address": "0.0.0.0",
+            "server.enableCORS": True,
+            "server.enableXsrfProtection": True,
+            "browser.gatherUsageStats": False,
+        }
+    )
 
 if __name__ == "__main__":
     main()
