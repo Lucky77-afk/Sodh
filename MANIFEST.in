@@ -4,11 +4,18 @@ recursive-include sodh *.py
 # Include package data files
 recursive-include sodh *.json
 recursive-include sodh *.toml
-recursive-include sodh *.md
-recursive-include sodh *.html
-recursive-include sodh *.css
-recursive-include sodh *.js
-recursive-include sodh *.png
+recursive-include README.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+include setup.cfg
+include setup.py
+recursive-include .streamlit *
+recursive-include sodh/components *
+recursive-include sodh/utils *
+recursive-include sodh/assets *
+include sodh/*.toml
+include sodh/*.json
 recursive-include sodh *.jpg
 recursive-include sodh *.jpeg
 recursive-include sodh *.gif

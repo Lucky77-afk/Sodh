@@ -10,7 +10,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # Import the app from the sodh package
-from .sodh.app import main
+from sodh.app import main
 
 if __name__ == "__main__":
     # Run the Streamlit app

@@ -31,12 +31,15 @@ package_data = find_package_data()
 setup(
     name="sodh",
     version="0.1.0",
-    packages=['sodh'],
-    package_dir={'sodh': 'sodh'},
-    package_data={'sodh': ['*.py', 'components/*.py', 'utils/*.py']},
+    packages=find_packages(include=['sodh', 'sodh.*']),
+    package_dir={'': '.'},
+    package_data={
+        'sodh': ['*.py', 'components/*.py', 'utils/*.py', 'components/*'],
+    },
     include_package_data=True,
     install_requires=requirements,
     python_requires='>=3.8',
+    zip_safe=False,
     entry_points={
         'console_scripts': [
             'sodh=run:main',
