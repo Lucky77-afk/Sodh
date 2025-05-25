@@ -66,12 +66,10 @@ Source = "https://github.com/Lucky77-afk/Sodh"
 
 [tool.setuptools]
 package-dir = { "" = "." }
-packages = find:
+packages = ["sodh"]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["sodh"]
-exclude = ["tests*", "docs*", "examples*"]
+[tool.setuptools.package-data]
+"sodh" = ["*.toml", "*.json", "*.md"]
 
 [tool.black]
 line-length = 88
