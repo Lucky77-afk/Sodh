@@ -95,10 +95,11 @@ def render_account():
     
     # Input field for wallet address
     wallet_address = st.text_input(
-        "", 
+        "Wallet Address", 
         value=st.session_state.get('wallet_address', ''),
         placeholder="Solana wallet address",
-        key="account_wallet_input"
+        key="account_wallet_input",
+        label_visibility="collapsed"
     )
     
     # Wallet provider selection
