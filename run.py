@@ -7,7 +7,7 @@ import os
 import sys
 from pathlib import Path
 
-if __name__ == "__main__":
+def main():
     # Add the project root to the Python path
     project_root = Path(__file__).resolve().parent
     sys.path.insert(0, str(project_root))
@@ -22,8 +22,29 @@ if __name__ == "__main__":
     os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
     
     # Import streamlit here to ensure environment is set first
-    from streamlit.web import cli as st_cli
+    import streamlit.web.bootstrap
+    from streamlit import config as _config
     
-    # Run the Streamlit app directly
-    sys.argv = ["streamlit", "run", app_path]
-    sys.exit(st_cli.main())
+    # Configure Streamlit
+    _config.set_option("server.port", int(os.getenv("PORT", "8501")))
+    _config.set_option("server.address", "0.0.0.0")
+    _config.set_option("server.enableCORS", True)
+    _config.set_option("server.enableXsrfProtection", True)
+    _config.set_option("browser.gatherUsageStats", False)
+    
+    # Run the app directly
+    streamlit.web.bootstrap.run(
+        app_path,
+        "",
+        [],
+        flag_options={
+            "server.port": int(os.getenv("PORT", "8501")),
+            "server.address": "0.0.0.0",
+            "server.enableCORS": True,
+            "server.enableXsrfProtection": True,
+            "browser.gatherUsageStats": False,
+        },
+    )
+
+if __name__ == "__main__":
+    main()
