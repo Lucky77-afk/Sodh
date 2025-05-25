@@ -1,18 +1,40 @@
 import streamlit as st
 from solana.rpc.api import Client
+from solana.rpc.commitment import Confirmed
 # Use solders pubkey instead of solana.publickey
-import solders.pubkey
-from solana.transaction import Transaction
-# These imports may have changed with the newer solana package
-import solders.instruction
+import solders.pubkey as pubkey
+
+# Import from solders package for transaction and instruction types
+import solders.instruction as instruction
 from solders.keypair import Keypair
-from solana.rpc.types import TxOpts
+from solders.transaction import Transaction as SolanaTransaction
+from solders.instruction import Instruction as SolanaTxIx
+from solders.signature import Signature
+from solders.hash import Hash
+from solders.message import Message
+
+# For backward compatibility
+TransactionInstruction = SolanaTxIx
+
+# For backward compatibility
+TransactionMessage = Message
+
+# For compatibility
+TxOpts = dict  # Simplified for compatibility
 
 # Define compatibility layer for PublicKey
-PublicKey = solders.pubkey.Pubkey
+PublicKey = pubkey.Pubkey
 # Aliases for compatibility
-TransactionInstruction = solders.instruction.Instruction
-AccountMeta = solders.instruction.AccountMeta
+TransactionInstruction = instruction.Instruction
+AccountMeta = instruction.AccountMeta
+
+# Transaction configuration
+tx_opts = {
+    'skip_preflight': False,
+    'preflight_commitment': Confirmed,
+    'encoding': 'jsonParsed',
+    'max_retries': 3
+}
 from datetime import datetime, timedelta
 import base64
 import json

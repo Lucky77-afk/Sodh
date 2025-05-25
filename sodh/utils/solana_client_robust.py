@@ -58,16 +58,16 @@ def get_account_info_robust(address):
     """Get account information using robust error handling and direct RPC calls"""
     try:
         # Import our wallet validator
-        from utils.wallet_validator import get_valid_pubkey
+        from ..utils.wallet_validator import is_valid_solana_address
+        from solders.pubkey import Pubkey
         
-        # Validate and convert the address
-        pubkey, address_type, error_msg = get_valid_pubkey(address)
-        
-        if error_msg:
-            st.error(f"Invalid address: {error_msg}")
+        # Validate the address
+        if not is_valid_solana_address(address):
+            st.error(f"Invalid Solana wallet address: {address}")
             return None
-        
-        st.write(f"🔍 Analyzing {address_type} address: {str(pubkey)}")
+            
+        pubkey = Pubkey.from_string(address)
+        st.write(f"🔍 Analyzing address: {str(pubkey)}")
         
         # Get balance using direct RPC call
         balance_result = make_direct_rpc_call("getBalance", [str(pubkey)])
@@ -129,11 +129,14 @@ def get_account_info_robust(address):
 def get_recent_transactions_robust(address, limit=5):
     """Get recent transactions using robust error handling"""
     try:
-        from utils.wallet_validator import get_valid_pubkey
+        from ..utils.wallet_validator import is_valid_solana_address
+        from solders.pubkey import Pubkey
         
-        pubkey, address_type, error_msg = get_valid_pubkey(address)
-        if error_msg:
+        if not is_valid_solana_address(address):
+            st.error(f"Invalid Solana wallet address: {address}")
             return []
+            
+        pubkey = Pubkey.from_string(address)
         
         # Get transaction signatures using direct RPC call
         sigs_result = make_direct_rpc_call("getSignaturesForAddress", [str(pubkey), {"limit": limit}])

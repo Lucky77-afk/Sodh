@@ -37,12 +37,13 @@ def get_account_data(address):
     """Get complete account data using direct RPC calls"""
     try:
         # Validate address format
-        from utils.wallet_validator import get_valid_pubkey
-        pubkey, address_type, error_msg = get_valid_pubkey(address)
+        from ..utils.wallet_validator import is_valid_solana_address
+        from solders.pubkey import Pubkey
         
-        if error_msg:
-            return None, f"Invalid address: {error_msg}"
-        
+        if not is_valid_solana_address(address):
+            return None, f"Invalid Solana wallet address: {address}"
+            
+        pubkey = Pubkey.from_string(address)
         address_str = str(pubkey)
         
         # Get balance
@@ -87,7 +88,7 @@ def get_account_data(address):
             'balance_lamports': balance_lamports,
             'transaction_count': tx_count,
             'usdt_balance': usdt_balance,
-            'address_type': address_type,
+            'address_type': 'wallet',  # Default to 'wallet' as we've already validated it's a valid address
             'recent_transactions': recent_transactions
         }, None
         

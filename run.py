@@ -5,39 +5,39 @@ Entry point for running the Streamlit application.
 """
 import os
 import sys
+import subprocess
 from pathlib import Path
 
 # Add the project root to the Python path
 project_root = Path(__file__).resolve().parent
 sys.path.insert(0, str(project_root))
 
-# Set the STREAMLIT_SERVER_ENABLE_STATIC_SERVING environment variable
-os.environ["STREAMLIT_SERVER_ENABLE_STATIC_SERVING"] = "true"
-
-# Import the app from the sodh package
-from sodh.app import main
-
 if __name__ == "__main__":
-    # Run the Streamlit app
-    main()
-    os.environ["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
-    os.environ["STREAMLIT_SERVER_HEADLESS"] = "true"
-    os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
+    # Set environment variables
+    env = os.environ.copy()
+    env["STREAMLIT_SERVER_ENABLE_STATIC_SERVING"] = "true"
+    env["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
+    env["STREAMLIT_SERVER_HEADLESS"] = "true"
+    env["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
+    
+    # Path to the app
+    app_path = str(project_root / "sodh" / "app.py")
+    
+    # Build the command to run Streamlit
+    cmd = [
+        sys.executable, "-m", "streamlit", "run",
+        "--server.port", "8501",
+        "--server.address", "0.0.0.0",
+        "--server.enableCORS", "true",
+        "--server.enableXsrfProtection", "true",
+        "--theme.base", "dark",
+        "--theme.primaryColor", "#14F195",
+        "--theme.backgroundColor", "#131313",
+        "--theme.secondaryBackgroundColor", "#1E1E1E",
+        "--theme.textColor", "#FFFFFF",
+        "--theme.font", "sans serif",
+        app_path
+    ]
     
     # Run the Streamlit app
-    streamlit.web.bootstrap.run(
-        str(project_root / "sodh" / "app.py"),
-        args=[],
-        flag_options={
-            "server.headless": True,
-            "global.developmentMode": False,
-            "server.port": 8501,
-            "server.address": "0.0.0.0",
-            "browser.serverAddress": "0.0.0.0",
-            "theme.base": "dark",
-            "theme.primaryColor": "#14F195",
-            "theme.backgroundColor": "#131313",
-            "theme.secondaryBackgroundColor": "#1E1E1E",
-            "theme.textColor": "#FFFFFF"
-        }
-    )
+    subprocess.run(cmd, env=env)

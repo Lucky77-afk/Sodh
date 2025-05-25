@@ -5,6 +5,49 @@ import base64
 import sys
 from datetime import datetime
 from pathlib import Path
+import importlib
+
+# Set page config must be the first Streamlit command
+# Set default page icon
+page_icon = "🔍"  # Default icon
+
+# Get the absolute path to the assets directory
+assets_dir = os.path.join(os.path.dirname(__file__), "..", "assets")
+os.makedirs(assets_dir, exist_ok=True)
+
+# Path to the logo
+logo_path = os.path.join(assets_dir, "logo.svg")
+
+# If logo doesn't exist, create a default one
+if not os.path.exists(logo_path):
+    with open(logo_path, "w") as f:
+        f.write('''<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="50" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .logo-text { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #14F195; }
+    .logo-subtext { font-family: Arial, sans-serif; font-size: 14px; fill: #FFFFFF; }
+  </style>
+  <rect width="200" height="50" fill="#131313" rx="5"/>
+  <text x="10" y="32" class="logo-text">Sodh</text>
+  <text x="80" y="32" class="logo-subtext">Solana Explorer</text>
+  <line x1="10" y1="35" x2="190" y2="35" stroke="#14F195" stroke-width="2"/>
+</svg>''')
+
+# Set the page icon to the logo
+page_icon = logo_path
+
+# Set page configuration (must be the first Streamlit command)
+st.set_page_config(
+    page_title="Sodh - Solana Blockchain Explorer",
+    page_icon=page_icon,
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://www.solana.com/docs',
+        'Report a bug': None,
+        'About': "Sodh Explorer - A Solana Blockchain Explorer built with Streamlit"
+    }
+)
 
 # Add the project root to the Python path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -20,17 +63,11 @@ from sodh.components.tutorial_simple import render_tutorial
 from sodh.utils.database import init_db
 from sodh.utils.solana_client_fixed import get_solana_client
 
-# Replace the original solana_client with our fixed version
-import sys
-import importlib
-import os
-
 # Create a stub for solana_client.py that just re-exports everything from solana_client_fixed
 print("Using solana_client_fixed.py with solders.pubkey")
 
 # Simplify the import approach - just make solana_client.py a pass-through to solana_client_fixed
-import sys
-from utils import solana_client_fixed
+from sodh.utils import solana_client_fixed
 sys.modules['utils.solana_client'] = solana_client_fixed
 
 # Initialize database with error handling
@@ -50,30 +87,6 @@ except Exception as e:
     print(f"Error getting server info: {e}")
     print(f"Server hostname: {hostname}")
     print(f"Server running on http://0.0.0.0:5000")
-
-# Check for logo to use as icon
-
-logo_path = os.path.join("assets", "logo.jpeg")
-if os.path.exists(logo_path):
-    with open(logo_path, "rb") as f:
-        logo_bytes = f.read()
-    encoded_logo = base64.b64encode(logo_bytes).decode()
-    page_icon = f"data:image/jpeg;base64,{encoded_logo}"
-else:
-    page_icon = "🔍"
-
-# Set page configuration
-st.set_page_config(
-    page_title="Sodh - Solana Blockchain Explorer",
-    page_icon=page_icon,
-    layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        'Get Help': 'https://www.solana.com/docs',
-        'Report a bug': None,
-        'About': "Sodh Explorer - A Solana Blockchain Explorer built with Streamlit"
-    }
-)
 
 # Add custom styling with improved UI
 st.markdown("""
@@ -426,7 +439,7 @@ st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 """, unsafe_allow_html=True)
 
-# Render the header with logo
+# Render the header with logo (without set_page_config)
 render_header()
 
 # Add access information notification
@@ -436,9 +449,9 @@ st.toast("📱 For mobile access, use the 'Open in new tab' button in Replit's p
 with st.sidebar:
     # Add health check access
     if st.button("⚡ Check Server Status"):
-        # Use experimental_set_query_params for setting the query parameter
-        st.experimental_set_query_params(health_check="true")
-        st.experimental_rerun()
+        # Use the new query_params API for setting the query parameter
+        st.query_params["health_check"] = "true"
+        st.rerun()
     st.markdown('<p class="gradient-text">NAVIGATION</p>', unsafe_allow_html=True)
     page = st.radio(
         "Select a page",
@@ -451,13 +464,13 @@ with st.sidebar:
     wallet_address = st.text_input("Wallet Address", placeholder="Enter Solana wallet address")
     if st.button("Connect"):
         st.session_state.wallet_address = wallet_address
-        st.experimental_rerun()
+        st.rerun()
     
     # Clear wallet
     if 'wallet_address' in st.session_state and st.session_state.wallet_address:
         if st.button("Disconnect Wallet"):
             del st.session_state.wallet_address
-            st.experimental_rerun()
+            st.rerun()
     
     # About section in sidebar
     st.markdown("---")
@@ -477,9 +490,8 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # Add health check/status page
-# Get query params in a way that works across Streamlit versions
-query_params = st.experimental_get_query_params()
-if 'health_check' in query_params:
+# Get query params using the new Streamlit API
+if 'health_check' in st.query_params:
     st.success("Server is up and running! 🚀")
     st.write(f"Server Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     try:

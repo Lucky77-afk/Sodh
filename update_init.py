@@ -1,4 +1,5 @@
-# Import all component functions to make them available when importing from sodh.components
+# Script to update the __init__.py file in the components directory
+init_content = """# Import all component functions to make them available when importing from sodh.components
 from .header import render_header
 from .dashboard_fixed import render_dashboard
 from .transactions_simple import render_transactions
@@ -15,4 +16,7 @@ __all__ = [
     'render_smart_contract',
     'render_whitepaper',
     'render_tutorial'
-]
+]"""
+
+with open('sodh/components/__init__.py', 'w') as f:
+    f.write(init_content)
