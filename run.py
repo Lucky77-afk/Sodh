@@ -6,6 +6,8 @@ Entry point for running the Streamlit application on Streamlit Cloud.
 import os
 import sys
 from pathlib import Path
+import streamlit as st
+import streamlit.web.bootstrap
 
 def main():
     # Add the project root to the Python path
@@ -16,27 +18,34 @@ def main():
     app_path = str(project_root / "sodh" / "app.py")
     
     # Set environment variables
-    os.environ["STREAMLIT_SERVER_PORT"] = os.getenv("PORT", "8501")
-    os.environ["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
     os.environ["STREAMLIT_SERVER_HEADLESS"] = "true"
-    os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
+    os.environ["STREAMLIT_SERVER_PORT"] = "8501"
+    os.environ["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
     os.environ["STREAMLIT_SERVER_ENABLE_CORS"] = "true"
     os.environ["STREAMLIT_SERVER_ENABLE_XSRF"] = "true"
+    os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
     
     # Clean up any existing runtime instance
     try:
         # Send SIGTERM to any existing Streamlit process
-        os.system("pkill -f 'streamlit run'")
-    except Exception as e:
-        print(f"Warning: Could not clean up existing Streamlit instances: {e}")
+        os.system("pkill -f 'streamlit run' 2>/dev/null")
+    except Exception:
+        pass
     
     # Set Streamlit configuration using environment variables
-    _config.set_option("server.headless", os.getenv("STREAMLIT_SERVER_HEADLESS") == "true")
-    _config.set_option("server.port", int(os.getenv("STREAMLIT_SERVER_PORT", "8501")))
-    _config.set_option("server.address", os.getenv("STREAMLIT_SERVER_ADDRESS", "0.0.0.0"))
-    _config.set_option("server.enableCORS", os.getenv("STREAMLIT_SERVER_ENABLE_CORS") == "true")
-    _config.set_option("server.enableXsrfProtection", os.getenv("STREAMLIT_SERVER_ENABLE_XSRF") == "true")
-    _config.set_option("browser.gatherUsageStats", os.getenv("STREAMLIT_BROWSER_GATHER_USAGE_STATS") == "true")
+    st.set_page_config(
+        page_title="Sodh - Solana Explorer",
+        page_icon="🔍",
+        layout="wide"
+    )
+    
+    # Configure Streamlit settings
+    st.set_option("server.headless", os.getenv("STREAMLIT_SERVER_HEADLESS") == "true")
+    st.set_option("server.port", int(os.getenv("STREAMLIT_SERVER_PORT", "8501")))
+    st.set_option("server.address", os.getenv("STREAMLIT_SERVER_ADDRESS", "0.0.0.0"))
+    st.set_option("server.enableCORS", os.getenv("STREAMLIT_SERVER_ENABLE_CORS") == "true")
+    st.set_option("server.enableXsrfProtection", os.getenv("STREAMLIT_SERVER_ENABLE_XSRF") == "true")
+    st.set_option("browser.gatherUsageStats", os.getenv("STREAMLIT_BROWSER_GATHER_USAGE_STATS") == "true")
     
     # Prepare command line arguments
     streamlit_args = [
