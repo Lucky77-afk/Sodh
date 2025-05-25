@@ -1,8 +1,19 @@
-# This project uses pyproject.toml for dependency management.
-# For development, please use: pip install -e .[dev]
-# For production: pip install .
+# Core Dependencies
+streamlit>=1.45.1
+solana>=0.36.6
+solders>=0.26.0
+base58>=2.1.1
+python-dotenv>=1.1.0
+requests>=2.32.3
+aiohttp>=3.12.0
+pandas>=2.2.3
+numpy>=2.2.6
+python-dateutil>=2.9.0
+pytz>=2025.2
+plotly>=6.1.1
+sqlalchemy>=2.0.41
 
-# This file is maintained for compatibility with tools that expect requirements.txt
-# The actual dependencies are specified in pyproject.toml
+# For Streamlit Cloud deployment
+protobuf>=3.20.0
+packaging>=21.0
 
--e .

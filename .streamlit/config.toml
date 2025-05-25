@@ -1,14 +1,17 @@
 [server]
 headless = true
 port = 8501
+baseUrlPath = "/"
 enableCORS = true
 enableXsrfProtection = true
 maxUploadSize = 200  # Max file upload size in MB
-enableStaticServing = false  # Disable static file serving
+enableStaticServing = true
+enableWebsocketCompression = true
 
 [browser]
 gatherUsageStats = false
 serverAddress = "0.0.0.0"
+serverPort = 8501
 
 [theme]
 base = "dark"
@@ -24,8 +27,14 @@ showErrorDetails = true
 [ui]
 hideTopBar = false
 
+[runner]
+fixMatplotlib = true
+
 [mapbox]
 token = ""  # Add your Mapbox token here if needed
 
 [logger]
 level = "info"
+
+[scheduler]
+heartbeatCallbackMs = 0  # Disable heartbeat for cloud deployment
