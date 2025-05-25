@@ -5,20 +5,7 @@ solders>=0.26.0
 base58>=2.1.1
 python-dotenv>=1.1.0
 requests>=2.32.3
-aiohttp>=3.12.0
-pandas>=2.2.3
-numpy>=2.2.6
-python-dateutil>=2.9.0
-pytz>=2025.2
-plotly>=6.1.1
-sqlalchemy>=2.0.41
 
-# For FastAPI and ASGI server
-fastapi>=0.115.0
-uvicorn>=0.34.0
-python-multipart>=0.0.6
-
-# For Streamlit Cloud deployment
+# Required for Streamlit Cloud
 protobuf>=3.20.0
 packaging>=21.0
-

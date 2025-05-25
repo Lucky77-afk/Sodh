@@ -1,34 +1,20 @@
-# Sodh - Solana Dashboard
+# 🚀 Sodh - Solana Blockchain Explorer
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://sodh.streamlit.app/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A Streamlit-based dashboard for interacting with the Solana blockchain, providing real-time analytics, transaction monitoring, and smart contract interaction.
-
-## ✨ Features
-
-- 📊 Real-time Solana account information and analytics
-- 🔍 Transaction monitoring and exploration
-- 🤖 Smart contract interaction and deployment
-- 📚 Whitepapers and tutorials
-- 🚀 Built with modern Python and Streamlit
-- 🐳 Docker support for easy deployment
-- 🔄 CI/CD ready with GitHub Actions
+A modern, user-friendly Solana blockchain explorer built with Streamlit, providing real-time analytics, transaction monitoring, and wallet management.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.10 or higher
-- [Poetry](https://python-poetry.org/) (recommended) or pip
+- Python 3.9 or higher
 - [Git](https://git-scm.com/)
-- [Docker](https://www.docker.com/) (optional, for containerized deployment)
 
 ### Local Development
-
-#### Using setup script (recommended)
 
 1. **Clone the repository**:
    ```bash
@@ -36,19 +22,161 @@ A Streamlit-based dashboard for interacting with the Solana blockchain, providin
    cd Sodh
    ```
 
-2. **Run the setup script**:
-   - **Windows**:
-     ```bash
-     .\setup.bat
-     ```
-   - **macOS/Linux**:
-     ```bash
-     chmod +x setup.sh
-     ./setup.sh
-     ```
-
-3. **Start the application**:
+2. **Set up a virtual environment** (recommended):
    ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the application**:
+   ```bash
+   streamlit run main/app.py
+   ```
+
+5. **Access the app** at http://localhost:8501
+
+## ☁️ Deployment
+
+### Streamlit Cloud (Recommended)
+
+1. Push your code to a GitHub repository
+2. Sign in to [Streamlit Cloud](https://share.streamlit.io/)
+3. Click "New app" and select your repository
+4. Set the main file path to `main/app.py`
+5. Click "Deploy!"
+
+## 🏗 Project Structure
+
+```
+Sodh/
+├── .streamlit/               # Streamlit configuration
+│   ├── config.toml           # App configuration
+│   └── secrets.toml          # Environment variables (not versioned)
+├── main/                     # Main application package
+│   ├── __init__.py           # Package initialization
+│   └── app.py                # Main Streamlit application
+├── requirements.txt          # Python dependencies
+└── runtime.txt              # Python version for deployment
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+
+## ✨ Features
+
+- 🚀 **Real-time Blockchain Data**: Monitor Solana network activity in real-time
+- 🔍 **Transaction Explorer**: Search and analyze transactions on the Solana blockchain
+- 💰 **Wallet Management**: View balances, tokens, and transaction history
+- 📊 **Analytics Dashboard**: Visualize network statistics and trends
+- 🌐 **Web3 Integration**: Connect with popular Solana wallets
+- 🔒 **Secure**: Built with security best practices in mind
+- ☁️ **Cloud-Ready**: Optimized for deployment on Streamlit Cloud
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.9 or higher
+- [Git](https://git-scm.com/)
+- [Poetry](https://python-poetry.org/) (recommended) or pip
+
+### Local Development
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Lucky77-afk/Sodh.git
+   cd Sodh
+   ```
+
+2. **Set up a virtual environment** (recommended):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the application**:
+   ```bash
+   python run.py
+   ```
+   
+   Or for development with auto-reload:
+   ```bash
+   streamlit run app.py
+   ```
+
+5. **Access the app** at http://localhost:8501
+
+## ☁️ Deployment
+
+### Streamlit Cloud (Recommended)
+
+1. Push your code to a GitHub repository
+2. Sign in to [Streamlit Cloud](https://share.streamlit.io/)
+3. Click "New app" and select your repository
+4. Set the main file path to `app.py`
+5. Add any required environment variables in the settings
+6. Click "Deploy!"
+
+### Health Check
+
+To verify the app is running, access the health check endpoint:
+```bash
+curl "https://your-app-url.streamlit.app/?health_check=true"
+```
+
+## 🏗 Project Structure
+
+```
+Sodh/
+├── .streamlit/               # Streamlit configuration
+│   ├── config.toml           # App configuration
+│   └── secrets.example.toml  # Example secrets (copy to secrets.toml)
+├── assets/                   # Static assets (images, etc.)
+├── app.py                    # Main Streamlit application
+├── run.py                    # Entry point with process management
+├── requirements.txt          # Python dependencies
+└── Procfile                  # Process configuration for deployment
+```
+
+## 🔧 Configuration
+
+Copy the example secrets file and update with your configuration:
+
+```bash
+cp .streamlit/secrets.example.toml .streamlit/secrets.toml
+# Edit the secrets.toml file with your configuration
+```
+
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+python test_app.py
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
    poetry run streamlit run sodh/app.py
    ```
    
