@@ -71,104 +71,65 @@ def render_tutorial():
     tabs = st.tabs(["🚀 Getting Started", "📋 Smart Contracts", "🔬 Creating Projects", "🤝 Collaborations", "💰 Funding"])
     
     with tabs[0]:
+        st.markdown("### 🚀 Getting Started with DAPPR")
+        
+        # Step 1
         st.markdown("""
         <div style="
-            background: linear-gradient(135deg, rgba(20, 241, 149, 0.05) 0%, rgba(153, 69, 255, 0.05) 100%);
-            border: 1px solid rgba(20, 241, 149, 0.2);
-            border-radius: 20px;
-            padding: 25px;
-            margin: 20px 0;
+            background: rgba(20, 241, 149, 0.05);
+            border: 1px solid rgba(20, 241, 149, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
         ">
-            <h3 style="
-                color: #14F195; 
-                font-size: 1.6rem; 
-                margin-bottom: 20px;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            ">
-                <span style="font-size: 1.4rem;">🚀</span>
-                Getting Started with DAPPR
-            </h3>
+            <h4 style="color: #14F195;">💼 Step 1: Connect Your Wallet</h4>
+            <p style="color: #CCCCCC;">Choose from supported Solana wallets:</p>
+            <ul style="color: #FFFFFF;">
+                <li>Phantom Wallet (Recommended)</li>
+                <li>Solflare</li>
+                <li>Binance Wallet</li>
+                <li>CoinDCX Wallet</li>
+            </ul>
         </div>
         """, unsafe_allow_html=True)
         
-        # Step-by-step guide
+        # Step 2
         st.markdown("""
         <div style="
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 25px 0;
+            background: rgba(153, 69, 255, 0.05);
+            border: 1px solid rgba(153, 69, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
         ">
-            <div style="
-                background: linear-gradient(135deg, rgba(20, 241, 149, 0.05) 0%, rgba(0, 255, 163, 0.05) 100%);
-                border: 1px solid rgba(20, 241, 149, 0.3);
-                border-radius: 15px;
-                padding: 25px;
-                position: relative;
-            ">
-                <div style="
-                    position: absolute;
-                    top: -10px;
-                    left: 20px;
-                    background: #14F195;
-                    color: #000;
-                    padding: 5px 15px;
-                    border-radius: 15px;
-                    font-size: 0.9rem;
-                    font-weight: 600;
-                ">STEP 1</div>
-                
-                <h4 style="color: #14F195; margin: 20px 0 15px 0; font-size: 1.2rem;">💼 Connect Your Wallet</h4>
-                <p style="color: #CCCCCC; margin-bottom: 15px; line-height: 1.5;">
-                    Choose from supported Solana wallets:
-                </p>
-                <div style="margin: 15px 0;">
-                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
-                        <span style="color: #14F195;">•</span> Phantom Wallet (Recommended)
-                    </div>
-                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
-                        <span style="color: #14F195;">•</span> Solflare
-                    </div>
-                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
-                        <span style="color: #14F195;">•</span> Binance Wallet
-                    </div>
-                </div>
-            </div>
-            
-            <div style="
-                background: linear-gradient(135deg, rgba(153, 69, 255, 0.05) 0%, rgba(20, 241, 149, 0.05) 100%);
-                border: 1px solid rgba(153, 69, 255, 0.3);
-                border-radius: 15px;
-                padding: 25px;
-                position: relative;
-            ">
-                <div style="
-                    position: absolute;
-                    top: -10px;
-                    left: 20px;
-                    background: #9945FF;
-                    color: #FFF;
-                    padding: 5px 15px;
-                    border-radius: 15px;
-                    font-size: 0.9rem;
-                    font-weight: 600;
-                ">STEP 2</div>
-                
-                <h4 style="color: #9945FF; margin: 20px 0 15px 0; font-size: 1.2rem;">🔍 Explore Platform</h4>
-                <p style="color: #CCCCCC; margin-bottom: 15px; line-height: 1.5;">
-                    Navigate through sections:
-                </p>
-                <div style="margin: 15px 0;">
-                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
-                        <span style="color: #9945FF;">•</span> Dashboard - Blockchain metrics
-                    </div>
-                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
-                        <span style="color: #9945FF;">•</span> Smart Contract - Collaborations
-                    </div>
-                </div>
-            </div>
+            <h4 style="color: #9945FF;">🔍 Step 2: Explore the Platform</h4>
+            <p style="color: #CCCCCC;">Navigate through the main sections:</p>
+            <ul style="color: #FFFFFF;">
+                <li>Dashboard - View blockchain metrics</li>
+                <li>Transactions - Monitor activity</li>
+                <li>Smart Contract - Manage collaborations</li>
+                <li>Account - Check wallet details</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Step 3
+        st.markdown("""
+        <div style="
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+        ">
+            <h4 style="color: #FFD700;">🤝 Step 3: Start Collaborating</h4>
+            <p style="color: #CCCCCC;">Begin your research collaboration journey:</p>
+            <ul style="color: #FFFFFF;">
+                <li>Create research projects</li>
+                <li>Set collaboration terms</li>
+                <li>Add team members</li>
+                <li>Track project progress</li>
+            </ul>
         </div>
         """, unsafe_allow_html=True)
     
