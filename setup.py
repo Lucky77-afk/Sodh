@@ -15,18 +15,12 @@ def find_package_data():
     package_data = {}
     for root, dirs, files in os.walk('sodh'):
         relative_path = os.path.relpath(root, 'sodh')
-        if relative_path == '.':
-            relative_path = ''
-        for file in files:
-            if file.endswith(('.py', '.pyc', '.pyo')):
-                continue
-            if relative_path not in package_data:
-                package_data[relative_path] = []
-            package_data[relative_path].append(file)
-    return package_data
 
-# Include all non-Python files in the package
-package_data = find_package_data()
+# Get all files from components and utils
+extra_files = []
+for directory in ['sodh/components', 'sodh/utils']:
+    if os.path.exists(directory):
+        extra_files.extend(package_files(directory))
 
 setup(
     name="sodh",
@@ -34,7 +28,7 @@ setup(
     packages=find_packages(include=['sodh', 'sodh.*']),
     package_dir={'': '.'},
     package_data={
-        'sodh': ['*.py', 'components/*.py', 'utils/*.py', 'components/*'],
+        'sodh': ['*.py', 'components/*', 'utils/*', '*.toml', '*.json'],
     },
     include_package_data=True,
     install_requires=requirements,
@@ -49,15 +43,12 @@ setup(
     author_email="your.email@example.com",
     description="Sodh - A Streamlit application for Solana blockchain interactions",
     long_description=long_description,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     url="https://github.com/Lucky77-afk/Sodh",
     classifiers=[
-        'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: GNU Affero General Public License v3',
-        'Operating System :: OS Independent',
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: Build Tools',
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+        "Operating System :: OS Independent",
     ],
     keywords='solana blockchain streamlit dashboard',
     project_urls={

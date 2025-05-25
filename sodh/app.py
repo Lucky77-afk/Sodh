@@ -10,15 +10,15 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 # Import components
-from .components.header import render_header
-from .components.dashboard_fixed import render_dashboard
-from .components.transactions_simple import render_transactions
-from .components.account_fixed import render_account
-from .components.smart_contract import render_smart_contract
-from .components.whitepaper_fixed import render_whitepaper
-from .components.tutorial_simple import render_tutorial
-from .utils.database import init_db
-from .utils.solana_client_fixed import get_solana_client
+from sodh.components.header import render_header
+from sodh.components.dashboard_fixed import render_dashboard
+from sodh.components.transactions_simple import render_transactions
+from sodh.components.account_fixed import render_account
+from sodh.components.smart_contract import render_smart_contract
+from sodh.components.whitepaper_fixed import render_whitepaper
+from sodh.components.tutorial_simple import render_tutorial
+from sodh.utils.database import init_db
+from sodh.utils.solana_client_fixed import get_solana_client
 
 # Replace the original solana_client with our fixed version
 import sys

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Entry point for running the Streamlit application.
 """
@@ -6,21 +8,18 @@ import sys
 from pathlib import Path
 
 # Add the project root to the Python path
-project_root = Path(__file__).parent
+project_root = Path(__file__).resolve().parent
 sys.path.insert(0, str(project_root))
+
+# Set the STREAMLIT_SERVER_ENABLE_STATIC_SERVING environment variable
+os.environ["STREAMLIT_SERVER_ENABLE_STATIC_SERVING"] = "true"
 
 # Import the app from the sodh package
 from sodh.app import main
 
 if __name__ == "__main__":
     # Run the Streamlit app
-    import streamlit.web.bootstrap
-    
-    # Set the config file path
-    config_path = project_root / ".streamlit" / "config.toml"
-    
-    # Set environment variables for Streamlit
-    os.environ["STREAMLIT_SERVER_PORT"] = "8501"
+    main()
     os.environ["STREAMLIT_SERVER_ADDRESS"] = "0.0.0.0"
     os.environ["STREAMLIT_SERVER_HEADLESS"] = "true"
     os.environ["STREAMLIT_BROWSER_GATHER_USAGE_STATS"] = "false"
