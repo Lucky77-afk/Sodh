@@ -10,7 +10,7 @@ from components.transactions_fixed import render_transactions
 from components.account_fixed import render_account
 from components.smart_contract import render_smart_contract
 from components.whitepaper import render_whitepaper
-from components.tutorial import render_tutorial
+from components.tutorial_fixed import render_tutorial
 from utils.database import init_db
 
 # Replace the original solana_client with our fixed version

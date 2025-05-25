@@ -1,41 +1,244 @@
 import streamlit as st
 
 def render_tutorial():
-    """Renders the tutorial section with Solana smart contract guidance"""
-    st.markdown('<h2>DAPPR Platform Tutorial</h2>', unsafe_allow_html=True)
-    
-    # Introduction
+    """Renders the tutorial section with enhanced visual design and comprehensive guidance"""
+    # Hero section for tutorial
     st.markdown("""
-    Welcome to the DAPPR platform tutorial. This guide will help you understand how to use the 
-    collaboration smart contract and navigate the Solana blockchain ecosystem.
-    """)
+    <div style="
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%, #0a0a0a 100%);
+        border: 1px solid rgba(20, 241, 149, 0.3);
+        border-radius: 25px;
+        padding: 40px;
+        margin: 20px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    ">
+        <div style="position: relative; z-index: 1;">
+            <h1 style="
+                color: #FFFFFF; 
+                font-size: 2.5rem; 
+                font-weight: 700; 
+                margin-bottom: 16px;
+                background: linear-gradient(135deg, #14F195 0%, #9945FF 50%, #00FFA3 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            ">DAPPR Platform Tutorial</h1>
+            <h2 style="
+                color: #AAAAAA; 
+                font-size: 1.4rem; 
+                font-weight: 400; 
+                margin-bottom: 20px;
+                line-height: 1.4;
+            ">Master Decentralized Research Collaboration on Solana</h2>
+            <div style="
+                width: 100px;
+                height: 4px;
+                background: linear-gradient(90deg, #14F195 0%, #9945FF 100%);
+                margin: 0 auto;
+                border-radius: 2px;
+            "></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Enhanced introduction
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, rgba(20, 241, 149, 0.05) 0%, rgba(153, 69, 255, 0.05) 100%);
+        border: 1px solid rgba(20, 241, 149, 0.2);
+        border-radius: 20px;
+        padding: 25px;
+        margin: 25px 0;
+        text-align: center;
+    ">
+        <p style="
+            color: #FFFFFF; 
+            font-size: 1.2rem; 
+            line-height: 1.6; 
+            margin: 0;
+        ">
+            Welcome to the comprehensive DAPPR platform tutorial. This guide will empower you to leverage blockchain technology for revolutionary research collaboration, smart contract interactions, and decentralized innovation on the Solana network.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Tutorial sections
     tabs = st.tabs(["Getting Started", "Smart Contract Basics", "Creating Projects", "Managing Collaborations", "Funding & Payments"])
     
     with tabs[0]:
-        st.markdown("### Getting Started with DAPPR")
-        
-        # Step 1: Connect wallet
         st.markdown("""
-        <div class="stCard">
-            <h4 style="color: #14F195; margin-top: 0;">Step 1: Connect Your Wallet</h4>
-            <p>
-                To interact with the DAPPR platform, you'll need a Solana wallet. Popular options include:
-            </p>
-            <ul>
-                <li>Phantom Wallet</li>
-                <li>Solflare</li>
-                <li>Sollet</li>
-            </ul>
-            <p>
-                Once you have a wallet, click on "Connect" in the sidebar and enter your wallet address.
-                For production use, the wallet connection would happen automatically through a web3 provider.
-            </p>
+        <div style="
+            background: linear-gradient(135deg, rgba(20, 241, 149, 0.05) 0%, rgba(153, 69, 255, 0.05) 100%);
+            border: 1px solid rgba(20, 241, 149, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+        ">
+            <h3 style="
+                color: #14F195; 
+                font-size: 1.6rem; 
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            ">
+                <span style="font-size: 1.4rem;">🚀</span>
+                Getting Started with DAPPR
+            </h3>
         </div>
         """, unsafe_allow_html=True)
         
-        # Step 2: Explore the platform
+        # Step-by-step guide with enhanced styling
+        st.markdown("""
+        <div style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        ">
+            <div style="
+                background: linear-gradient(135deg, rgba(20, 241, 149, 0.05) 0%, rgba(0, 255, 163, 0.05) 100%);
+                border: 1px solid rgba(20, 241, 149, 0.3);
+                border-radius: 15px;
+                padding: 25px;
+                position: relative;
+            ">
+                <div style="
+                    position: absolute;
+                    top: -10px;
+                    left: 20px;
+                    background: #14F195;
+                    color: #000;
+                    padding: 5px 15px;
+                    border-radius: 15px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                ">STEP 1</div>
+                
+                <h4 style="color: #14F195; margin: 20px 0 15px 0; font-size: 1.2rem;">💼 Connect Your Wallet</h4>
+                <p style="color: #CCCCCC; margin-bottom: 15px; line-height: 1.5;">
+                    Choose from supported Solana wallets to interact with the DAPPR platform:
+                </p>
+                <div style="margin: 15px 0;">
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #14F195;">•</span> Phantom Wallet (Recommended)
+                    </div>
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #14F195;">•</span> Solflare
+                    </div>
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #14F195;">•</span> Binance Wallet
+                    </div>
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #14F195;">•</span> CoinDCX Wallet
+                    </div>
+                </div>
+            </div>
+            
+            <div style="
+                background: linear-gradient(135deg, rgba(153, 69, 255, 0.05) 0%, rgba(20, 241, 149, 0.05) 100%);
+                border: 1px solid rgba(153, 69, 255, 0.3);
+                border-radius: 15px;
+                padding: 25px;
+                position: relative;
+            ">
+                <div style="
+                    position: absolute;
+                    top: -10px;
+                    left: 20px;
+                    background: #9945FF;
+                    color: #FFF;
+                    padding: 5px 15px;
+                    border-radius: 15px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                ">STEP 2</div>
+                
+                <h4 style="color: #9945FF; margin: 20px 0 15px 0; font-size: 1.2rem;">🔍 Explore the Platform</h4>
+                <p style="color: #CCCCCC; margin-bottom: 15px; line-height: 1.5;">
+                    Navigate through the main sections to understand platform capabilities:
+                </p>
+                <div style="margin: 15px 0;">
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #9945FF;">•</span> Dashboard - View blockchain metrics
+                    </div>
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #9945FF;">•</span> Transactions - Monitor activity
+                    </div>
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #9945FF;">•</span> Smart Contract - Manage collaborations
+                    </div>
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #9945FF;">•</span> Account - Check wallet details
+                    </div>
+                </div>
+            </div>
+            
+            <div style="
+                background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(255, 107, 107, 0.05) 100%);
+                border: 1px solid rgba(255, 215, 0, 0.3);
+                border-radius: 15px;
+                padding: 25px;
+                position: relative;
+            ">
+                <div style="
+                    position: absolute;
+                    top: -10px;
+                    left: 20px;
+                    background: #FFD700;
+                    color: #000;
+                    padding: 5px 15px;
+                    border-radius: 15px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                ">STEP 3</div>
+                
+                <h4 style="color: #FFD700; margin: 20px 0 15px 0; font-size: 1.2rem;">🤝 Start Collaborating</h4>
+                <p style="color: #CCCCCC; margin-bottom: 15px; line-height: 1.5;">
+                    Begin your research collaboration journey:
+                </p>
+                <div style="margin: 15px 0;">
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #FFD700;">•</span> Create research projects
+                    </div>
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #FFD700;">•</span> Set collaboration terms
+                    </div>
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #FFD700;">•</span> Add team members
+                    </div>
+                    <div style="color: #FFFFFF; margin: 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #FFD700;">•</span> Track project progress
+                    </div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Additional guidance section
+        st.markdown("""
+        <div style="
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        ">
+            <p style="
+                color: #CCCCCC; 
+                font-size: 1.1rem; 
+                line-height: 1.6; 
+                margin: 0;
+            ">
+                💡 <strong style="color: #14F195;">Pro Tip:</strong> Start by exploring the Account page to understand wallet connections, then move to Smart Contract to see collaboration features in action.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         st.markdown("""
         <div class="stCard">
             <h4 style="color: #14F195; margin-top: 0;">Step 2: Explore the Platform</h4>
