@@ -1,6 +1,46 @@
+# Include all Python files
+recursive-include sodh *.py
+
+# Include package data files
+recursive-include sodh *.json
+recursive-include sodh *.toml
+recursive-include sodh *.md
+recursive-include sodh *.html
+recursive-include sodh *.css
+recursive-include sodh *.js
+recursive-include sodh *.png
+recursive-include sodh *.jpg
+recursive-include sodh *.jpeg
+recursive-include sodh *.gif
+recursive-include sodh *.svg
+recursive-include sodh *.ico
+
+# Include root directory files
 include README.md
+include LICENSE
 include requirements.txt
-include runtime.txt
-recursive-include sodh/components *.py
-recursive-include sodh/utils *.py
-recursive-include .streamlit *.toml
+include .env.example
+include setup.py
+include setup.cfg
+include MANIFEST.in
+include pyproject.toml
+
+# Include Streamlit configuration
+recursive-include .streamlit *
+
+# Exclude unnecessary files
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *$
+global-exclude *.so
+prune .git
+prune .github
+prune .vscode
+prune .pytest_cache
+prune .mypy_cache
+prune .venv
+prune venv
+prune env
+prune build
+prune dist
+prune *.egg-infotoml

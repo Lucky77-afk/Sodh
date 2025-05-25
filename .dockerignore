@@ -1,6 +1,9 @@
 # Git
 .git
 .gitignore
+.gitattributes
+.gitkeep
+.gitmodules
 
 # Python
 __pycache__/
@@ -8,46 +11,95 @@ __pycache__/
 *$py.class
 *.so
 .Python
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
 
 # Virtual Environment
+.env
+.venv
 venv/
-ENV/
 env/
+ENV/
 
 # Distribution / packaging
-.Python
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
-lib
-lib64
-parts
-sdist
-var
-wheels
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.whl
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Local development
-.DS_Store
+# IDE
 .idea/
 .vscode/
+*.sublime-*
+*.sublime-project
+*.sublime-workspace
 *.swp
 *.swo
+*~
 
-# Logs
-logs
+# Logs and databases
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.sql
+*.sqlite
+
+# Local development
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+.streamlit/config.toml
+secrets.toml
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Documentation
+docs/_build/
+
+# Testing
+.coverage
+.pytest_cache/
+.mypy_cache/
+
+# Build and distribution
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Environment files
 .env

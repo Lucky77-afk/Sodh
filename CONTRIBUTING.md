@@ -100,60 +100,79 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 ## Submitting a Pull Request
 
 1. **Push your changes** to your fork:
-   ```bash
-   git push origin your-branch-name
-   ```
-
-2. **Open a Pull Request** from your fork to the main repository's `main` branch.
-
-3. **Describe your changes** in the PR description:
-   - What changes were made
-   - Why these changes are necessary
-   - Any relevant issue numbers
-
-4. **Request a review** from one of the maintainers.
-
-## Reporting Issues
-
-If you find a bug or have a feature request, please open an issue with the following information:
-
-1. **Bug Report**:
    - A clear and descriptive title
-   - Steps to reproduce the issue
-   - Expected vs. actual behavior
-   - Screenshots if applicable
-   - Environment information (OS, Python version, etc.)
+   - A detailed description of the enhancement
+   - Why this enhancement would be useful
+   - Any alternative solutions or features you've considered
 
-2. **Feature Request**:
-   - A clear and descriptive title
-   - Detailed description of the feature
-   - Use cases and benefits
-   - Any alternative solutions considered
+### Your First Code Contribution
 
-## Style Guide
+Unsure where to begin contributing? You can start by looking through the `good first issue` and `help wanted` issues:
 
-### Python Code
+- [Good first issues](https://github.com/Lucky77-afk/Sodh/labels/good%20first%20issue) - issues which should only require a few lines of code
+- [Help wanted](https://github.com/Lucky77-afk/Sodh/labels/help%20wanted) - issues which should be a bit more involved
 
-- Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guide
-- Use type hints for function signatures
-- Keep lines under 88 characters (Black formatter default)
-- Use docstrings for all public modules, classes, and functions
-- Use Google-style docstrings
+### Pull Requests
+
+1. Fork the repository and create your branch from `main`.
+2. If you've added code that should be tested, add tests.
+3. If you've changed APIs, update the documentation.
+4. Ensure the test suite passes.
+5. Make sure your code lints.
+6. Issue that pull request!
+
+## Development Workflow
 
 ### Git Commit Messages
 
 - Use the present tense ("Add feature" not "Added feature")
 - Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-- Keep the first line under 50 characters
-- Reference issues and pull requests liberally
+- Limit the first line to 72 characters or less
+- Reference issues and pull requests liberally after the first line
+- When only changing documentation, include `[ci skip]` in the commit description
 
-### Code Review Guidelines
+### Code Style Guide
 
-- Be respectful and constructive
-- Focus on the code, not the person
-- Explain your reasoning
-- Suggest improvements rather than just pointing out problems
+We use the following tools to maintain code quality:
+
+- **Black** for code formatting
+- **isort** for import sorting
+- **Flake8** for linting
+- **Mypy** for static type checking
+
+Run these before committing:
+
+```bash
+black .
+isort .
+flake8
+mypy .
+```
+
+### Testing
+
+We use `pytest` for testing. To run the tests:
+
+```bash
+pytest
+```
+
+## Additional Notes
+
+### Issue and Pull Request Labels
+
+We use the following labels to help us track and manage issues and pull requests:
+
+- `bug` - Something isn't working
+- `documentation` - Improvements or additions to documentation
+- `duplicate` - This issue or pull request already exists
+- `enhancement` - New feature or request
+- `good first issue` - Good for newcomers
+- `help wanted` - Extra attention is needed
+- `invalid` - This doesn't seem right
+- `question` - Further information is requested
+- `wontfix` - This will not be worked on
 
 ## License
 
-By contributing to Sodh, you agree that your contributions will be licensed under the GNU Affero General Public License v3.0. See the [LICENSE](LICENSE) file for details.
+By contributing, you agree that your contributions will be licensed under its AGPL-3.0 License.

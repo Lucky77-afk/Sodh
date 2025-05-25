@@ -1,0 +1,120 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "setuptools_scm[toml]>=3.5.0",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sodh"
+version = "0.1.0"
+description = "Sodh - A Streamlit application for Solana blockchain interactions"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "AGPL-3.0-or-later"}
+authors = [
+    {name = "Lucky77-afk", email = "your.email@example.com"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+dependencies = [
+    "streamlit>=1.45.1",
+    "solana>=0.36.6",
+    "solders>=0.18.0",
+    "base58>=2.1.1",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+    "aiohttp>=3.8.4",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "python-dateutil>=2.8.2",
+    "pytz>=2023.3",
+    "plotly>=5.15.0",
+    "sqlalchemy>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.3.1",
+    "black>=23.3.0",
+    "flake8>=6.0.0",
+    "mypy>=1.3.0",
+    "pytest-cov>=4.0.0",
+    "pre-commit>=3.2.0",
+]
+docs = [
+    "mkdocs>=1.4.2",
+    "mkdocs-material>=9.1.8",
+    "mkdocstrings[python]>=0.21.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Lucky77-afk/Sodh"
+Documentation = "https://github.com/Lucky77-afk/Sodh#readme"
+Bug Tracker = "https://github.com/Lucky77-afk/Sodh/issues"
+Source = "https://github.com/Lucky77-afk/Sodh"
+
+[tool.setuptools]
+package-dir = { "" = "." }
+packages = find:
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sodh"]
+exclude = ["tests*", "docs*", "examples*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v --cov=sodh --cov-report=term-missing"
+
+[metadata]
+license_files = LICENSE
+
+[check-manifest]
+ignore = [
+    ".github/*",
+    ".gitignore",
+    ".pre-commit-config.yaml",
+    "*.md",
+    "*.toml",
+    "*.txt",
+]

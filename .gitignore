@@ -82,9 +82,11 @@ MANIFEST
 # Docker
 .docker/
 *.docker
+# Build and distribution
+# Docker files are now included in the repository
 Dockerfile
-Dockerfile.*
-docker-compose*.yml
+docker-compose.*.yml
+.dockerignore
 
 # IDE
 .vscode/*

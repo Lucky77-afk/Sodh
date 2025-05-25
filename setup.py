@@ -1,9 +1,10 @@
 from setuptools import setup, find_packages
 import os
+from pathlib import Path
 
 # Read requirements from requirements.txt
 with open('requirements.txt') as f:
-    requirements = f.read().splitlines()
+    requirements = [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
 # Get long description from README.md
 with open('README.md', 'r', encoding='utf-8') as f:
@@ -13,23 +14,26 @@ with open('README.md', 'r', encoding='utf-8') as f:
 def find_package_data():
     package_data = {}
     for root, dirs, files in os.walk('sodh'):
-        root = root.replace('sodh/', '', 1)
+        relative_path = os.path.relpath(root, 'sodh')
+        if relative_path == '.':
+            relative_path = ''
         for file in files:
-            if file.endswith(('.py', '.json', '.toml', '.md')):
+            if file.endswith(('.py', '.pyc', '.pyo')):
                 continue
-            if root not in package_data:
-                package_data[root] = []
-            package_data[root].append(file)
+            if relative_path not in package_data:
+                package_data[relative_path] = []
+            package_data[relative_path].append(file)
     return package_data
+
+# Include all non-Python files in the package
+package_data = find_package_data()
 
 setup(
     name="sodh",
     version="0.1.0",
     packages=find_packages(include=['sodh', 'sodh.*']),
     package_dir={"": "."},
-    package_data={
-        'sodh': ['**/*.toml', '**/*.json', '**/*.md'],
-    },
+    package_data=package_data,
     include_package_data=True,
     install_requires=requirements,
     python_requires='>=3.8',
