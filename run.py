@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-
 """
-Minimal entry point for running the Streamlit application on Streamlit Cloud.
+Streamlit Cloud entry point.
 """
 import os
 import sys
@@ -16,24 +15,25 @@ def main():
     os.environ["STREAMLIT_SERVER_HEADLESS"] = "true"
     os.environ["STREAMLIT_SERVER_PORT"] = os.getenv("PORT", "8501")
     
-    try:
-        # Import streamlit and run the app directly
-        import streamlit.web.bootstrap as bootstrap
-        from streamlit import config as _config
-        
-        # Set config options directly
-        _config.set_option("server.port", int(os.getenv("PORT", "8501")))
-        _config.set_option("server.address", "0.0.0.0")
-        _config.set_option("server.enableCORS", True)
-        _config.set_option("server.enableXsrfProtection", True)
-        _config.set_option("browser.gatherUsageStats", False)
-        
-        # Run the app
-        bootstrap.run(app_path, [], [])
-        
-    except Exception as e:
-        print(f"Error running Streamlit app: {e}", file=sys.stderr)
-        sys.exit(1)
+    # Add the project root to the Python path
+    sys.path.append(str(project_root))
+    
+    # Import and run the app directly
+    from streamlit.web import cli as st_cli
+    
+    # Prepare command line arguments
+    streamlit_args = [
+        "run",
+        app_path,
+        "--server.port", os.getenv("PORT", "8501"),
+        "--server.address", "0.0.0.0",
+        "--server.enableCORS", "true",
+        "--server.enableXsrfProtection", "true",
+        "--browser.gatherUsageStats", "false"
+    ]
+    
+    # Run the app
+    sys.exit(st_cli.main(streamlit_args))
 
 if __name__ == "__main__":
     main()
