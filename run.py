@@ -1,25 +1,46 @@
 #!/usr/bin/env python3
 """
-Entry point for Sodh - Solana Blockchain Explorer
+Entry point for Sodh - Solana Blockchain Explorer with Health Check
 """
 import os
 import sys
+import time
+import signal
 import subprocess
+import threading
+import uvicorn
+from fastapi import FastAPI, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 
-def main():
-    # Get the path to the app
+app = FastAPI()
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Global variable to track Streamlit process
+streamlit_process = None
+
+@app.get("/healthz")
+async def health_check():
+    """Health check endpoint"""
+    if streamlit_process and streamlit_process.poll() is None:
+        return Response(status_code=status.HTTP_200_OK, content="OK")
+    return Response(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content="Streamlit not running")
+
+def run_streamlit():
+    """Run Streamlit in a subprocess"""
+    global streamlit_process
+    
     app_path = str(Path(__file__).parent / "sodh" / "app.py")
     port = os.getenv("PORT", "8501")
     
-    # Set environment variables for Streamlit
-    env = os.environ.copy()
-    
-    # Configure Streamlit to use the health check endpoint
-    env["STREAMLIT_SERVER_HEALTH_CHECK_ENABLED"] = "true"
-    env["STREAMLIT_SERVER_HEALTH_CHECK_PATH"] = "/healthz"
-    
-    # Run Streamlit in a subprocess
     cmd = [
         sys.executable, "-m", "streamlit", "run",
         "--server.port", port,
@@ -40,14 +61,39 @@ def main():
         app_path
     ]
     
-    print(f"Starting Streamlit server on port {port}")
-    try:
-        return subprocess.call(cmd, env=env)
-    except KeyboardInterrupt:
-        return 0
-    except Exception as e:
-        print(f"Error starting Streamlit: {e}", file=sys.stderr)
-        return 1
+    env = os.environ.copy()
+    streamlit_process = subprocess.Popen(cmd, env=env)
+    return streamlit_process.wait()
+
+def signal_handler(signum, frame):
+    """Handle termination signals"""
+    global streamlit_process
+    if streamlit_process:
+        streamlit_process.terminate()
+        streamlit_process.wait()
+    sys.exit(0)
+
+def main():
+    """Main entry point"""
+    # Set up signal handlers
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+    
+    # Start Streamlit in a separate thread
+    streamlit_thread = threading.Thread(target=run_streamlit, daemon=True)
+    streamlit_thread.start()
+    
+    # Wait a moment for Streamlit to start
+    time.sleep(2)
+    
+    # Start the FastAPI server for health checks
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8080,
+        log_level="info",
+        access_log=False
+    )
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
