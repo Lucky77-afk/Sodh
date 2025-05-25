@@ -20,35 +20,8 @@ primaryColor = "#14F195"
 backgroundColor = "#131313"
 secondaryBackgroundColor = "#1E1E1E"
 
-# Disable analytics
 [global]
-# Disable telemetry
 disableTelemetry = true
 
-# Disable the warning about running on localhost
 [runner]
 fastReruns = true
-
-# Disable the file watcher
-[server]
-# Disable the file watcher
-fileWatcherType = "none"
-
-# Disable the file uploader
-[server]
-# Disable the file uploader
-enableWebsocketCompression = false
-textColor = "#FFFFFF"
-font = "sans serif"
-
-[client]
-showErrorDetails = true
-
-[ui]
-hideTopBar = false
-
-[mapbox]
-token = ""  # Add your Mapbox token here if needed
-
-[logger]
-level = "info"
