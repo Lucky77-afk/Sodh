@@ -5,46 +5,120 @@ import time
 def render_transaction_card(tx):
     """Renders a clean transaction card using Streamlit components"""
     
-    # Transaction header
-    col1, col2 = st.columns([3, 1])
-    
-    with col1:
-        st.markdown(f"**📊 Transaction**")
-        st.markdown(f"*{tx.get('date', '2025-05-25')}*")
-    
-    with col2:
-        if tx.get('status') == 'Success':
-            st.success("✓ Success")
-        else:
-            st.error("✗ Failed")
-    
-    # Transaction signature
-    st.markdown("**Transaction Signature:**")
-    signature = tx.get('signature', 'Unknown')
-    if len(signature) > 20:
-        short_sig = f"{signature[:8]}...{signature[-8:]}"
-        st.code(short_sig)
+    # Create a card container with custom styling
+    with st.container():
+        # Card container with custom styling
+        st.markdown("""
+        <style>
+            .tx-card {
+                background-color: #1E1E1E;
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 16px;
+                border-left: 4px solid #14F195;
+            }
+            .tx-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 12px;
+            }
+            .tx-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: #FFFFFF;
+                margin: 0;
+            }
+            .tx-date {
+                font-size: 14px;
+                color: #888888;
+                margin: 4px 0 0 0;
+            }
+            .tx-status {
+                font-size: 14px;
+                font-weight: 500;
+                padding: 4px 8px;
+                border-radius: 4px;
+                margin-top: 4px;
+            }
+            .status-success {
+                background-color: rgba(20, 241, 149, 0.2);
+                color: #14F195;
+            }
+            .status-failed {
+                background-color: rgba(255, 71, 87, 0.2);
+                color: #FF4757;
+            }
+            .tx-metric {
+                font-size: 14px;
+                color: #AAAAAA;
+                margin: 4px 0;
+            }
+            .tx-metric-value {
+                font-weight: 600;
+                color: #FFFFFF;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Get transaction data
+        signature = tx.get('signature', 'Unknown')
+        short_sig = f"{signature[:8]}...{signature[-8:]}" if len(signature) > 20 else signature
+        
+        # Card content
+        st.markdown(f"""
+        <div class="tx-card">
+            <div class="tx-header">
+                <div>
+                    <h3 class="tx-title">📊 Transaction</h3>
+                    <p class="tx-date">{date}</p>
+                </div>
+                <span class="tx-status {'status-success' if tx.get('status') == 'Success' else 'status-failed'}">
+                    {'✓ Success' if tx.get('status') == 'Success' else '✗ Failed'}
+                </span>
+            </div>
+            
+            <div>
+                <p class="tx-metric">Transaction Signature:</p>
+                <div style="font-family: 'Roboto Mono', monospace; background-color: #2A2A2A; padding: 8px 12px; border-radius: 4px; margin: 8px 0;">
+                    {short_sig}
+                </div>
+                
+                <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px;">
+                    <div>
+                        <p class="tx-metric">SLOT</p>
+                        <p class="tx-metric-value">{slot}</p>
+                    </div>
+                    <div>
+                        <p class="tx-metric">FEE</p>
+                        <p class="tx-metric-value">{fee} SOL</p>
+                    </div>
+                    <div>
+                        <p class="tx-metric">TIME</p>
+                        <p class="tx-metric-value">{time}</p>
+                    </div>
+                    <div>
+                        <p class="tx-metric">COMPUTE</p>
+                        <p class="tx-metric-value">{compute_units}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """.format(
+            date=tx.get('date', '2025-05-25'),
+            signature=signature,
+            short_sig=short_sig,
+            slot=tx.get('slot', 'N/A'),
+            fee=tx.get('fee', 0),
+            time=tx.get('time', 'N/A'),
+            compute_units=tx.get('compute_units', 0)
+        ), unsafe_allow_html=True)
+        
+        # Add expander for full signature
         with st.expander("View Full Signature"):
-            st.code(signature)
-    else:
-        st.code(signature)
-    
-    # Transaction details in columns
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("SLOT", tx.get('slot', 'N/A'))
-    
-    with col2:
-        st.metric("FEE", f"{tx.get('fee', 0)} SOL")
-    
-    with col3:
-        st.metric("TIME", tx.get('time', 'N/A'))
-    
-    with col4:
-        st.metric("COMPUTE", tx.get('compute_units', 0))
-    
-    st.divider()
+            st.code(signature, language='text')
+        
+        st.markdown("---")
 
 def render_transactions():
     """Renders the transactions page with clean formatting"""
