@@ -48,6 +48,37 @@ mobile-app/web-build/
 .env.test.local
 .env.production.local
 
+# Deployment
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Python
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
 # Logs
 *.log
 npm-debug.log*
