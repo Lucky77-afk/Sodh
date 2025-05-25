@@ -23,78 +23,104 @@ def make_rpc_call(method, params):
     }
     
     try:
-        response = requests.post(rpc_url, json=payload, timeout=10)
+        response = requests.post(rpc_url, json=payload, timeout=30)  # Increased timeout
         response.raise_for_status()
         return response.json()
+    except requests.exceptions.Timeout:
+        st.warning(f"Request timed out for {method}")
+        return None
+    except requests.exceptions.RequestException as e:
+        st.warning(f"Network error for {method}: {str(e)}")
+        return None
     except Exception as e:
-        st.error(f"RPC call failed: {str(e)}")
+        st.warning(f"Error in {method}: {str(e)}")
         return None
 
 def get_blockchain_metrics():
-    """Get current blockchain metrics"""
+    """Get current blockchain metrics with optimized calls"""
+    metrics = {
+        'current_slot': 0,
+        'block_time': None,
+        'epoch': 0,
+        'slot_index': 0,
+        'slots_in_epoch': 0,
+        'total_supply': 0,
+        'circulating_supply': 0
+    }
+    
     try:
-        # Get current slot (latest block)
-        slot_result = make_rpc_call("getSlot", [])
-        current_slot = slot_result['result'] if slot_result and 'result' in slot_result else 0
-        
-        # Get block time for current slot
-        block_time_result = make_rpc_call("getBlockTime", [current_slot])
-        current_block_time = block_time_result['result'] if block_time_result and 'result' in block_time_result else None
-        
-        # Get epoch info
+        # Get epoch info first (most reliable call)
         epoch_result = make_rpc_call("getEpochInfo", [])
-        epoch_info = epoch_result['result'] if epoch_result and 'result' in epoch_result else {}
+        if epoch_result and 'result' in epoch_result:
+            epoch_info = epoch_result['result']
+            metrics.update({
+                'epoch': epoch_info.get('epoch', 0),
+                'slot_index': epoch_info.get('slotIndex', 0),
+                'slots_in_epoch': epoch_info.get('slotsInEpoch', 0)
+            })
+            # Use absolute slot from epoch info
+            metrics['current_slot'] = epoch_info.get('absoluteSlot', 0)
         
-        # Get supply info
+        # Try to get supply info (may timeout)
         supply_result = make_rpc_call("getSupply", [])
-        supply_info = supply_result['result']['value'] if supply_result and 'result' in supply_result else {}
+        if supply_result and 'result' in supply_result:
+            supply_info = supply_result['result']['value']
+            metrics.update({
+                'total_supply': supply_info.get('total', 0),
+                'circulating_supply': supply_info.get('circulating', 0)
+            })
         
-        return {
-            'current_slot': current_slot,
-            'block_time': current_block_time,
-            'epoch': epoch_info.get('epoch', 0),
-            'slot_index': epoch_info.get('slotIndex', 0),
-            'slots_in_epoch': epoch_info.get('slotsInEpoch', 0),
-            'total_supply': supply_info.get('total', 0),
-            'circulating_supply': supply_info.get('circulating', 0)
-        }
+        return metrics
+        
     except Exception as e:
-        st.error(f"Error fetching blockchain metrics: {str(e)}")
-        return {}
+        st.warning(f"Some blockchain data unavailable: {str(e)}")
+        return metrics
 
-def get_recent_blocks_safe(limit=10):
-    """Get recent blocks using safe RPC calls"""
+def get_recent_blocks_safe(current_slot, limit=5):
+    """Get recent blocks using safe RPC calls with reduced limit"""
+    blocks = []
+    
     try:
-        # Get current slot
-        slot_result = make_rpc_call("getSlot", [])
-        if not slot_result or 'result' not in slot_result:
-            return []
-        
-        current_slot = slot_result['result']
-        blocks = []
-        
-        # Get recent blocks
-        for i in range(limit):
+        # Get fewer blocks to reduce timeout risk
+        for i in range(min(limit, 5)):  # Max 5 blocks
             slot = current_slot - i
-            block_result = make_rpc_call("getBlock", [slot, {"encoding": "json", "transactionDetails": "none"}])
+            
+            # Use minimal encoding to reduce response size
+            block_result = make_rpc_call("getBlock", [slot, {
+                "encoding": "json", 
+                "transactionDetails": "signatures",
+                "maxSupportedTransactionVersion": 0
+            }])
             
             if block_result and 'result' in block_result and block_result['result']:
                 block_data = block_result['result']
                 
+                # Count signatures instead of full transactions
+                signatures = block_data.get('signatures', [])
+                
                 block = {
                     'slot': slot,
                     'block_time': block_data.get('blockTime'),
-                    'transaction_count': len(block_data.get('transactions', [])),
+                    'transaction_count': len(signatures),
                     'block_hash': block_data.get('blockhash', ''),
                     'parent_slot': block_data.get('parentSlot', 0)
                 }
                 blocks.append(block)
+            else:
+                # Add placeholder for failed blocks
+                blocks.append({
+                    'slot': slot,
+                    'block_time': None,
+                    'transaction_count': 0,
+                    'block_hash': '',
+                    'parent_slot': 0
+                })
         
         return blocks
         
     except Exception as e:
-        st.error(f"Error fetching blocks: {str(e)}")
-        return []
+        st.warning(f"Block data partially unavailable: {str(e)}")
+        return blocks
 
 def render_dashboard():
     """Renders the dashboard with blockchain metrics and visualizations"""
@@ -103,7 +129,8 @@ def render_dashboard():
     # Get blockchain metrics
     with st.spinner("Loading blockchain data..."):
         metrics = get_blockchain_metrics()
-        recent_blocks = get_recent_blocks_safe(10)
+        current_slot = metrics.get('current_slot', 0)
+        recent_blocks = get_recent_blocks_safe(current_slot, 5) if current_slot > 0 else []
     
     if not metrics:
         st.error("Unable to load blockchain metrics")

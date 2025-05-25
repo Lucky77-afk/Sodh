@@ -21,11 +21,17 @@ def make_rpc_call(method, params):
     }
     
     try:
-        response = requests.post(rpc_url, json=payload, timeout=10)
+        response = requests.post(rpc_url, json=payload, timeout=30)  # Increased timeout
         response.raise_for_status()
         return response.json()
+    except requests.exceptions.Timeout:
+        st.warning(f"Request timed out for {method}")
+        return None
+    except requests.exceptions.RequestException as e:
+        st.warning(f"Network error for {method}: {str(e)}")
+        return None
     except Exception as e:
-        st.error(f"RPC call failed: {str(e)}")
+        st.warning(f"Error in {method}: {str(e)}")
         return None
 
 def get_recent_transactions_safe(limit=10):
