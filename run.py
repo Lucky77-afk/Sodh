@@ -5,41 +5,19 @@ Entry point for Sodh - Solana Blockchain Explorer
 import os
 import sys
 import subprocess
-import http.server
-import socketserver
-import threading
 from pathlib import Path
 
-# Health check server configuration
-HEALTH_CHECK_PORT = 8080
-
-def run_health_check_server():
-    class HealthCheckHandler(http.server.BaseHTTPRequestHandler):
-        def do_GET(self):
-            if self.path == '/healthz':
-                self.send_response(200)
-                self.send_header('Content-type', 'text/plain')
-                self.end_headers()
-                self.wfile.write(b'OK')
-            else:
-                self.send_response(404)
-                self.end_headers()
-
-    with socketserver.TCPServer(("0.0.0.0", HEALTH_CHECK_PORT), HealthCheckHandler) as httpd:
-        print(f"Health check server running on port {HEALTH_CHECK_PORT}")
-        httpd.serve_forever()
-
 def main():
-    # Start health check server in a separate thread
-    health_thread = threading.Thread(target=run_health_check_server, daemon=True)
-    health_thread.start()
-
     # Get the path to the app
     app_path = str(Path(__file__).parent / "sodh" / "app.py")
+    port = os.getenv("PORT", "8501")
     
     # Set environment variables for Streamlit
     env = os.environ.copy()
-    port = os.getenv("PORT", "8501")
+    
+    # Configure Streamlit to use the health check endpoint
+    env["STREAMLIT_SERVER_HEALTH_CHECK_ENABLED"] = "true"
+    env["STREAMLIT_SERVER_HEALTH_CHECK_PATH"] = "/healthz"
     
     # Run Streamlit in a subprocess
     cmd = [
@@ -58,6 +36,7 @@ def main():
         "--theme.primaryColor", "#14F195",
         "--theme.backgroundColor", "#131313",
         "--theme.secondaryBackgroundColor", "#1E1E1E",
+        "--server.enableWebsocketCompression", "true",
         app_path
     ]
     
