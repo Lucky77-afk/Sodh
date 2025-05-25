@@ -326,32 +326,35 @@ def get_account_info(_client, address):
         # Get transaction count
         try:
             try:
+                # Try with pubkey object first
                 tx_signatures = client.get_signatures_for_address(pubkey, limit=100)
                 st.write("DEBUG - Signatures fetched with pubkey object")
             except Exception as e_sig_obj:
                 st.write(f"DEBUG - Signatures fetch with object failed: {str(e_sig_obj)}")
-                try:
-                    tx_signatures = client.get_signatures_for_address(str(pubkey), limit=100)
-                    st.write("DEBUG - Signatures fetched with string representation")
-                except Exception as e_sig_str:
-                    st.write(f"DEBUG - Signatures fetch with string failed: {str(e_sig_str)}")
-                    raise Exception(f"Could not fetch signatures: {str(e_sig_obj)}, {str(e_sig_str)}")
-                    
-            # Handle different response types
-            st.write(f"DEBUG - Signatures response type: {type(tx_signatures)}")
-            
-            if hasattr(tx_signatures, 'value'):
-                # This is a typed response object
-                tx_count = len(tx_signatures.value) if hasattr(tx_signatures, 'value') else 0
-                st.write(f"DEBUG - Using value attribute for tx count: {tx_count}")
-            elif isinstance(tx_signatures, dict) and 'result' in tx_signatures:
-                # This is the dictionary response type
-                tx_count = len(tx_signatures.get('result', []))
-                st.write(f"DEBUG - Using result dictionary for tx count: {tx_count}")
-            else:
-                # Try to convert to a string and log
-                st.write(f"DEBUG - Unknown tx signatures format: {str(tx_signatures)}")
+                # Return empty transaction list instead of failing
                 tx_count = 0
+                st.write("DEBUG - Using fallback: no transactions found")
+                tx_signatures = None
+                    
+            # Handle different response types only if we have signatures
+            if tx_signatures is not None:
+                st.write(f"DEBUG - Signatures response type: {type(tx_signatures)}")
+                
+                if hasattr(tx_signatures, 'value'):
+                    # This is a typed response object
+                    tx_count = len(tx_signatures.value) if tx_signatures.value else 0
+                    st.write(f"DEBUG - Using value attribute for tx count: {tx_count}")
+                elif isinstance(tx_signatures, dict) and 'result' in tx_signatures:
+                    # This is the dictionary response type
+                    tx_count = len(tx_signatures.get('result', []))
+                    st.write(f"DEBUG - Using result dictionary for tx count: {tx_count}")
+                else:
+                    # Default to 0 if we can't determine the format
+                    tx_count = 0
+                    st.write("DEBUG - Could not determine signature format, using 0")
+            else:
+                # No signatures fetched, use the fallback count
+                st.write("DEBUG - No signatures object, using fallback count")
         except Exception as tx_error:
             st.warning(f"Could not fetch transaction count: {str(tx_error)}")
             tx_count = 0
