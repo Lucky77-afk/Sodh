@@ -13,7 +13,6 @@ import time
 from pathlib import Path
 from typing import Optional, List
 
-
 def run_health_check(port: int = 8501, timeout: int = 10) -> bool:
     """Run a health check against the running Streamlit server.
     
@@ -33,7 +32,6 @@ def run_health_check(port: int = 8501, timeout: int = 10) -> bool:
     except requests.RequestException:
         return False
 
-
 def start_streamlit(port: int = 8501) -> subprocess.Popen:
     """Start the Streamlit server as a subprocess.
     
@@ -46,10 +44,13 @@ def start_streamlit(port: int = 8501) -> subprocess.Popen:
     # Set environment variables for Streamlit
     env = os.environ.copy()
     env.update({
-        "STREAMLIT_SERVER_ENABLE_STATIC_SERVING": "false",
+        "STREAMLIT_SERVER_PORT": str(port),
+        "STREAMLIT_SERVER_HEADLESS": "true",
         "STREAMLIT_SERVER_ENABLE_CORS": "false",
         "STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION": "false",
-        "STREAMLIT_SERVER_HEADLESS": "true",
+        "STREAMLIT_SERVER_FILE_WATCHER_TYPE": "none",
+        "STREAMLIT_BROWSER_GATHER_USAGE_STATS": "false",
+        "STREAMLIT_SERVER_ADDRESS": "0.0.0.0",
         "PORT": str(port)
     })
     
@@ -77,7 +78,7 @@ def start_streamlit(port: int = 8501) -> subprocess.Popen:
         app_path
     ]
     
-    print(f"Starting Streamlit on port {port}...")
+    print(f"🚀 Starting Streamlit on port {port}...")
     return subprocess.Popen(
         cmd,
         env=env,
@@ -86,36 +87,26 @@ def start_streamlit(port: int = 8501) -> subprocess.Popen:
         start_new_session=True
     )
 
-
 def main():
     """Main entry point for the application."""
-    import argparse
+    # Get port from environment variable or use default
+    port = int(os.environ.get("PORT", 8501))
     
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Run the Sodh Streamlit app')
-    parser.add_argument('--port', type=int, default=8501,
-                       help='Port to run the server on')
-    parser.add_argument('--health-check', action='store_true',
-                       help='Run health check and exit')
-    args = parser.parse_args()
+    # Check if this is a health check
+    if os.environ.get("HEALTH_CHECK") == "true":
+        print("🩺 Health check endpoint")
+        print("HTTP/1.1 200 OK\nContent-Type: text/plain\n\nServer is up and running")
+        sys.exit(0)
     
-    if args.health_check:
-        # Just run a health check and exit
-        if run_health_check(port=args.port):
-            print("Health check passed")
-            sys.exit(0)
-        else:
-            print("Health check failed")
-            sys.exit(1)
+    print(f"🚀 Starting Sodh - Solana Blockchain Explorer on port {port}")
     
-    # Start the Streamlit server
-    process = start_streamlit(port=args.port)
+    # Start Streamlit server
+    process = start_streamlit(port)
     
-    # Set up signal handlers for clean shutdown
+    # Set up signal handlers for graceful shutdown
     def signal_handler(sig, frame):
-        print("Shutting down...")
+        print("\n🛑 Shutting down...")
         process.terminate()
-        process.wait()
         sys.exit(0)
     
     signal.signal(signal.SIGINT, signal_handler)
@@ -123,10 +114,13 @@ def main():
     
     # Wait for the process to complete
     try:
-        process.wait()
+        while True:
+            time.sleep(1)
+            if process.poll() is not None:
+                print(f"\n❌ Streamlit process exited with code {process.returncode}")
+                sys.exit(process.returncode)
     except KeyboardInterrupt:
         signal_handler(None, None)
-
 
 if __name__ == "__main__":
     main()
