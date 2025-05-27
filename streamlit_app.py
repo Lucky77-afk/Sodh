@@ -1,25 +1,30 @@
 """
-Streamlit entry point for Sodh - Solana Blockchain Explorer
-
-This file serves as the main entry point for Streamlit Cloud deployment.
-It simply imports and runs the main app from app.py
+Sodh - Solana Blockchain Explorer (Minimal Example)
 """
-import os
-import sys
 import streamlit as st
 
-# Add the current directory to the path so we can import app
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Set page config (must be the first Streamlit command)
+st.set_page_config(
+    page_title="Sodh - Solana Explorer",
+    page_icon="🔍",
+    layout="wide"
+)
 
-# Import the main function from app
-from app import main
+# Add a title
+st.title("🔍 Sodh - Solana Blockchain Explorer")
+st.write("Welcome to Sodh! This is a minimal working example.")
 
-# Run the app
-if __name__ == "__main__":
-    # Set environment variables for Streamlit Cloud
-    os.environ["STREAMLIT_SERVER_HEADLESS"] = "true"
-    os.environ["STREAMLIT_SERVER_ENABLE_CORS"] = "false"
-    os.environ["STREAMLIT_SERVER_PORT"] = os.environ.get("PORT", "8501")
-    
-    # Run the main function
-    main()
+# Add a simple input
+user_input = st.text_input("Enter something:")
+if user_input:
+    st.write(f"You entered: {user_input}")
+
+# Add a button
+if st.button("Click me!"):
+    st.balloons()
+    st.success("Success! The app is working!")
+
+# Add a footer
+st.markdown("---")
+st.markdown("### About Sodh")
+st.markdown("A minimal working example for Streamlit Cloud deployment")
