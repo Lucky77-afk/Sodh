@@ -1,1 +1,1 @@
-web: python run.py
+web: python entry_point.py
