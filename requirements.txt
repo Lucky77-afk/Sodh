@@ -1,5 +1,6 @@
 # Core Dependencies
 streamlit>=1.45.1
+setuptools>=68.0.0
 
 # For future Solana integration
 # solana>=0.36.6
