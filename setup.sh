@@ -6,9 +6,79 @@ set -e
 echo "🚀 Setting up Sodh - Solana Dashboard Helper"
 echo "===================================="
 
-# Check if Python 3.8+ is installed
-if ! command -v python3 &> /dev/null; then
-    echo "❌ Python 3.8 or higher is required. Please install it first."
+# Create necessary directories
+echo "📁 Creating directory structure..."
+mkdir -p .streamlit
+
+# Create a simple app.py if it doesn't exist
+if [ ! -f app.py ]; then
+    echo "📄 Creating default app.py..."
+    cat > app.py << 'EOL'
+import streamlit as st
+
+def main():
+    st.set_page_config(
+        page_title="Sodh - Solana Dashboard Helper",
+        page_icon="🔍",
+        layout="wide"
+    )
+    
+    st.title("🔍 Sodh - Solana Dashboard Helper")
+    st.write("Welcome to Sodh! Your Solana dashboard is up and running.")
+
+if __name__ == "__main__":
+    main()
+EOL
+fi
+
+# Create a simple requirements.txt if it doesn't exist
+if [ ! -f requirements.txt ]; then
+    echo "📄 Creating requirements.txt..."
+    cat > requirements.txt << 'EOL'
+streamlit>=1.45.1
+solana>=0.36.6
+solders>=0.26.0
+base58>=2.1.1
+python-dotenv>=1.1.0
+requests>=2.32.3
+EOL
+fi
+
+# Create a simple .streamlit/config.toml if it doesn't exist
+if [ ! -f .streamlit/config.toml ]; then
+    echo "📄 Creating .streamlit/config.toml..."
+    mkdir -p .streamlit
+    cat > .streamlit/config.toml << 'EOL'
+[server]
+port = 8501
+address = "0.0.0.0"
+headless = true
+baseUrlPath = "/"
+enableCORS = false
+enableXsrfProtection = false
+maxUploadSize = 200
+enableWebsocketCompression = true
+fileWatcherType = "none"
+runOnSave = false
+enableStaticServing = false
+
+[browser]
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+serverPort = 8501
+
+[theme]
+base = "dark"
+primaryColor = "#14F195"
+backgroundColor = "#131313"
+secondaryBackgroundColor = "#1E1E1E"
+textColor = "#FFFFFF"
+font = "sans serif"
+EOL
+fi
+
+echo "✅ Setup complete!"
+echo "You can now run the app with: streamlit run app.py"
     exit 1
 fi
 
