@@ -28,7 +28,7 @@ def start_streamlit():
     })
     
     # Get the path to the app
-    app_path = str(Path(__file__).parent / "app.py")
+    app_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "app.py"))
     
     # Start Streamlit
     cmd = [
@@ -41,6 +41,10 @@ def start_streamlit():
     ]
     
     print(f"🚀 Starting Streamlit on port {port}...")
+    print(f"📂 App path: {app_path}")
+    print(f"🔧 Environment: {env}")
+    print(f"🚀 Command: {' '.join(cmd)}")
+    
     return subprocess.Popen(
         cmd,
         env=env,
@@ -66,41 +70,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-
-def main():
-    """Main entry point for the application."""
-    # Get port from environment variable or use default
-    port = int(os.environ.get("PORT", 8501))
-    
-    # Check if this is a health check
-    if os.environ.get("HEALTH_CHECK") == "true":
-        print("🩺 Health check endpoint")
-        print("HTTP/1.1 200 OK\nContent-Type: text/plain\n\nServer is up and running")
-        sys.exit(0)
-    
-    print(f"🚀 Starting Sodh - Solana Blockchain Explorer on port {port}")
-    
-    # Start Streamlit server
-    process = start_streamlit(port)
-    
-    # Set up signal handlers for graceful shutdown
-    def signal_handler(sig, frame):
-        print("\n🛑 Shutting down...")
-        process.terminate()
-        sys.exit(0)
-    
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-    
-    # Wait for the process to complete
-    try:
-        while True:
-            time.sleep(1)
-            if process.poll() is not None:
-                print(f"\n❌ Streamlit process exited with code {process.returncode}")
-                sys.exit(process.returncode)
-    except KeyboardInterrupt:
-        signal_handler(None, None)
-
-if __name__ == "__main__":
-    main()
