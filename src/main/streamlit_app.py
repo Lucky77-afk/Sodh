@@ -8,6 +8,7 @@ import asyncio
 import time
 import os
 from pathlib import Path
+from datetime import datetime
 from solana.rpc.async_api import AsyncClient
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
@@ -120,20 +121,78 @@ if st.session_state.show_error:
     time.sleep(3)
     st.session_state.show_error = False
 
-# Sidebar
+# Sidebar with custom styling
+st.markdown("""
+<style>
+    .sidebar .sidebar-content {
+        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+    }
+    .stRadio > div > label {
+        color: white !important;
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+    .stRadio > div > label:hover {
+        background: rgba(20, 241, 149, 0.1);
+    }
+    .stRadio > div > div > div {
+        margin: 10px 0;
+    }
+    .wallet-address {
+        font-family: monospace;
+        background: #1e293b;
+        padding: 10px;
+        border-radius: 8px;
+        margin: 15px 0;
+        word-break: break-all;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 with st.sidebar:
-    # Logo and title with animation
-    col1, col2 = st.columns([1, 3])
-    with col1:
-        st.image("assets/logo.svg", width=50)
-    with col2:
-        st.markdown("<h1 style='color: #14F195; margin-top: 10px;'>DAPPR</h1>", unsafe_allow_html=True)
+    # Logo and title
+    st.image("assets/logo.svg", width=50)
+    st.markdown("<h1 style='color: #14F195; margin-top: 10px;'>DAPPR</h1>", unsafe_allow_html=True)
     
     st.markdown("---")
     
     # Navigation
-    nav_options = ["🏠 Dashboard", "📝 Create Project", "🔍 Browse Projects", "📊 My Projects", "⚙️ Settings"]
-    nav_option = st.radio("Navigation", nav_options, index=0, label_visibility="collapsed")
+    st.markdown("### NAVIGATION")
+    nav_options = [
+        "📊 Dashboard",
+        "🔄 Transactions",
+        "👤 Account",
+        "📝 Smart Contract",
+        "📄 Whitepaper",
+        "🎓 Tutorial"
+    ]
+    nav_option = st.radio("", nav_options, index=0, label_visibility="collapsed")
+    
+    st.markdown("---")
+    
+    # Wallet Connection
+    st.markdown("### CONNECT WALLET")
+    wallet_address = st.text_input("Wallet Address", 
+                                 placeholder="Enter Solana wallet address",
+                                 label_visibility="collapsed")
+    
+    if wallet_address:
+        st.markdown(f"<div class='wallet-address'>{wallet_address}</div>", unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # About Section
+    st.markdown("### ABOUT DAPPR")
+    st.markdown("""
+    Decentralized Autonomous Platform for Propagation of Research (DAPPR) 
+    leverages Solana blockchain to revolutionize academia-industry collaboration.
+    """)
+    
+    st.markdown("---")
+    st.markdown("Sodh Explorer v1.0  ")
     
     st.markdown("---")
     
@@ -156,20 +215,12 @@ with st.sidebar:
         if st.button("🔗 Connect Wallet", use_container_width=True):
             connect_wallet()
     
-    # Add some space at the bottom
-    st.markdown("<div style='margin-top: 100px;'></div>", unsafe_allow_html=True)
-    nav_option = st.radio(
-        "",
-        ["🏠 Dashboard", "📝 Create Project", "💰 Fund Research", "📊 My Projects", "⚙️ Settings"],
-        label_visibility="collapsed"
-    )
-    
     # Footer
     st.markdown("---")
     st.markdown("""
     <div style="text-align: center; color: #6B7280; font-size: 0.8rem;">
         <p>DAPPR v1.0.0</p>
-        <p> 2025 All rights reserved</p>
+        <p>© 2025 All rights reserved</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -205,386 +256,185 @@ if nav_option == "🏠 Dashboard":
             with st.container(border=True, height=150):
                 st.markdown("### Total Funding")
                 st.markdown("<h1 style='color: #14F195; margin-top: 10px;'>1,245 SOL</h1>", unsafe_allow_html=True)
-                st.caption("+120 SOL this month")
-        
         with col3:
-            with st.container(border=True, height=150):
-                st.markdown("### Active Researchers")
-                st.markdown("<h1 style='color: #14F195; margin-top: 10px;'>87</h1>", unsafe_allow_html=True)
-                st.caption("+12 this month")
-        
-        # Recent activity
-        st.markdown("### 📈 Recent Activity")
-        with st.container(border=True):
-            st.markdown("""
-            - **Project 'AI for Climate' received 5 SOL from 0x1a...3f**
-            - **New project 'Blockchain in Healthcare' created**
-            - **Milestone 1 completed for 'Renewable Energy Research'**
-            - **3 new researchers joined the platform**
-            - **Project 'Quantum Computing' reached 75% of its funding goal**
-            """)
-        
-        # Featured projects
-        st.markdown("### 🌟 Featured Projects")
-        featured_cols = st.columns(3)
-        for i in range(3):
-            with featured_cols[i]:
-                with st.container(border=True, height=250):
-                    st.markdown("#### Project Title")
-                    st.caption("Brief description of the project and its goals...")
-                    st.progress(0.65)
-                    st.caption("65% funded • 15 days left")
-                    st.button("View Details", key=f"featured_{i}", use_container_width=True)
+            st.metric("Total Funding", "42 SOL")
+            
+        st.markdown("### Recent Activity")
+        st.info("Recent activity will be displayed here.")
     else:
-        st.info("🔑 Connect your wallet to view your dashboard")
+        st.warning("🔒 Please connect your wallet to view your dashboard")
+        if st.button("🔗 Connect Wallet", type="primary"):
+            connect_wallet()
 
-elif nav_option == "📝 Create Project":
-    st.title("🚀 Create New Research Project")
+elif nav_option == "🔄 Transactions":
+    st.title("🔄 Transactions")
+    st.info("Transaction history will be displayed here.")
+
+elif nav_option == "👤 Account":
+    st.title("👤 Account")
     
     if st.session_state.connected:
-        with st.form("create_project_form"):
-            col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 3])
+        
+        with col1:
+            st.image("assets/logo.svg", width=150)
+        
+        with col2:
+            st.markdown(f"### Wallet Address")
+            st.code(str(st.session_state.wallet.public_key))
             
-            with col1:
-                title = st.text_input("Project Title*", placeholder="Enter project title", help="A clear and concise title for your research project")
-                funding_goal = st.number_input("Funding Goal (SOL)*", min_value=1.0, step=1.0, format="%.2f", help="Minimum funding required to start the project")
-                
-                # Categories
-                categories = ["AI/ML", "Blockchain", "Climate Change", "Healthcare", "Renewable Energy"]
-                category = st.selectbox("Category*", options=categories)
-                
-                # Tags
-                tags = st.text_input("Tags*", placeholder="Enter relevant tags (comma-separated)", help="Tags to help researchers find your project")
-                
-            with col2:
-                category = st.selectbox("Category *", ["Blockchain", "AI/ML", "Biotech", "Renewable Energy", "Other"])
-            
-            description = st.text_area("Project Description *", 
-                                     placeholder="Describe your research project in detail...", 
-                                     height=150)
-            
-            # Funding goal with SOL conversion
-            st.markdown("### 💰 Funding Goal")
-            funding_col1, funding_col2 = st.columns([2, 1])
-            with funding_col1:
-                funding_goal = st.number_input("Amount (SOL) *", 
-                                            min_value=1.0, 
-                                            step=0.1,
-                                            format="%.1f",
-                                            help="Minimum funding goal in SOL")
-            with funding_col2:
-                st.markdown("<div style='margin-top: 30px; color: #A0AEC0;'>≈ $0.00</div>", 
-                           unsafe_allow_html=True)
-            
-            # Milestones
-            st.markdown("### 📅 Milestones")
-            st.markdown("<div class='caption'>Add key milestones for your project with their respective rewards</div>", 
-                       unsafe_allow_html=True)
-            
-            milestones = []
-            for i in range(3):
-                with st.expander(f"Milestone {i+1}", expanded=(i==0)):
-                    m_col1, m_col2 = st.columns([3, 1])
-                    with m_col1:
-                        m_title = st.text_input(f"Title *", 
-                                             key=f"milestone_title_{i}",
-                                             placeholder=f"Milestone {i+1} title")
-                    with m_col2:
-                        m_reward = st.number_input(f"Reward (SOL) *", 
-                                                min_value=0.1, 
-                                                step=0.1,
-                                                format="%.1f",
-                                                key=f"milestone_reward_{i}")
-                    m_desc = st.text_area(f"Description *", 
-                                         key=f"milestone_desc_{i}",
-                                         placeholder=f"Describe what will be delivered in this milestone")
-                    
-                    if m_title and m_desc and m_reward > 0:
-                        milestones.append({
-                            "title": m_title,
-                            "description": m_desc,
-                            "reward": m_reward,
-                            "status": "Pending"
-                        })
-            
-            # IP Terms
-            st.markdown("### 📜 Intellectual Property Terms")
-            ip_terms = st.text_area("Specify how intellectual property will be handled",
-                                 placeholder="Describe the IP terms and conditions for this project...",
-                                 height=100)
-            
-            # Form submission
-            st.markdown("<div class='caption'>* Required fields</div>", unsafe_allow_html=True)
-            
-            submitted = st.form_submit_button("🚀 Create Project", type="primary", use_container_width=True)
-            
-            if submitted:
-                if not title or not description or funding_goal <= 0 or not milestones:
-                    show_error("Please fill in all required fields and add at least one valid milestone")
-                else:
-                    try:
-                        # Create project object
-                        project_id = f"PRJ-{int(time.time())}"
-                        new_project = {
-                            "id": project_id,
-                            "title": title,
-                            "category": category,
-                            "description": description,
-                            "funding_goal": funding_goal,
-                            "funds_raised": 0,
-                            "milestones": milestones,
-                            "ip_terms": ip_terms,
-                            "status": "Draft",
-                            "created_at": int(time.time()),
-                            "owner": str(st.session_state.wallet.public_key)
-                        }
-                        
-                        # Here you would call your smart contract
-                        if SMART_CONTRACTS_ENABLED and 'client' in st.session_state:
-                            # Convert SOL to lamports (1 SOL = 1,000,000,000 lamports)
-                            lamports = int(funding_goal * 1_000_000_000)
-                            
-                            # Call the smart contract
-                            tx_signature = asyncio.run(
-                                st.session_state.client.create_project(
-                                    title=title,
-                                    description=description,
-                                    funding_goal=lamports,
-                                    ip_terms={"terms": ip_terms}
-                                )
-                            )
-                            new_project["tx_signature"] = tx_signature
-                            
-                        # Add to session state
-                        if 'projects' not in st.session_state:
-                            st.session_state.projects = []
-                        st.session_state.projects.append(new_project)
-                        
-                        show_success(f"Project '{title}' created successfully! 🎉")
-                        # Reset form
-                        st.experimental_rerun()
-                        
-                    except Exception as e:
-                        st.error(f"❌ Error creating project: {str(e)}")
-                        st.exception(e)  # Log the full exception for debugging
+            if st.button("Disconnect Wallet"):
+                disconnect_wallet()
     else:
-        st.warning("🔒 Please connect your wallet to create a project")
+        st.warning("🔒 Please connect your wallet to view account details")
         if st.button("🔗 Connect Wallet", type="primary"):
             connect_wallet()
 
-elif nav_option == "💰 Fund Research":
-    st.title("💸 Fund Research Projects")
+elif nav_option == "📝 Smart Contract":
+    st.title("📝 Smart Contract Manager")
+    st.markdown("Deploy and interact with smart contracts on the Solana blockchain.")
     
-    if 'wallet' in st.session_state and st.session_state.wallet is not None:
-        # Search and filter section
-        with st.container():
-            st.markdown("### 🔍 Find Projects to Support")
-            
-            # Search and filter in columns
-            col1, col2, col3 = st.columns([3, 2, 2])
-            
-            with col1:
-                search_query = st.text_input("Search projects...", 
-                                           placeholder="Search by title, description, or tags")
-            
-            with col2:
-                categories = ["All Categories", "Blockchain", "AI/ML", "Biotech", "Renewable Energy", "Other"]
-                selected_category = st.selectbox("Category", categories)
-            
-            with col3:
-                statuses = ["All Statuses", "Active", "Funded", "In Progress", "Completed"]
-                selected_status = st.selectbox("Status", statuses)
+    if st.session_state.connected:
+        tab1, tab2, tab3 = st.tabs(["📜 Deployed Contracts", "🚀 Deploy New", "📚 Documentation"])
         
-        # Display projects in a grid
-        st.markdown("### 🚀 Available Projects")
-        
-        # Sample project data (in a real app, this would come from your smart contract)
-        projects = [
-            {
-                "id": "PRJ-001",
-                "title": "Decentralized Identity Solution",
-                "category": "Blockchain",
-                "description": "Building a self-sovereign identity solution on Solana that gives users full control over their personal data.",
-                "funding_goal": 100,
-                "funds_raised": 45,
-                "status": "Active",
-                "owner": str(st.session_state.wallet.public_key)[:8] + "..." + str(st.session_state.wallet.public_key)[-4:],
-                "milestones": 3,
-                "created_at": "2023-05-15",
-                "tags": ["identity", "privacy", "web3"]
-            },
-            {
-                "id": "PRJ-002",
-                "title": "AI for Climate Modeling",
-                "category": "AI/ML",
-                "description": "Using machine learning to improve climate prediction models and help combat climate change.",
-                "funding_goal": 200,
-                "funds_raised": 180,
-                "status": "Active",
-                "owner": "7xYt...9m4n",
-                "milestones": 4,
-                "created_at": "2023-06-01",
-                "tags": ["ai", "climate", "sustainability"]
-            }
-        ]
-        
-        # Filter projects
-        filtered_projects = projects
-        if search_query:
-            filtered_projects = [p for p in filtered_projects 
-                              if (search_query.lower() in p["title"].lower() 
-                                   or search_query.lower() in p["description"].lower()
-                                   or any(search_query.lower() in tag.lower() for tag in p.get("tags", [])))]
-        
-        if selected_category != "All Categories":
-            filtered_projects = [p for p in filtered_projects if p["category"] == selected_category]
+        with tab1:
+            st.header("Your Smart Contracts")
             
-        if selected_status != "All Statuses":
-            filtered_projects = [p for p in filtered_projects if p["status"] == selected_status]
-        
-        # Display projects in a responsive grid
-        if not filtered_projects:
-            st.info("🌟 No projects found matching your criteria. Try adjusting your filters.")
-        else:
-            # Create a responsive grid
-            cols = st.columns(1)  # Single column for mobile, will be adjusted with CSS
+            if 'deployed_contracts' not in st.session_state:
+                st.session_state.deployed_contracts = []
             
-            for i, project in enumerate(filtered_projects):
-                with cols[0]:
-                    with st.container():
-                        progress = min(100, int((project['funds_raised'] / project['funding_goal']) * 100))
-                        category_color = {
-                            'Blockchain': '#9945FF',
-                            'AI/ML': '#00C4FF',
-                            'Biotech': '#FF6B6B',
-                            'Renewable Energy': '#4CAF50',
-                            'Other': '#9C27B0'
-                        }.get(project['category'], '#666666')
-                        
-                        # Format description with ellipsis if too long
-                        desc = (project['description'][:150] + '...') if len(project['description']) > 150 else project['description']
-                        
-                        # Get status color
-                        status_color = {
-                            'Active': '#14F195',
-                            'Funded': '#00C4FF',
-                            'In Progress': '#FFD700',
-                            'Completed': '#4CAF50'
-                        }.get(project['status'], '#A0AEC0')
-                        
-                        # Render the card with proper string formatting
-                        card_html = f"""
-                        <div class='card' style='margin-bottom: 20px; padding: 15px; border-radius: 8px; background: #1A1E2C;'>
-                            <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;'>
-                                <h3 style='margin: 0; color: white;'>{project['title']}</h3>
-                                <span style='background: {category_color}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8em;'>{project['category']}</span>
-                            </div>
-                            <p style='color: #A0AEC0; margin-bottom: 15px;'>{desc}</p>
+            if not st.session_state.deployed_contracts:
+                st.info("You haven't deployed any smart contracts yet.")
+            else:
+                for contract in st.session_state.deployed_contracts:
+                    with st.expander(f"📄 {contract['name']} ({contract['address'][:8]}...{contract['address'][-4:]})"):
+                        col1, col2 = st.columns([2, 1])
+                        with col1:
+                            st.markdown(f"""
+                            **Network:** `{contract['network']}`  
+                            **Type:** `{contract['type']}`  
+                            **Deployed:** `{contract['deployed_at']}`
+                            """)
+                        with col2:
+                            st.code(contract['address'])
                             
-                            <div style='margin-bottom: 15px;'>
-                                <div style='display: flex; justify-content: space-between; margin-bottom: 5px;'>
-                                    <span style='color: #A0AEC0;'>Progress</span>
-                                    <span style='color: white;'>{progress}%</span>
-                                </div>
-                                <div style='height: 8px; background: #2D3748; border-radius: 4px; overflow: hidden;'>
-                                    <div style='width: {progress}%; height: 100%; background: #14F195;'></div>
-                                </div>
-                                <div style='display: flex; justify-content: space-between; margin-top: 5px;'>
-                                    <small style='color: #A0AEC0;'>{project['funds_raised']} SOL raised</small>
-                                    <small style='color: #A0AEC0;'>Goal: {project['funding_goal']} SOL</small>
-                                </div>
-                            </div>
-                            
-                            <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;'>
-                                <div>
-                                    <small style='color: #A0AEC0;'>👤 {project['owner']}</small> • 
-                                    <small style='color: #A0AEC0;'>📅 {project.get('created_at', 'N/A')}</small> • 
-                                    <small style='color: #A0AEC0;'>📌 {project.get('milestones', 0)} milestones</small>
-                                </div>
-                                <span style='color: {status_color}; font-weight: 500;'>{project['status']}</span>
-                            </div>
-                            
-                            <button class='stButton' style='width: 100%; padding: 8px 16px; background: #14F195; color: black; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;'>
-                                💰 Fund Project
-                            </button>
-                        </div>
-                        """
-                        st.markdown(card_html, unsafe_allow_html=True)
-                        
-                        # Add fund button handler
-                        if st.button(f"Fund {project['title']}", key=f"fund_{project['id']}"):
-                            st.session_state.selected_project = project
+                        if st.button("Interact", key=f"interact_{contract['address']}"):
+                            st.session_state.active_contract = contract['address']
                             st.experimental_rerun()
+        
+        with tab2:
+            st.header("Deploy New Contract")
+            
+            contract_type = st.selectbox(
+                "Select Contract Type",
+                ["Research Project", "Funding Pool", "IP License", "Custom"]
+            )
+            
+            contract_name = st.text_input("Contract Name")
+            
+            if contract_type == "Custom":
+                contract_code = st.text_area("Contract Code (Rust)", height=300)
+                st.info("Note: Custom contracts will be compiled on the client side before deployment.")
+            
+            if st.button("Deploy Contract", type="primary"):
+                if not contract_name:
+                    st.error("Please enter a contract name")
+                else:
+                    with st.spinner("Deploying contract to Solana devnet..."):
+                        # Simulate deployment
+                        time.sleep(2)
+                        new_contract = {
+                            "name": contract_name,
+                            "type": contract_type,
+                            "address": f"{base58.b58encode(os.urandom(32)).decode('utf-8')}",
+                            "network": "devnet",
+                            "deployed_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            "abi": {}
+                        }
+                        st.session_state.deployed_contracts.append(new_contract)
+                        st.success(f"✅ Contract deployed successfully!")
+                        st.balloons()
+                        st.experimental_rerun()
+        
+        with tab3:
+            st.header("Smart Contract Documentation")
+            
+            st.markdown("""
+            ### Available Contract Types
+            
+            1. **Research Project**
+               - Manages research project lifecycle
+               - Handles funding milestones
+               - Tracks deliverables
+            
+            2. **Funding Pool**
+               - Manages pooled funding
+               - Handles distributions
+               - Tracks contributions
+            
+            3. **IP License**
+               - Manages intellectual property rights
+               - Handles licensing terms
+               - Tracks usage
+            
+            4. **Custom**
+               - Deploy your own Solana program
+               - Requires Rust code
+            
+            ### Interaction Guide
+            - Connect your wallet to view deployed contracts
+            - Use the "Interact" button to call contract methods
+            - All transactions require wallet confirmation
+            """)
     else:
-        st.warning("🔒 Please connect your wallet to browse and fund projects")
+        st.warning("🔒 Please connect your wallet to interact with smart contracts")
         if st.button("🔗 Connect Wallet", type="primary"):
             connect_wallet()
-            
-        # Show some sample projects to encourage signup
-        st.markdown("## 🌟 Featured Projects")
-        st.markdown("Connect your wallet to see all available projects and start funding research!")
-        
-        # Sample project cards (hidden until connected)
-        sample_projects = [
-            {
-                "title": "Decentralized Identity",
-                "category": "Blockchain",
-                "description": "Self-sovereign identity solution giving users control over their personal data.",
-                "funding_goal": 100,
-                "funds_raised": 45,
-                "status": "Active"
-            },
-            {
-                "title": "AI Climate Models",
-                "category": "AI/ML",
-                "description": "Improving climate prediction accuracy with machine learning.",
-                "funding_goal": 200,
-                "funds_raised": 180,
-                "status": "Active"
-            }
-        ]
-        
-        for project in sample_projects:
-            with st.container():
-                # Get category color for sample project
-                sample_category_color = {
-                    'Blockchain': '#9945FF',
-                    'AI/ML': '#00C4FF',
-                    'Biotech': '#FF6B6B',
-                    'Renewable Energy': '#4CAF50',
-                    'Other': '#9C27B0'
-                }.get(project['category'], '#666666')
-                
-                # Format description for sample project
-                sample_desc = (project['description'][:150] + '...') if len(project['description']) > 150 else project['description']
-                
-                # Sample project card HTML
-                sample_card = f"""
-                <div class='card' style='margin-bottom: 20px; padding: 15px; border-radius: 8px; background: #1A1E2C; opacity: 0.7; filter: blur(1px); pointer-events: none;'>
-                    <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;'>
-                        <h3 style='margin: 0; color: white;'>{title}</h3>
-                        <span style='background: {color}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8em;'>{category}</span>
-                    </div>
-                    <p style='color: #A0AEC0; margin-bottom: 15px;'>{description}</p>
-                    
-                    <div style='margin-bottom: 15px;'>
-                        <div style='display: flex; justify-content: space-between;'>
-                            <small style='color: #A0AEC0;'>Connect wallet to see details</small>
-                            <span style='color: #14F195; font-weight: 500;'>{status}</span>
-                        </div>
-                        <div style='height: 8px; background: #2D3748; border-radius: 4px; margin-top: 10px; overflow: hidden;'>
-                            <div style='width: 30%; height: 100%; background: #14F195; opacity: 0.5;'></div>
-                        </div>
-                    </div>
-                </div>
-                """.format(
-                    title=project['title'],
-                    category=project['category'],
-                    description=sample_desc,
-                    status=project['status'],
-                    color=sample_category_color
-                )
-                st.markdown(sample_card, unsafe_allow_html=True)
+
+elif nav_option == "📄 Whitepaper":
+    st.title("📄 Whitepaper")
+    st.markdown("""
+    ## Decentralized Autonomous Platform for Propagation of Research (DAPPR)
+    
+    ### Abstract
+    DAPPR leverages Solana blockchain to revolutionize academia-industry collaboration by creating a decentralized 
+    platform for research funding, intellectual property management, and knowledge sharing.
+    
+    ### Key Features
+    - **Decentralized Funding**: Transparent and secure funding for research projects
+    - **IP Management**: Blockchain-based intellectual property rights management
+    - **Smart Contracts**: Automated execution of research agreements
+    - **Token Economy**: Native token for platform governance and rewards
+    
+    [Read the full whitepaper here](https://example.com/whitepaper)
+    """)
+
+elif nav_option == "🎓 Tutorial":
+    st.title("🎓 Tutorial")
+    
+    st.markdown("### Getting Started with DAPPR")
+    
+    st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    
+    st.markdown("### Step-by-Step Guide")
+    
+    steps = [
+        "1. Connect your Solana wallet",
+        "2. Browse available research projects",
+        "3. Fund projects you're interested in",
+        "4. Track project progress and milestones",
+        "5. Receive rewards and updates"
+    ]
+    
+    for step in steps:
+        st.markdown(f"- {step}")
+    
+    st.download_button(
+        label="📥 Download User Guide (PDF)",
+        data=b"Sample PDF content",
+        file_name="dappr_user_guide.pdf",
+        mime="application/pdf"
+    )
 
 # Project funding modal
 if 'selected_project' in st.session_state and st.session_state.selected_project is not None:
