@@ -1,0 +1,112 @@
+/* Main container */
+.main {
+    background-color: #0E1117;
+    color: #FAFAFA;
+}
+
+/* Buttons */
+.stButton>button {
+    background-color: #14F195 !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.6rem 1.2rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.stButton>button:hover {
+    background-color: #12D98A !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(20, 241, 149, 0.3) !important;
+}
+
+/* Text inputs */
+.stTextInput>div>div>input {
+    background-color: #1E1E1E !important;
+    color: #FAFAFA !important;
+    border: 1px solid #2D3748 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* Headers */
+h1, h2, h3, h4, h5, h6 {
+    color: #14F195 !important;
+    font-weight: 700 !important;
+}
+
+/* Sidebar */
+.css-1d391kg, .css-1d391kg:focus:not(:active) {
+    background-color: #0a0d12 !important;
+    border-right: 1px solid #1E1E1E !important;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 8px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background-color: #1E1E1E !important;
+    color: #A0AEC0 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1rem !important;
+    margin-right: 0 !important;
+    transition: all 0.3s ease !important;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #14F195 !important;
+    color: #000000 !important;
+}
+
+/* Cards */
+.stAlert, .stException, .stProgress > div > div > div > div {
+    border-radius: 12px !important;
+}
+
+/* Success/Error messages */
+.stAlert {
+    border-left: 4px solid #14F195 !important;
+}
+
+.stException {
+    border-left: 4px solid #F56565 !important;
+}
+
+/* Custom classes */
+.card {
+    background: #1E1E1E;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #2D3748;
+}
+
+.card:hover {
+    border-color: #14F195;
+    box-shadow: 0 4px 12px rgba(20, 241, 149, 0.1);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .stTabs [data-baseweb="tab-list"] {
+        flex-direction: column;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
