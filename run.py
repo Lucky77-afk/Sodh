@@ -28,7 +28,7 @@ def start_streamlit():
     })
     
     # Get the path to the app
-    app_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "app.py"))
+    app_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "src", "main", "streamlit_app.py"))
     
     # Start Streamlit
     cmd = [
