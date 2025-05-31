@@ -1,0 +1,21 @@
+# Core Dependencies
+streamlit>=1.45.1
+
+# Solana Dependencies
+solana>=0.36.6
+solders>=0.26.0
+base58>=2.1.1
+
+# Web3 and Blockchain
+web3>=6.15.1
+borsh-construct>=0.1.0
+
+# Utils
+python-dotenv>=1.1.0
+requests>=2.32.3
+pydantic>=2.7.1
+
+# Development
+typing-extensions>=4.13.0
+pytest>=8.2.0
+pytest-asyncio>=0.23.6
