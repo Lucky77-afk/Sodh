@@ -1,6 +1,7 @@
 [features]
 seeds = false
 skip-lint = false
+
 [programs.localnet]
 dappr_collab = "DAPPRCo11abC0llab111111111111111111111111111111"
 
@@ -13,3 +14,9 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+
+[programs.devnet]
+dappr_collab = "DAPPRCo11abC0llab111111111111111111111111111111"
+
+[programs.mainnet]
+dappr_collab = ""  # Add your mainnet program ID when deploying to mainnet
